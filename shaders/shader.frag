@@ -10,5 +10,5 @@ layout(binding = 1) uniform sampler2D texSampler;
 void main() {
     // Colours are vec 4
     // R G B A
-    outColour = texture(texSampler, fragTexCoord * 2);
+    outColour = texture(texSampler, fragTexCoord);
 }
