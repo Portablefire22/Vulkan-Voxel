@@ -16,4 +16,6 @@ link_libraries(vulkan)
 
 add_executable(VulkanTest main.cpp
         stb_image.h
-        Camera.h)
+        Camera.h
+        world/chunk.cpp
+        world/chunk.h)

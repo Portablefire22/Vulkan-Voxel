@@ -10,6 +10,7 @@
 #include <vector>
 #include <bits/types/siginfo_t.h>
 #include <limits>
+#include <numeric>
 #include <algorithm>
 
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -171,19 +172,20 @@ private:
     (-1,-1)     (1,-1)
  */
 
-    const std::vector<Vertex> vertices = {
+    std::vector<Vertex> vertices = {
         {{-1,1,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
         {{1, 1, 1}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
         {{1,-1,1}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
         {{-1,-1,1}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
 
-        {{-10, -1.5, 10}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{10, -1.5, 10}, {0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f}},
-        {{-10, -1.5, -10}, {0.0f, 0.0f, 1.0f}, {-1.0f, 1.0f}},
-        {{10, -1.5, -10}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+        {{-10, -1.5, 10}, {1.0f, 0.0f, 0.0f}, {1,1}},
+        {{10, -1.5, 10}, {0.0f, 1.0f, 0.0f}, {1,0}},
+        {{-10, -1.5, -10}, {0.0f, 0.0f, 1.0f}, {0,1}},
+        {{10, -1.5, -10}, {1.0f, 1.0f, 1.0f}, {0,0}}
     };
 
-    const std::vector<uint16_t> indices = {
+
+    std::vector<uint16_t> indices = {
         0, 1, 2, 2, 3, 0,
         4, 5, 7, 7, 6, 4
     };
@@ -318,7 +320,7 @@ private:
         if (window == NULL) {
             throw std::runtime_error("Failed to create window!");
         }
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetCursorPosCallback(window, mouse_callback);
@@ -360,6 +362,99 @@ private:
         VkFormat depthFormat = findDepthFormat();
         createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
         depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    }
+
+    void createBlock() {
+
+    }
+
+    uint16_t indicesOffset;
+    bool test = false;
+    void createBlockVertex(glm::vec3 min, int size = 1) {
+        if (test) { return; }
+        test = true;
+
+        indicesOffset = indices.size();
+        uint16_t blockIndices[] = {
+            1, 0, 3, 1, 3, 2, // north (-z)
+           4, 5, 6, 4, 6, 7, // south (+z)
+           5, 1, 2, 5, 2, 6, // east (+x)
+           0, 4, 7, 0, 7, 3, // west (-x)
+           2, 3, 7, 2, 7, 6, // top (+y)
+           5, 4, 0, 5, 0, 1  // bottom (-y)
+        };
+
+
+        std::transform(std::begin(blockIndices),std::end(blockIndices),std::begin(blockIndices),[&](uint16_t x){return x+indicesOffset;});
+
+        min.x = (int) min.x;
+        min.y = (int) min.y;
+        min.z = (int) min.z;
+        //glm::vec3 max = {min.x + size, min.y + size, min.z + size};
+        glm::vec3 max = min * 2.0f;
+        std::cout << "MIN NUMBERS" << min.x << "|" << min.y << "|" << min.z << std::endl;
+        std::cout << "MAX NUMBERS" << max.x << "|" << max.y << "|" << max.z << std::endl;
+        /*Vertex blockVertices[] = {
+            {{min.x, min.y, min.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{max.x, min.y, min.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{max.x, max.y, min.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+            {{min.x, max.y, min.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+            {{min.x, min.y, max.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{max.x, min.y, max.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{max.x, max.y, max.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+            {{min.x, max.y, max.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        };*/
+
+        Vertex blockVertices[] = {
+            {{5, 5, 5},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{10, 5, 5},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{10, 10, 5},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+            {{5, 10, 5},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+            {{5, 5, 10},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+            {{10, 5, 10},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+            {{10, 10, 10},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+            {{5, 10, 10},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        };
+        indices.resize(indices.size() + (sizeof(blockIndices) / sizeof(uint16_t)));
+        vertices.resize(vertices.size() + (sizeof(blockVertices) / sizeof(Vertex)));
+        VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
+        VkDeviceSize vertBufferSize = sizeof(vertices[0]) * vertices.size();
+        indices.insert(indices.end(), std::begin(blockIndices), std::end(blockIndices));
+        vertices.insert(vertices.end(), std::begin(blockVertices), std::end(blockVertices));
+
+        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+        //vkCmdUpdateBuffer(commandBuffer, indexBuffer, 0, bufferSize, indices.data());
+        //vkCmdUpdateBuffer(commandBuffer, vertexBuffer, 0, bufferSize, vertices.data());
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+        void* data;
+        vkMapMemory(device, stagingBufferMemory, 0, indexBufferSize, 0 , &data);
+        memcpy(data, indices.data(), (size_t) indexBufferSize);
+        vkUnmapMemory(device,stagingBufferMemory);
+
+        copyBuffer(stagingBuffer, indexBuffer, indexBufferSize);
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device,stagingBufferMemory,nullptr);
+        data = nullptr;
+
+        createBuffer(vertBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+        vkMapMemory(device, stagingBufferMemory, 0, vertBufferSize, 0 , &data);
+        memcpy(data, vertices.data(), (size_t) vertBufferSize);
+        vkUnmapMemory(device,stagingBufferMemory);
+        copyBuffer(stagingBuffer, vertexBuffer, vertBufferSize);
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        endSingleTimeCommands(commandBuffer);
+
+        //createIndexBuffer();
+    }
+
+    void updateBuffer(VkBuffer srcBuffer, VkBuffer ) {
+
     }
 
     VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
@@ -649,7 +744,7 @@ private:
         memcpy(data, indices.data(), (size_t) bufferSize);
         vkUnmapMemory(device,stagingBufferMemory);
 
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+        createBuffer(2000000000, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
         copyBuffer(stagingBuffer, indexBuffer, bufferSize);
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -667,7 +762,7 @@ private:
         memcpy(data, vertices.data(), (size_t) bufferSize);
         vkUnmapMemory(device, stagingBufferMemory);
 
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+        createBuffer(2000000000, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
         copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
@@ -1568,11 +1663,18 @@ private:
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
             camera.ProcessKeyboard(DOWN, deltaTime);
         }
+        if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) {
+            createBlockVertex(camera.Position, 1);
+        }
+        if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) {
+            test = false;
+        }
     }
 
     void drawFrame() {
         // True makes it wait for all fences
         vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -1584,7 +1686,7 @@ private:
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
 
         vkResetCommandBuffer(commandBuffers[currentFrame], 0);
         recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
