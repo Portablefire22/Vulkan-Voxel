@@ -13,9 +13,9 @@ find_package(glfw3 REQUIRED)
 link_libraries(glfw)
 link_libraries(vulkan)
 
+set(PROJECT_SOURCES main.cpp world/chunk.cpp block/Block.cpp)
+set(PROJECT_HEADERS main.h stb_image.h Camera.h world/chunk.h block/Block.h)
 
-add_executable(VulkanTest main.cpp
-        stb_image.h
-        Camera.h
-        world/chunk.cpp
-        world/chunk.h)
+add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS}
+
+)
