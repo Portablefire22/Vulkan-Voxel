@@ -320,7 +320,7 @@ private:
         if (window == NULL) {
             throw std::runtime_error("Failed to create window!");
         }
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         glfwSetCursorPosCallback(window, mouse_callback);
@@ -370,18 +370,19 @@ private:
 
     uint16_t indicesOffset;
     bool test = false;
+    int j = 0;
     void createBlockVertex(glm::vec3 min, int size = 1) {
         if (test) { return; }
         test = true;
 
-        indicesOffset = indices.size();
+        indicesOffset = vertices.size();
         uint16_t blockIndices[] = {
             1, 0, 3, 1, 3, 2, // north (-z)
            4, 5, 6, 4, 6, 7, // south (+z)
            5, 1, 2, 5, 2, 6, // east (+x)
            0, 4, 7, 0, 7, 3, // west (-x)
            2, 3, 7, 2, 7, 6, // top (+y)
-           5, 4, 0, 5, 0, 1  // bottom (-y)
+           5, 4, 0, 5, 0, 1,  // bottom (-y)
         };
 
 
@@ -391,43 +392,28 @@ private:
         min.y = (int) min.y;
         min.z = (int) min.z;
         //glm::vec3 max = {min.x + size, min.y + size, min.z + size};
-        glm::vec3 max = min * 2.0f;
+        glm::vec3 max = min + (float) size;
         std::cout << "MIN NUMBERS" << min.x << "|" << min.y << "|" << min.z << std::endl;
         std::cout << "MAX NUMBERS" << max.x << "|" << max.y << "|" << max.z << std::endl;
-        /*Vertex blockVertices[] = {
-            {{min.x, min.y, min.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{max.x, min.y, min.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{max.x, max.y, min.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{min.x, max.y, min.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-            {{min.x, min.y, max.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{max.x, min.y, max.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{max.x, max.y, max.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{min.x, max.y, max.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-        };*/
-
         Vertex blockVertices[] = {
-            {{5, 5, 5},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{10, 5, 5},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{10, 10, 5},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{5, 10, 5},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{min.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // 0
+            {{max.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // 1
+            {{max.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // 4
+            {{min.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // 5
 
-            {{5, 5, 10},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{10, 5, 10},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{10, 10, 10},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{5, 10, 10},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{min.x, min.y, max.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // 2
+            {{max.x, min.y, max.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, // 3
+            {{max.x, max.y, max.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // 6
+            {{min.x, max.y, max.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 7
         };
-        indices.resize(indices.size() + (sizeof(blockIndices) / sizeof(uint16_t)));
-        vertices.resize(vertices.size() + (sizeof(blockVertices) / sizeof(Vertex)));
-        VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
-        VkDeviceSize vertBufferSize = sizeof(vertices[0]) * vertices.size();
+
         indices.insert(indices.end(), std::begin(blockIndices), std::end(blockIndices));
         vertices.insert(vertices.end(), std::begin(blockVertices), std::end(blockVertices));
+        VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
+        VkDeviceSize vertBufferSize = sizeof(vertices[0]) * vertices.size();
 
         VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
-        //vkCmdUpdateBuffer(commandBuffer, indexBuffer, 0, bufferSize, indices.data());
-        //vkCmdUpdateBuffer(commandBuffer, vertexBuffer, 0, bufferSize, vertices.data());
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         createBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -1764,7 +1750,7 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 0.01f));
         ubo.view = camera.GetViewMatrix();
         ubo.proj = glm::perspective(glm::radians(camera.Zoom), (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 100.0f);
         ubo.proj[1][1] *= -1;
