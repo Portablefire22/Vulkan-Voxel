@@ -71,6 +71,7 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
            5, 4, 0, 5, 0, 1,  // bottom (-y)
         };
 
+        // TODO Cull block faces that do not need to exist
 
         std::transform(std::begin(blockIndices),std::end(blockIndices),std::begin(blockIndices),[&](uint16_t x){return x+indicesOffset;});
 
@@ -158,7 +159,7 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
 
     VkPresentModeKHR mainApp::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         for (const auto& availablePresentMode : availablePresentModes) {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            if (availablePresentMode == VK_PRESENT_MODE_FIFO_KHR) {
                 return availablePresentMode;
             }
         }
@@ -353,11 +354,17 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
         char* textureName = "test.png";
         std::string filePath = std::format("../textures/{}", textureName);
         stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
+
 
         if (!pixels) {
-            throw std::runtime_error(std::format("Failed to load texture image: {}!", textureName));
+            // Load a missing texture if it cant find the given texture
+            std::string filePath = std::format("../textures/missing.png");
+            pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            if (!pixels) {
+                throw std::runtime_error(std::format("Failed to load texture image: {}!", textureName));
+            }
         }
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
