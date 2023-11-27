@@ -24,7 +24,7 @@ namespace Block {
 class Block {
 
 public:
-
+    BlockState blockState;
     Block(int blockId, glm::vec3 position, DIRECTION facing);
 };
 

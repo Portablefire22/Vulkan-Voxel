@@ -57,11 +57,15 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
         mainApp::mainLoop();
         mainApp::cleanup();
     }
+    void mainApp::createBlockVertices(std::vector<Block::Block> Blocks) {
+        for (Block::Block block : Blocks) {
+            calculateBlockVertices(block.blockState.Position, 1);
+        }
+        updateVertexBuffer();
+    }
 
-    void mainApp::createBlockVertex(glm::vec3 min) {
-
-        int size = 1;
-        indicesOffset = vertices.size();
+    void mainApp::calculateBlockVertices(glm::vec3 position, int size) {
+        int indicesOffset = vertices.size();
         uint16_t blockIndices[] = {
             1, 0, 3, 1, 3, 2, // north (-z)
            4, 5, 6, 4, 6, 7, // south (+z)
@@ -70,14 +74,12 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
            2, 3, 7, 2, 7, 6, // top (+y)
            5, 4, 0, 5, 0, 1,  // bottom (-y)
         };
+        glm::vec3 min = position;
 
         // TODO Cull block faces that do not need to exist
 
         std::transform(std::begin(blockIndices),std::end(blockIndices),std::begin(blockIndices),[&](uint16_t x){return x+indicesOffset;});
 
-        min.x = (int) min.x;
-        min.y = (int) min.y;
-        min.z = (int) min.z;
         //glm::vec3 max = {min.x + size, min.y + size, min.z + size};
         glm::vec3 max = min + (float) size;
         //std::cout << "MIN NUMBERS" << min.x << "|" << min.y << "|" << min.z << std::endl;
@@ -96,6 +98,16 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
 
         indices.insert(indices.end(), std::begin(blockIndices), std::end(blockIndices));
         vertices.insert(vertices.end(), std::begin(blockVertices), std::end(blockVertices));
+    }
+
+    // TODO MOVE RENDERING INTO A RENDER CLASS && CHANGE THE METHOD OF RENDERING BLOCKS AS THE INDICES METHOD OVERFLOWS TOO EASILY
+    void mainApp::createBlockVertex(glm::vec3 min, int size) {
+        calculateBlockVertices(min, size);
+        updateVertexBuffer();
+        //createIndexBuffer();
+    }
+
+    void mainApp::updateVertexBuffer() {
         VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
         VkDeviceSize vertBufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -122,8 +134,6 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
         vkDestroyBuffer(device, stagingBuffer, nullptr);
         vkFreeMemory(device, stagingBufferMemory, nullptr);
         endSingleTimeCommands(commandBuffer);
-
-        //createIndexBuffer();
     }
 
     mainApp::SwapChainSupportDetails mainApp::querySwapChainSupport(VkPhysicalDevice device) {

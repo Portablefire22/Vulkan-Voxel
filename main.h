@@ -37,12 +37,16 @@
 
 
 #include "Camera.h"
+#include "block/Block.h"
 
 
 static void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 class mainApp {
 public:
-    void createBlockVertex(glm::vec3 min);
+    void createBlockVertex(glm::vec3 min, int size = 1);
+    void createBlockVertices(std::vector<Block::Block>);
+    void calculateBlockVertices(glm::vec3 position, int size);
+    void updateVertexBuffer();
     void run();
 private:
     struct Vertex {
@@ -82,11 +86,6 @@ private:
     };
 
     std::vector<Vertex> vertices = {
-        {{-1,1,1}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{1, 1, 1}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{1,-1,1}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-1,-1,1}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
         {{-10, -1.5, 10}, {1.0f, 0.0f, 0.0f}, {1,1}},
         {{10, -1.5, 10}, {0.0f, 1.0f, 0.0f}, {1,0}},
         {{-10, -1.5, -10}, {0.0f, 0.0f, 1.0f}, {0,1}},
@@ -171,8 +170,7 @@ private:
     };
 
     std::vector<uint16_t> indices = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 7, 7, 6, 4
+        0, 1, 3, 3, 2, 0,
     };
 
     struct QueueFamilyIndices {
