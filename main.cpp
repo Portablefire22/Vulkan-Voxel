@@ -65,7 +65,8 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
     }
 
     void mainApp::calculateBlockVertices(glm::vec3 position, int size) {
-        int indicesOffset = vertices.size();
+        return;
+        int indicesOffset = 1;
         uint16_t blockIndices[] = {
             1, 0, 3, 1, 3, 2, // north (-z)
            4, 5, 6, 4, 6, 7, // south (+z)
@@ -85,19 +86,19 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
         //std::cout << "MIN NUMBERS" << min.x << "|" << min.y << "|" << min.z << std::endl;
         //std::cout << "MAX NUMBERS" << max.x << "|" << max.y << "|" << max.z << std::endl;
         Vertex blockVertices[] = {
-            {{min.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // 0
-            {{max.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // 1
-            {{max.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // 4
-            {{min.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // 5
+            {{min.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}, // 0
+            {{max.x, min.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // 1
+            {{max.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}}, // 4
+            {{min.x, max.y, min.z},{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // 5
 
-            {{min.x, min.y, max.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // 2
-            {{max.x, min.y, max.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, // 3
-            {{max.x, max.y, max.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // 6
-            {{min.x, max.y, max.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}, // 7
+            {{min.x, min.y, max.z},{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}, // 2
+            {{max.x, min.y, max.z},{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // 3
+            {{max.x, max.y, max.z},{0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 0.0f}}, // 6
+            {{min.x, max.y, max.z},{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, // 7
         };
 
         indices.insert(indices.end(), std::begin(blockIndices), std::end(blockIndices));
-        vertices.insert(vertices.end(), std::begin(blockVertices), std::end(blockVertices));
+        //vertices.insert(vertices.end(), std::begin(blockVertices), std::end(blockVertices));
     }
 
     // TODO MOVE RENDERING INTO A RENDER CLASS && CHANGE THE METHOD OF RENDERING BLOCKS AS THE INDICES METHOD OVERFLOWS TOO EASILY
@@ -242,6 +243,48 @@ chunk::chunk testChunk = chunk::chunk({0,0,0});
         createDescriptorSets();
         createCommandBuffer();
         createSyncObjects();
+
+        load_meshes();
+    }
+
+void mainApp::load_meshes() {
+
+        upload_mesh(mesh);
+}
+
+    void mainApp::upload_mesh(Mesh& mesh) {
+        // Allocate vertex buffer
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = mesh._vertices.size() * sizeof(Vertex);
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+        // Let VMA know that it should be writeable by the CPU and readable by the GPU
+        VmaAllocationCreateInfo vmallocInfo{};
+        vmallocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        if (!vmaCreateBuffer(allocator, &bufferInfo, &vmallocInfo, &mesh._vertexBuffer._buffer, &mesh._vertexBuffer._allocation, nullptr) == VK_SUCCESS) {
+            throw std::runtime_error("upload_Mesh(Mesh& mesh): Failed to create buffer!");
+        }
+
+        void* data;
+        vmaMapMemory(allocator, mesh._vertexBuffer._allocation, &data);
+        memcpy(data, mesh._vertices.data(), mesh._vertices.size() * sizeof(Vertex));
+        vmaUnmapMemory(allocator, mesh._vertexBuffer._allocation);
+
+        //vmaDestroyBuffer(allocator, mesh._vertexBuffer._buffer, mesh._vertexBuffer._allocation);
+
+    }
+
+
+
+
+
+    void mainApp::createAllocator() {
+        VmaAllocatorCreateInfo allocatorInfo = {};
+        allocatorInfo.physicalDevice = physicalDevice;
+        allocatorInfo.device = device;
+        allocatorInfo.instance = instance;
+        vmaCreateAllocator(&allocatorInfo, &allocator);
     }
 
     void mainApp::createDepthResources() {

@@ -6,15 +6,13 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 proj;
 } ubo;
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColour;
-layout(location = 2) in vec2 inTexCoord;
+layout(location = 0) in vec3 vertPosition;
+layout(location = 1) in vec3 vertNormal;
+layout(location = 2) in vec3 vertColour;
 
-layout(location = 0) out vec3 fragColour;
-layout(location = 1) out vec2 fragTexCoord;
+layout(location = 0) out vec3 outColour;
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    fragColour = inColour;
-    fragTexCoord = inTexCoord ;
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(vertPosition, 1.0);
+    outColour = vertColour;
 }
