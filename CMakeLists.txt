@@ -26,7 +26,9 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/chunk.h block/Block.h
         vk_initialisers.cpp
         vk_initialisers.h
         player/Player.cpp
-        player/Player.h)
+        player/Player.h
+        RenderUtils/RenderBlock.cpp
+        RenderUtils/RenderBlock.h)
 
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 target_link_libraries(VulkanTest ${SDL2_LIBRARIES})

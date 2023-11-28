@@ -70,6 +70,12 @@ public:
         return glm::lookAt(Position, Position + Front, Up);
     }
 
+    glm::mat4 getProjectionMatrix(int width, int height) {
+        glm::mat4 projection = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 100.0f);
+        projection[1][1] *= -1;
+        return projection;
+    }
+
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
@@ -82,6 +88,12 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        if (direction == UP) {
+            Position += Up * velocity;
+        }
+        if (direction == DOWN) {
+            Position -= Up * velocity;
+        }
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

@@ -13,6 +13,19 @@
 #include "vk_mem_alloc.h"
 
 #include "vk_initialisers.h"
+#include "RenderUtils/RenderBlock.h"
+
+
+#define VK_CHECK(x)                                                 \
+do                                                              \
+{                                                               \
+VkResult err = x;                                           \
+if (err)                                                    \
+{                                                           \
+std::cout <<"Detected Vulkan error: " << err << std::endl; \
+abort();                                                \
+}                                                           \
+} while (0)
 
 void VulkanEngine::init() {
 
@@ -43,29 +56,98 @@ void VulkanEngine::init() {
     initPipelines();
 
     loadMeshes();
+	initScene();
 
 	PlayerEntity = Player::Player();
     _isInitialised = true;
 }
 
 void VulkanEngine::loadMeshes() {
-    _triangleMesh._vertices.resize(3);
+	/*Mesh triMesh{};
+	triMesh._vertices.resize(3);
 
-    //vertex positions
-    _triangleMesh._vertices[0].position = { 10.f, -1.f, 10.0f };
-    _triangleMesh._vertices[1].position = {-10.f, -1.f, -10.0f };
-    _triangleMesh._vertices[2].position = { -10.f,-1.f, 10.0f };
-	_triangleMesh._vertices[2].position = { 10.f,-1.f, -10.0f };
+	triMesh._vertices[0].position = { 1.f,1.f, 0.5f };
+	triMesh._vertices[1].position = { -1.f,1.f, 0.5f };
+	triMesh._vertices[2].position = { 0.f,-1.f, 0.5f };
 
-    //vertex colors, all green
-    _triangleMesh._vertices[0].colour = { 0.f, 1.f, 0.0f }; //pure green
-    _triangleMesh._vertices[1].colour = { 0.f, 0.0f, 1.f }; //pure green
-    _triangleMesh._vertices[2].colour = { 0.f, 1.f, 0.0f }; //pure green
-	_triangleMesh._vertices[2].colour = { 1.0f, 0.0, 0.0f }; //pure green
+	triMesh._vertices[0].colour = { 0.f,1.f, 0.0f }; //pure green
+	triMesh._vertices[1].colour = { 0.f,1.f, 0.0f }; //pure green
+	triMesh._vertices[2].colour = { 0.f,1.f, 0.0f }; //pure green
+
 
     //we don't care about the vertex normals
 
-    uploadMesh(_triangleMesh);
+    uploadMesh(triMesh);
+	_meshes["grass"] = triMesh;*/
+	RenderBlock::createBlocks();
+}
+
+Material* VulkanEngine::createMaterial(VkPipeline pipeline, VkPipelineLayout layout, const std::string&name) {
+	Material mat{};
+	mat.pipeline = pipeline;
+	mat.pipelineLayout = layout;
+	_materials[name] = mat;
+	return &_materials[name];
+}
+
+Material* VulkanEngine::getMaterial(const std::string&name) {
+	auto it = _materials.find(name);
+	if (it == _materials.end()) {
+		return nullptr;
+	} else {
+		return &(*it).second;
+	}
+}
+
+Mesh* VulkanEngine::getMesh(const std::string&name) {
+	auto it = _meshes.find(name);
+	if (it == _meshes.end()) {
+		return nullptr;
+	} else {
+		return &(*it).second;
+	}
+}
+
+void VulkanEngine::drawObjects(VkCommandBuffer cmd, RenderObject* first, int count) {
+	// Get a model view matrix
+	glm::vec3 camPos = PlayerEntity.camera.Position;
+	glm::mat4 view = PlayerEntity.camera.GetViewMatrix();
+	glm::mat4 projection = PlayerEntity.camera.getProjectionMatrix(_windowExtent.width, _windowExtent.height);
+
+	Mesh* lastMesh = nullptr;
+	Material* lastMaterial = nullptr;
+	for (int i = 0; i < count; i++)
+	{
+		RenderObject& object = first[i];
+
+		//only bind the pipeline if it doesn't match with the already bound one
+		if (object.material != lastMaterial) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
+			lastMaterial = object.material;
+		}
+
+
+		glm::mat4 model = object.transformMatrix;
+		//final render matrix, that we are calculating on the cpu
+		glm::mat4 mesh_matrix = projection * view * model;
+
+		MeshPushConstants constants;
+		constants.renderMatrix = mesh_matrix;
+
+		//upload the mesh to the GPU via push constants
+		vkCmdPushConstants(cmd, object.material->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+
+
+		//only bind the mesh if it's a different one from last bind
+		if (object.mesh != lastMesh) {
+			//bind the mesh vertex buffer with offset 0
+			VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers(cmd, 0, 1, &object.mesh->_vertexBuffer._buffer, &offset);
+			lastMesh = object.mesh;
+		}
+		//we can now draw
+		vkCmdDraw(cmd, object.mesh->_vertices.size(), 1, 0, 0);
+	}
 }
 
 void VulkanEngine::uploadMesh(Mesh&mesh) {
@@ -131,11 +213,23 @@ void VulkanEngine::run() {
         	PlayerEntity.processInput();
 
         }
-
-
-
         draw();
     }
+}
+
+void VulkanEngine::initScene() {
+	for (int x = -20; x <= 20; x++) {
+		for (int y = -20; y <= 20; y++) {
+			RenderObject triangle;
+			triangle.name = "grass";
+			triangle.mesh = getMesh(triangle.name);
+			triangle.material = getMaterial(triangle.name);
+			glm::mat4 translation = glm::translate(glm::mat4{1.0}, glm::vec3(x, 0, y));
+			glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(0.2, 0.2, 0.2));
+			triangle.transformMatrix = translation * scale;
+			_renderables.push_back(triangle);
+		}
+	}
 }
 
 
@@ -383,11 +477,12 @@ void VulkanEngine::draw() {
     // Wait for frame to be rendered
     vkWaitForFences(_device, 1, &_renderFence, true, 1000000000); // 1 second timeout, nanoseconds
     vkResetFences(_device, 1, &_renderFence);
+	vkResetCommandBuffer(_mainCommandBuffer, 0);
 
     // Request image from the swapchain
     uint32_t swapchainImageIndex;
     vkAcquireNextImageKHR(_device, _swapchain, 1000000000, _presentSemaphore, nullptr, &swapchainImageIndex);
-    vkResetCommandBuffer(_mainCommandBuffer, 0);
+
 
     VkCommandBuffer cmd = _mainCommandBuffer;
     VkCommandBufferBeginInfo cmdBeginInfo = {};
@@ -415,23 +510,7 @@ void VulkanEngine::draw() {
     vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     // Rendering commands go here :3
 
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _meshPipeline);
-
-    // Bind the mesh vertex buffer with offset 0
-    VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(cmd, 0, 1, &_triangleMesh._vertexBuffer._buffer, &offset);
-	Camera camera = PlayerEntity.camera;
-	glm::vec3 camPos = camera.Position;
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) _windowExtent.width / (float) _windowExtent.height, 0.1f, 100.0f);
-	projection[1][1] *= -1;
-	glm::mat4 model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 0.01f));
-	glm::mat4 meshMatrix = projection * view * model;
-	MeshPushConstants constants;
-	constants.renderMatrix = meshMatrix;
-	vkCmdPushConstants(cmd, _meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
-
-    vkCmdDraw(cmd, _triangleMesh._vertices.size(),1,0,0);
+	drawObjects(cmd, _renderables.data(), _renderables.size());
 
     vkCmdEndRenderPass(cmd);
     vkEndCommandBuffer(cmd);
@@ -598,7 +677,7 @@ void VulkanEngine::initPipelines() {
 		std::cout << "Error when building the triangle vertex shader module" << std::endl;
 	}
 	else {
-		std::cout << "Red Triangle vertex shader succesfully loaded" << std::endl;
+		std::cout << "Triangle vertex shader succesfully loaded" << std::endl;
 	}
 
 	//add the other shaders
@@ -630,6 +709,7 @@ void VulkanEngine::initPipelines() {
 	pipelineBuilder._pipelineLayout = _meshPipelineLayout;
 	//build the mesh triangle pipeline
 	_meshPipeline = pipelineBuilder.buildPipeline(_device, _renderPass);
+	createMaterial(_meshPipeline, _meshPipelineLayout, "grass");
 
 	vkDestroyShaderModule(_device, meshVertShader, nullptr);
 	vkDestroyShaderModule(_device, triangleFragShader, nullptr);
@@ -652,7 +732,7 @@ void VulkanEngine::cleanup() {
         vkWaitForFences(_device, 1, &_renderFence, true, 1000000000);
         std::cout << "Cleaning up!" << std::endl;
         _mainDeletionQueue.flush();
-
+		vmaDestroyAllocator(_allocator);
         vkDestroyDevice(_device, nullptr);
         vkDestroySurfaceKHR(_instance, _surface, nullptr);
         vkb::destroy_debug_utils_messenger(_instance, _debug_messenger);

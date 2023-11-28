@@ -27,7 +27,6 @@ namespace Player {
 
         if (keystate[SDL_SCANCODE_W]) {
             camera.ProcessKeyboard(FORWARD, entryPoint::engine.deltaTime);
-            std::cout << entryPoint::engine.deltaTime << std::endl;
         }
         if (keystate[SDL_SCANCODE_A]) {
             camera.ProcessKeyboard(LEFT, entryPoint::engine.deltaTime);

@@ -15,6 +15,8 @@
 #include "VkBootstrap.h"
 #include "player/Player.h"
 
+#include <unordered_map>
+
 class vk_engine {
 
 };
@@ -39,8 +41,31 @@ struct MeshPushConstants {
     glm::mat4 renderMatrix;
 };
 
+struct Material {
+    VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
+};
+
+struct RenderObject {
+    Mesh* mesh;
+    Material* material;
+    glm::mat4 transformMatrix;
+    char* name;
+};
+
 class VulkanEngine {
     public:
+
+    std::vector<RenderObject> _renderables;
+    std::unordered_map<std::string, Material> _materials;
+    std::unordered_map<std::string, Mesh> _meshes;
+
+    Material* createMaterial(VkPipeline pipeline, VkPipelineLayout layout, const std::string& name);
+    Material* getMaterial(const std::string& name);
+    Mesh* getMesh(const std::string& name);
+
+
+
     DeletionQueue _mainDeletionQueue;
     bool _isInitialised{ false };
     int _frameNumber {0};
@@ -110,6 +135,7 @@ class VulkanEngine {
     Uint64 lastFrameTime;
     Uint64 nowFrameTime = 0;
 
+    void uploadMesh(Mesh& mesh);
 
 
     private:
@@ -123,7 +149,9 @@ class VulkanEngine {
     bool loadShaderModule(const char* filePath, VkShaderModule* outShaderModule);
     void initPipelines();
     void loadMeshes();
-    void uploadMesh(Mesh& mesh);
+
+    void initScene();
+    void drawObjects(VkCommandBuffer cmd, RenderObject* first, int count);
 };
 
 class PipelineBuilder {
@@ -141,6 +169,8 @@ public:
     VkPipeline buildPipeline(VkDevice device, VkRenderPass pass);
 
     VkPipelineDepthStencilStateCreateInfo _depthStencil;
+
+
 
 
 
