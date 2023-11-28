@@ -1,9 +1,15 @@
 //
 // Created by blakey on 25/11/23.
 //
-#pragma once
+
+
+
 #ifndef CHUNK_H
 #define CHUNK_H
+#pragma once
+
+
+
 #include <glm/vec3.hpp>
 #include <vector>
 #include "../block/Block.h"

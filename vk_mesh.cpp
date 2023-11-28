@@ -12,7 +12,7 @@ VertexInputDescription Vertex::getVertexDescription() {
     mainBinding.stride = sizeof(Vertex);
     mainBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    description.binding.push_back(mainBinding);
+    description.bindings.push_back(mainBinding);
 
     VkVertexInputAttributeDescription positionAttribute = {};
     positionAttribute.binding = 0;

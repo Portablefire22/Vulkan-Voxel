@@ -6,6 +6,7 @@
 #include "../main.h"
 
 
+
 namespace chunk {
 
     chunk::chunk(glm::vec3 chunkPos, int height, int width, int depth) {
@@ -32,7 +33,7 @@ namespace chunk {
                 for (int z = 0; z < this->data.info.Depth ; z++) {
                     Block::Block block = Block::Block(1, glm::vec3{x, y,z}, Block::POSX);
                     this->data.Blocks.push_back(block);
-                    init::app->createBlockVertex({x,y,z});
+                    //init::app->createBlockVertex({x,y,z});
 
                 }
             }

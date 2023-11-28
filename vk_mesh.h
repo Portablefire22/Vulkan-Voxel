@@ -9,7 +9,7 @@
 #include <glm/vec3.hpp>
 
 struct VertexInputDescription {
-    std::vector<VkVertexInputBindingDescription> binding;
+    std::vector<VkVertexInputBindingDescription> bindings;
     std::vector<VkVertexInputAttributeDescription> attributes;
 
     VkPipelineVertexInputStateCreateFlags flags = 0;
