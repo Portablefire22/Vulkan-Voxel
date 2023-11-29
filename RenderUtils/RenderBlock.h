@@ -10,17 +10,15 @@
 namespace RenderBlock {
 
     enum FACE {
-        POSX = 0,
-        POSY = 1,
-        POSZ = 2,
-        NEGX = 3,
-        NEGZ = 4,
-        NEGY = 5,
-        TOP = 6,
-        BOTTOM = 7
+        FRONT = 0,
+        RIGHT = 1,
+        BACK = 2,
+        LEFT = 3,
+        TOP = 4,
+        BOTTOM = 5
     };
 
-    Mesh createHorizontalQuad(float tileSize, FACE face);
+    Mesh createHorizontalQuad(float tileSize, FACE face, glm::vec3 colour = {0.0,0.0,0.0});
     bool createBlocks();
 
 };

@@ -26,11 +26,17 @@ const float SPEED       =  1.0f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
+struct GPUCameraData {
+    glm::mat4 view;
+    glm::mat4 proj;
+    glm::mat4 viewProj;
+};
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
 public:
+    GPUCameraData GPUData;
     // camera Attributes
     glm::vec3 Position;
     glm::vec3 Front;
@@ -67,13 +73,19 @@ public:
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
-        return glm::lookAt(Position, Position + Front, Up);
+        GPUData.view = glm::lookAt(Position, Position + Front, Up);
+        return GPUData.view;
     }
 
     glm::mat4 getProjectionMatrix(int width, int height) {
-        glm::mat4 projection = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 100.0f);
-        projection[1][1] *= -1;
-        return projection;
+        GPUData.proj = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 100.0f);
+        GPUData.proj[1][1] *= -1;
+        return GPUData.proj;
+    }
+
+    glm::mat4 getViewProjection() {
+        GPUData.viewProj = GPUData.proj * GPUData.view;
+        return GPUData.viewProj;
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)

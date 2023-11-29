@@ -53,8 +53,41 @@ struct RenderObject {
     char* name;
 };
 
+struct FrameData {
+    VkSemaphore _presentSemaphore, _renderSemaphore;
+    VkFence _renderFence;
+
+    VkCommandPool _commandPool;
+    VkCommandBuffer _mainCommandBuffer;
+
+    AllocatedBuffer cameraBuffer;
+    VkDescriptorSet globalDescriptor;
+};
+
+struct GPUSceneData { // For GPU just try to stick to vec4 and mat4 for simplicity
+    glm::vec4 fogColour;
+    glm::vec4 fogDistances;
+    glm::vec4 ambientColor;
+    glm::vec4 sunlightDirection;
+    glm::vec4 sunlightColour;
+};
+
+constexpr unsigned int FRAME_OVERLAP = 2;
+
 class VulkanEngine {
     public:
+    GPUSceneData _sceneParameters;
+    AllocatedBuffer _sceneParameterBuffer;
+    size_t padUniformBufferSize(size_t originalSize);
+
+    VkPhysicalDeviceProperties _gpuProperties;
+    VkPhysicalDeviceFeatures _gpuFeatures;
+
+    VkDescriptorSetLayout _globalSetLayout;
+    VkDescriptorPool _descriptorPool;
+
+    FrameData _frames[FRAME_OVERLAP];
+    FrameData& getCurrentFrame();
 
     std::vector<RenderObject> _renderables;
     std::unordered_map<std::string, Material> _materials;
@@ -64,7 +97,8 @@ class VulkanEngine {
     Material* getMaterial(const std::string& name);
     Mesh* getMesh(const std::string& name);
 
-
+    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+    void initDescriptors();
 
     DeletionQueue _mainDeletionQueue;
     bool _isInitialised{ false };
