@@ -1,7 +1,7 @@
 #version 450
 
 // Input
-layout(location = 0) in vec3 inColour;
+layout(location = 0) in vec4 inColour;
 
 
 // Output
@@ -19,5 +19,5 @@ void main() {
     // Colours are vec 4
     // R G B A
     //outColour = texture(texSampler, fragTexCoord);
-    outColour = vec4(inColour + sceneData.ambientColour.xyz, 1.0f);
+    outColour = inColour;
 }

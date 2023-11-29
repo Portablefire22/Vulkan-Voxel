@@ -51,6 +51,7 @@ struct RenderObject {
     Material* material;
     glm::mat4 transformMatrix;
     char* name;
+    glm::vec4 colour;
 };
 
 struct FrameData {
@@ -62,6 +63,14 @@ struct FrameData {
 
     AllocatedBuffer cameraBuffer;
     VkDescriptorSet globalDescriptor;
+
+    AllocatedBuffer objectBuffer;
+    VkDescriptorSet objectDescriptor;
+};
+
+struct GPUObjectData {
+    glm::mat4 modelMatrix;
+    glm::vec4 modelColour;
 };
 
 struct GPUSceneData { // For GPU just try to stick to vec4 and mat4 for simplicity
@@ -76,6 +85,9 @@ constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
     public:
+    VkDescriptorSetLayout _globalSetLayout;
+    VkDescriptorSetLayout _objectSetLayout;
+
     GPUSceneData _sceneParameters;
     AllocatedBuffer _sceneParameterBuffer;
     size_t padUniformBufferSize(size_t originalSize);
@@ -83,7 +95,6 @@ class VulkanEngine {
     VkPhysicalDeviceProperties _gpuProperties;
     VkPhysicalDeviceFeatures _gpuFeatures;
 
-    VkDescriptorSetLayout _globalSetLayout;
     VkDescriptorPool _descriptorPool;
 
     FrameData _frames[FRAME_OVERLAP];

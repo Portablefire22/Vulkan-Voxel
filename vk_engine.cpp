@@ -132,6 +132,18 @@ void VulkanEngine::drawObjects(VkCommandBuffer cmd, RenderObject* first, int cou
 	memcpy(sceneData, &_sceneParameters, sizeof(GPUSceneData));
 	vmaUnmapMemory(_allocator, _sceneParameterBuffer._allocation);
 
+	void* objectData;
+	vmaMapMemory(_allocator, getCurrentFrame().objectBuffer._allocation, &objectData);
+	GPUObjectData* objectSSBO = (GPUObjectData*)objectData;
+
+	for (int i = 0; i < count; i++) {
+		RenderObject& object = first[i];
+		objectSSBO[i].modelMatrix = object.transformMatrix;
+		objectSSBO[i].modelColour = object.colour;
+	}
+
+	vmaUnmapMemory(_allocator, getCurrentFrame().objectBuffer._allocation);
+
 	Mesh* lastMesh = nullptr;
 	Material* lastMaterial = nullptr;
 	for (int i = 0; i < count; i++)
@@ -145,6 +157,9 @@ void VulkanEngine::drawObjects(VkCommandBuffer cmd, RenderObject* first, int cou
 
 			uint32_t uniformOffset = padUniformBufferSize(sizeof(GPUSceneData)) * frameIndex;
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
+
+			// Object data descriptor
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 1, 1, &getCurrentFrame().objectDescriptor, 0, nullptr);
 		}
 
 
@@ -167,7 +182,7 @@ void VulkanEngine::drawObjects(VkCommandBuffer cmd, RenderObject* first, int cou
 			lastMesh = object.mesh;
 		}
 		//we can now draw
-		vkCmdDraw(cmd, object.mesh->_vertices.size(), 1, 0, 0);
+		vkCmdDraw(cmd, object.mesh->_vertices.size(), 1, 0, i);
 	}
 }
 
@@ -219,6 +234,9 @@ void VulkanEngine::run() {
         		case SDL_MOUSEMOTION:
         			PlayerEntity.processMouse(e.motion.xrel, -e.motion.yrel);
         			break;
+        		case SDL_MOUSEWHEEL:
+					PlayerEntity.camera.ProcessMouseScroll(e.wheel.y);
+        			break;
         		case SDL_KEYDOWN:
         			switch (e.key.keysym.sym) {
         				case SDLK_ESCAPE:
@@ -231,9 +249,8 @@ void VulkanEngine::run() {
         		default:
         			break;
         	}
-        	PlayerEntity.processInput();
-
         }
+    	PlayerEntity.processInput();
         draw();
     }
 }
@@ -246,6 +263,10 @@ void VulkanEngine::initScene() {
 				triangle.name = "grass";
 				triangle.mesh = getMesh(triangle.name);
 				triangle.material = getMaterial(triangle.name);
+				double r = ((double) rand() / (RAND_MAX));
+				double g = ((double) rand() / (RAND_MAX));
+				double b = ((double) rand() / (RAND_MAX));
+				triangle.colour = glm::vec4 { r, g, b, 1.0 };
 				/*float newX, newY, newZ;
 				newX = x / 100.0f;
 				newY = y / 100.0f;
@@ -288,8 +309,14 @@ void VulkanEngine::initVulkan() {
         .value();
 
     vkb::DeviceBuilder deviceBuilder {physicalDevice};
-    vkb::Device vkbDevice = deviceBuilder.build().value();
 
+
+	VkPhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures = {};
+	shaderDrawParametersFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+	shaderDrawParametersFeatures.pNext = nullptr;
+	shaderDrawParametersFeatures.shaderDrawParameters = VK_TRUE;
+
+	vkb::Device vkbDevice = deviceBuilder.add_pNext(&shaderDrawParametersFeatures).build().value();
     _device = vkbDevice;
     _chosenGPU = physicalDevice.physical_device;
 
@@ -302,6 +329,8 @@ void VulkanEngine::initVulkan() {
     allocatorInfo.device = _device;
     allocatorInfo.instance = _instance;
     vmaCreateAllocator(&allocatorInfo, &_allocator);
+
+
 
 	_gpuProperties = vkbDevice.physical_device.properties;
 	_gpuFeatures = vkbDevice.physical_device.features;
@@ -628,8 +657,10 @@ void VulkanEngine::initDescriptors() {
 
 	std::vector<VkDescriptorPoolSize> sizes = {
 		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 },
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10 }
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 }
 	};
+
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = 0;
@@ -645,8 +676,22 @@ void VulkanEngine::initDescriptors() {
 	setInfo.pNext = nullptr;
 	setInfo.pBindings = bindings;
 	vkCreateDescriptorSetLayout(_device, &setInfo, nullptr, &_globalSetLayout);
+
+	VkDescriptorSetLayoutBinding objectBind = vkInit::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+	VkDescriptorSetLayoutCreateInfo set2Info = {};
+	set2Info.bindingCount = 1;
+	set2Info.flags = 0;
+	set2Info.pNext = nullptr;
+	set2Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	set2Info.pBindings = &objectBind;
+
+	vkCreateDescriptorSetLayout(_device, &set2Info, nullptr, &_objectSetLayout);
+
 	for (int i = 0; i < FRAME_OVERLAP; i++)  {
-		_frames[i].cameraBuffer = createBuffer(sizeof(PlayerEntity.camera.GPUData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		_frames[i].cameraBuffer = createBuffer(sizeof(GPUCameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		const int MAX_OBJECTS = 100000;
+		_frames[i].objectBuffer = createBuffer(sizeof(GPUObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.pNext = nullptr;
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -654,6 +699,15 @@ void VulkanEngine::initDescriptors() {
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &_globalSetLayout;
 		vkAllocateDescriptorSets(_device, &allocInfo, &_frames[i].globalDescriptor);
+
+		VkDescriptorSetAllocateInfo objectSetAlloc = {};
+		objectSetAlloc.pNext = nullptr;
+		objectSetAlloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		objectSetAlloc.descriptorPool = _descriptorPool;
+		objectSetAlloc.descriptorSetCount = 1;
+		objectSetAlloc.pSetLayouts = &_objectSetLayout;
+		vkAllocateDescriptorSets(_device, &objectSetAlloc, &_frames[i].objectDescriptor);
+
 
 		VkDescriptorBufferInfo cameraInfo;
 		cameraInfo.buffer = _frames[i].cameraBuffer._buffer;
@@ -665,21 +719,31 @@ void VulkanEngine::initDescriptors() {
 		sceneInfo.offset = 0;
 		sceneInfo.range = sizeof(GPUSceneData);
 
+		VkDescriptorBufferInfo objectBufferInfo;
+		objectBufferInfo.buffer = _frames[i].objectBuffer._buffer;
+		objectBufferInfo.offset = 0;
+		objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
+
 		VkWriteDescriptorSet cameraWrite = vkInit::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, _frames[i].globalDescriptor,&cameraInfo,0);
 
 		VkWriteDescriptorSet sceneWrite = vkInit::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, _frames[i].globalDescriptor, &sceneInfo, 1);
 
-		VkWriteDescriptorSet setWrites[] = { cameraWrite, sceneWrite};
+		VkWriteDescriptorSet objectWrite = vkInit::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, _frames[i].objectDescriptor, &objectBufferInfo, 0);
 
-		vkUpdateDescriptorSets(_device, 2, setWrites, 0, nullptr);
+		VkWriteDescriptorSet setWrites[] = { cameraWrite, sceneWrite, objectWrite };
+
+		vkUpdateDescriptorSets(_device, 3, setWrites, 0, nullptr);
 
 		_mainDeletionQueue.push_function([&, i] {
+			vmaDestroyBuffer(_allocator, _frames[i].objectBuffer._buffer, _frames[i].objectBuffer._allocation);
 			vmaDestroyBuffer(_allocator, _frames[i].cameraBuffer._buffer, _frames[i].cameraBuffer._allocation);
 		});
 	}
 	_mainDeletionQueue.push_function([=] {
+
 		vkDestroyDescriptorSetLayout(_device, _globalSetLayout, nullptr);
 		vmaDestroyBuffer(_allocator, _sceneParameterBuffer._buffer, _sceneParameterBuffer._allocation);
+		vkDestroyDescriptorSetLayout(_device, _objectSetLayout, nullptr);
 	});
 }
 
@@ -834,9 +898,10 @@ void VulkanEngine::initPipelines() {
 	meshPipelineLayoutInfo.pPushConstantRanges = &push_constant;
 	meshPipelineLayoutInfo.pushConstantRangeCount = 1;
 
+	VkDescriptorSetLayout setLayouts[] = { _globalSetLayout, _objectSetLayout };
 	// Hook the global set layout
-	meshPipelineLayoutInfo.setLayoutCount = 1;
-	meshPipelineLayoutInfo.pSetLayouts = &_globalSetLayout;
+	meshPipelineLayoutInfo.setLayoutCount = 2;
+	meshPipelineLayoutInfo.pSetLayouts = setLayouts;
 
 	vkCreatePipelineLayout(_device, &meshPipelineLayoutInfo, nullptr, &_meshPipelineLayout);
 
