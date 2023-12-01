@@ -21,6 +21,11 @@ class vk_engine {
 
 };
 
+struct Texture {
+    AllocatedImage image;
+    VkImageView imageView;
+};
+
 struct DeletionQueue {
     std::deque<std::function<void()>> deletors;
 
@@ -42,6 +47,7 @@ struct MeshPushConstants {
 };
 
 struct Material {
+    VkDescriptorSet textureSet{VK_NULL_HANDLE}; // set default to null
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 };
@@ -81,10 +87,27 @@ struct GPUSceneData { // For GPU just try to stick to vec4 and mat4 for simplici
     glm::vec4 sunlightColour;
 };
 
+struct UploadContext {
+    VkFence _uploadFence;
+    VkCommandPool _commandPool;
+    VkCommandBuffer _commandBuffer;
+};
+
 constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
     public:
+    VkDescriptorSetLayout _singleTextureSetLayout;
+
+    std::unordered_map<std::string, Texture> _loadedTextures;
+    void loadImages();
+
+    UploadContext _uploadContext;
+    void immediateSubmit(std::function<void(VkCommandBuffer cmd)> && function);
+
+
+
+
     VkDescriptorSetLayout _globalSetLayout;
     VkDescriptorSetLayout _objectSetLayout;
 

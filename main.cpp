@@ -1,12 +1,8 @@
 #include "main.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #include "vk_engine.h"
 #include "world/chunk.h"
-// Vulkan-tutorial.com
-// TODO https://vulkan-tutorial.com/en/Depth_buffering
 
 
 

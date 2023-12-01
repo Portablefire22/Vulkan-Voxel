@@ -24,10 +24,10 @@ Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face, glm::vec3 colo
         case RIGHT:
             quadMesh._vertices[0].position = {0,0,0};
             quadMesh._vertices[1].position = {0,tileSize,0};
-            quadMesh._vertices[2].position = {0,0,tileSize};
-            quadMesh._vertices[3].position = {0,0,tileSize};
-            quadMesh._vertices[4].position = {0,tileSize,0};
-            quadMesh._vertices[5].position = {0,tileSize,tileSize};
+            quadMesh._vertices[2].position = {0,tileSize,tileSize};
+            quadMesh._vertices[3].position = {0,tileSize,tileSize};
+            quadMesh._vertices[4].position = {0,0,tileSize};
+            quadMesh._vertices[5].position = {0,0,0};
             break;
         case BACK:
             quadMesh._vertices[0].position = {0,0,tileSize};
@@ -41,10 +41,10 @@ Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face, glm::vec3 colo
         case LEFT:
             quadMesh._vertices[0].position = {tileSize,0,0};
             quadMesh._vertices[1].position = {tileSize,tileSize,0};
-            quadMesh._vertices[2].position = {tileSize,0,tileSize};
-            quadMesh._vertices[3].position = {tileSize,0,tileSize};
-            quadMesh._vertices[4].position = {tileSize,tileSize,0};
-            quadMesh._vertices[5].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[2].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[3].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[4].position = {tileSize,0,tileSize};
+            quadMesh._vertices[5].position = {tileSize,0,0};
         break;
         case TOP:
             quadMesh._vertices[0].position = {0,tileSize,0};
@@ -75,6 +75,13 @@ Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face, glm::vec3 colo
     quadMesh._vertices[3].colour = colour;
     quadMesh._vertices[4].colour = colour;
     quadMesh._vertices[5].colour = colour;
+
+    quadMesh._vertices[0].uv = {0,0};
+    quadMesh._vertices[1].uv = {0,tileSize};
+    quadMesh._vertices[2].uv = {tileSize,tileSize};
+    quadMesh._vertices[3].uv = {tileSize,tileSize};
+    quadMesh._vertices[4].uv = {tileSize,0};
+    quadMesh._vertices[5].uv = {0,0};
 
 
     //entryPoint::engine.uploadMesh(quadMesh);

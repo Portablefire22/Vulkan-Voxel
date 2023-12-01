@@ -6,6 +6,7 @@
 #define VK_MESH_H
 #include "vk_types.h"
 #include <vector>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 struct VertexInputDescription {
@@ -19,6 +20,7 @@ struct Vertex {
     glm::vec3 position;
     glm::vec3 colour;
     glm::vec3 normal;
+    glm::vec2 uv;
 
     static VertexInputDescription getVertexDescription();
 };
