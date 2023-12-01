@@ -101,3 +101,11 @@ bool RenderBlock::createBlocks() {
     entryPoint::engine._meshes["grass"] = blockMesh;
     return true;
 }
+
+void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE> faces) {
+    // Only add the faces that were given
+    for (FACE face : faces) {
+        Mesh tempMesh = createHorizontalQuad(1.f, face, {1,1,1}); // Colour currently goes unused
+        chunkMesh._vertices.insert(chunkMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
+    }
+}

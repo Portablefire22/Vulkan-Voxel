@@ -5,25 +5,22 @@
 #include "Player.h"
 
 #include <map>
+#include <SDL_keyboard.h>
 
 #include "../main.h"
 #include "../vk_engine.h"
 
 namespace Player {
-    std::map<int, bool> keyboard;
-    int xMouse, yMouse;
-    int lastX, lastY;
-    bool firstMouse = true;
+
     Player::Player(glm::vec3 position, float size) {
         Position = position;
         Size = size;
         camera = Camera(glm::vec3(0.0,0.0,-2.0));
     }
 
-    void Player::processInput() {
+    void Player::processInput() { // Called every frame
 
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
-
 
         if (keystate[SDL_SCANCODE_W]) {
             camera.ProcessKeyboard(FORWARD, entryPoint::engine.deltaTime);
@@ -43,6 +40,13 @@ namespace Player {
         if (keystate[SDL_SCANCODE_LSHIFT]) {
             camera.ProcessKeyboard(DOWN, entryPoint::engine.deltaTime);
         }
+        updatePosition();
+    }
+
+    void Player::updatePosition() {
+        Position = camera.Position;
+        Position.y -= 1.75f;
+        ChunkPosition = {static_cast<int32_t>(floor(Position.x)) >> 4, static_cast<int32_t>(floor(Position.y)) >> 4, static_cast<int32_t>(floor(Position.z)) >> 4};
     }
 
     void Player::processMouse(float xOffset, float yOffset) {

@@ -19,6 +19,7 @@
 #include "imgui/imgui_impl_sdl2.h"
 #include "imgui/imgui_impl_vulkan.h"
 #include "imgui/imgui_internal.h"
+#include "world/World.h"
 
 #define VK_CHECK(x)                                                 \
 do                                                              \
@@ -375,38 +376,25 @@ void VulkanEngine::run() {
     	if (!freeMouse) {
     		PlayerEntity.processInput();
     	}
+
+    	if (PlayerEntity.ChunkPosition != PlayerEntity.LastChunkPosition) {
+			PlayerEntity.LastChunkPosition = PlayerEntity.ChunkPosition;
+    		currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 4,4));
+    	}
+
     	ImGui_ImplVulkan_NewFrame();
     	ImGui_ImplSDL2_NewFrame();
     	ImGui::NewFrame();
 
-    	ImGui::ShowDemoWindow();
+    	//ImGui::ShowDemoWindow();
+    	DebugUI::PlayerInformation(PlayerEntity, *this);
         draw();
     }
 }
 
 void VulkanEngine::initScene() {
-	for (int x = -10; x <= 10; x++) {
-		for (int y = -10; y <= 10; y++) {
-			for (int z = -10; z<= 10; z++) {
-				RenderObject triangle;
-				triangle.name = "grass";
-				triangle.mesh = getMesh(triangle.name);
-				triangle.material = getMaterial(triangle.name);
-				double r = ((double) rand() / (RAND_MAX));
-				double g = ((double) rand() / (RAND_MAX));
-				double b = ((double) rand() / (RAND_MAX));
-				triangle.colour = glm::vec4 { r, g, b, 1.0 };
-				/*float newX, newY, newZ;
-				newX = x / 100.0f;
-				newY = y / 100.0f;
-				newZ = z / 100.0f;*/
-				glm::mat4 translation = glm::translate(glm::mat4{1.0}, glm::vec3(x, y, z));
-				glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(.5,.5,.5));
-				triangle.transformMatrix = translation * scale;
-				_renderables.push_back(triangle);
-			}
-		}
-	}
+	currentWorld = WorldHandler::World((char*)"DEBUG WORLD");
+
 	VkSamplerCreateInfo samplerInfo = vkInit::samplerCreateInfo(VK_FILTER_NEAREST);
 	VkSampler blockySampler;
 	vkCreateSampler(_device, &samplerInfo, nullptr, &blockySampler);

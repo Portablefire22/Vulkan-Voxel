@@ -24,8 +24,11 @@ set(PROJECT_SOURCES main.cpp world/chunk.cpp block/Block.cpp
         vk_engine.cpp
         VkBootstrap.cpp
         vk_initialisers.cpp
+        Entity/Entity.cpp
         player/Player.cpp
         RenderUtils/RenderBlock.cpp
+        DebugUtils/ImGuiHandler.cpp
+        world/World.cpp
         vk_textures.cpp)
 
 set(PROJECT_HEADERS main.h stb_image.h Camera.h world/chunk.h block/Block.h
@@ -37,7 +40,13 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/chunk.h block/Block.h
         vk_initialisers.h
         player/Player.h
         RenderUtils/RenderBlock.h
-        vk_textures.h)
+        vk_textures.h
+
+        world/World.h
+
+        DebugUtils/ImGuiHandler.h
+
+        Entity/Entity.h)
 
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui)

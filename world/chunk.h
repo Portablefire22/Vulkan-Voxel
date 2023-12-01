@@ -15,7 +15,7 @@
 #include "../block/Block.h"
 
 
-
+struct Mesh;
 
 namespace Block {
     class Block;
@@ -32,14 +32,15 @@ namespace chunk {
         ChunkInfo info;
         std::vector<Block::Block> Blocks;
     };
-
 class chunk {
 public:
     ChunkData data;
-    explicit chunk(glm::vec3 chunkPos, int height = 16, int width = 16, int depth = 16);
-    void generateChunk();
-};
+    chunk();
+    chunk(glm::vec3 chunkPos, int height = 16, int width = 16, int depth = 16);
 
+};
+    chunk generateChunk(glm::vec3 ChunkPos);
+    Mesh GenerateChunkMesh(chunk &localChunk);
 } // chunk
 
 #endif //CHUNK_H

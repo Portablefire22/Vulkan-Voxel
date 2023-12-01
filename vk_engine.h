@@ -9,17 +9,18 @@
 #define GLFW_INCLUDE_VULKAN
 #include <deque>
 #include <functional>
+#include <SDL_stdinc.h>
 #include <GLFW/glfw3.h>
 #include <glm/vec4.hpp>
 
 #include "VkBootstrap.h"
 #include "player/Player.h"
+#include "DebugUtils/ImGuiHandler.h"
 
 #include <unordered_map>
 
-class vk_engine {
+#include "world/World.h"
 
-};
 
 struct Texture {
     AllocatedImage image;
@@ -97,6 +98,7 @@ constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
     public:
+    WorldHandler::World currentWorld;
 
     void initImgui();
 
@@ -143,10 +145,11 @@ class VulkanEngine {
     int _frameNumber {0};
 
     bool freeMouse;
-    bool showDebug = false;
+    bool showDebug = true;
+
+
 
     void recreateSwapChain(); // Recreate the swapchain to deal with window resizing
-
 
     VkExtent2D _windowExtent{ 1700 , 900 };
 

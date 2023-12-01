@@ -1,7 +1,7 @@
 #include "main.h"
 
+#include <iostream>
 
-#include "vk_engine.h"
 #include "world/chunk.h"
 
 
@@ -13,7 +13,6 @@ float lastX;
 float lastY;
 
 int main() {
-    //init::app = new mainApp();
     try {
         //init::app->run();
         entryPoint::engine.init();

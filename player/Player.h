@@ -4,21 +4,31 @@
 
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <SDL_events.h>
+#include <map>
 
 #include "../Camera.h"
+#include "../Entity/Entity.h"
 
 namespace Player {
 
-class Player {
+class Player{
 public:
     Camera camera;
     glm::vec3 Position{};
+    glm::vec3 ChunkPosition{};
+    glm::vec3 LastChunkPosition{};
     float Size = 1.75f;
 
     explicit Player(glm::vec3 position = {0,0,0}, float size = 1.75f);
     void processInput();
+    void updatePosition();
     void processMouse(float xOffset, float yOffset);
+
+    private:
+    std::map<int, bool> keyboard;
+    int xMouse, yMouse;
+    int lastX, lastY;
+    bool firstMouse = true;
 };
 
 } // Player
