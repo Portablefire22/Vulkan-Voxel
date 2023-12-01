@@ -48,3 +48,4 @@ _deps
 .ninja_log
 *.ninja
 /cmake-build*/*
+*.spv

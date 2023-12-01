@@ -97,6 +97,10 @@ constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
     public:
+
+    void initImgui();
+
+
     VkDescriptorSetLayout _singleTextureSetLayout;
 
     std::unordered_map<std::string, Texture> _loadedTextures;
@@ -137,6 +141,11 @@ class VulkanEngine {
     DeletionQueue _mainDeletionQueue;
     bool _isInitialised{ false };
     int _frameNumber {0};
+
+    bool freeMouse;
+
+    void recreateSwapChain(); // Recreate the swapchain to deal with window resizing
+
 
     VkExtent2D _windowExtent{ 1700 , 900 };
 

@@ -15,7 +15,10 @@
 #include "vk_initialisers.h"
 #include "vk_textures.h"
 #include "RenderUtils/RenderBlock.h"
-
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_vulkan.h"
+#include "imgui/imgui_internal.h"
 
 #define VK_CHECK(x)                                                 \
 do                                                              \
@@ -49,6 +52,7 @@ void VulkanEngine::init() {
     //glfwSetCursorPosCallback(window, mouse_callback);
 
     initVulkan();
+
     initSwapchain();
     initCommands();
     initDefaultRenderpass();
@@ -60,6 +64,7 @@ void VulkanEngine::init() {
 	loadImages();
     loadMeshes();
 	initScene();
+	initImgui();
 
 	PlayerEntity = Player::Player();
     _isInitialised = true;
@@ -254,6 +259,58 @@ void VulkanEngine::loadImages() {
 	_loadedTextures["grass_side_diffuse"] = grassSide;
 }
 
+void VulkanEngine::initImgui() {
+	VkDescriptorPoolSize poolSizes[] = { // Copied from the imgui demo
+		{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+	};
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	poolInfo.maxSets = 1000;
+	poolInfo.poolSizeCount = std::size(poolSizes);
+	poolInfo.pPoolSizes = poolSizes;
+
+	VkDescriptorPool imguiPool;
+	VK_CHECK(vkCreateDescriptorPool(_device, &poolInfo, nullptr, &imguiPool));
+
+	// Initialise core of imgui
+	ImGui::CreateContext();
+	ImGui_ImplSDL2_InitForVulkan(_window);
+
+	ImGui_ImplVulkan_InitInfo initInfo = {};
+	initInfo.Instance = _instance;
+	initInfo.PhysicalDevice = _chosenGPU;
+	initInfo.Device = _device;
+	initInfo.Queue = _graphicsQueue;
+	initInfo.DescriptorPool = imguiPool;
+	initInfo.MinImageCount = 3;
+	initInfo.ImageCount = 3;
+	initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+	ImGui_ImplVulkan_Init(&initInfo, _renderPass);
+	// Upload imgui font textures to gpu
+	immediateSubmit([&](VkCommandBuffer cmd) {
+		ImGui_ImplVulkan_CreateFontsTexture();
+	});
+	_mainDeletionQueue.push_function([=]() {
+
+		vkDestroyDescriptorPool(_device, imguiPool, nullptr);
+		ImGui_ImplVulkan_Shutdown();
+		});
+
+
+}
 
 void VulkanEngine::run() {
     SDL_Event e;
@@ -271,27 +328,55 @@ void VulkanEngine::run() {
     	SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0)
         {
+        	ImGui_ImplSDL2_ProcessEvent(&e);
         	switch (e.type) {
         		case SDL_MOUSEMOTION:
+        			if (freeMouse) break;
         			PlayerEntity.processMouse(e.motion.xrel, -e.motion.yrel);
         			break;
         		case SDL_MOUSEWHEEL:
 					PlayerEntity.camera.ProcessMouseScroll(e.wheel.y);
+        			break;
+        		case SDL_WINDOWEVENT:
+        			if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) { // TODO HANDLE RESIZING
+        				std::cout << "Resized!" << std::endl;
+        				//recreateSwapChain();
+        			}
         			break;
         		case SDL_KEYDOWN:
         			switch (e.key.keysym.sym) {
         				case SDLK_ESCAPE:
         					bQuit = true;
         					break;
+        				case SDLK_LALT:
+        					freeMouse = true;
+        					SDL_SetRelativeMouseMode(SDL_FALSE);
+        					break;
         				default:
         					break;
         			}
         			break;
+        		case SDL_KEYUP:
+        			switch (e.key.keysym.sym) {
+        				case SDLK_LALT:
+        					freeMouse = false;
+							SDL_SetRelativeMouseMode(SDL_TRUE);
+        					break;
+        				default:
+        					break;
+        			}
         		default:
         			break;
         	}
         }
-    	PlayerEntity.processInput();
+    	if (!freeMouse) {
+    		PlayerEntity.processInput();
+    	}
+    	ImGui_ImplVulkan_NewFrame();
+    	ImGui_ImplSDL2_NewFrame();
+    	ImGui::NewFrame();
+
+    	ImGui::ShowDemoWindow();
         draw();
     }
 }
@@ -418,6 +503,10 @@ size_t VulkanEngine::padUniformBufferSize(size_t originalSize) {
 
 void VulkanEngine::initSwapchain() {
     vkb::SwapchainBuilder swapchainBuilder{_chosenGPU, _device, _surface};
+	int newWidth, newHeight;
+	SDL_GetWindowSize(_window, &newWidth, &newHeight);
+	_windowExtent.width = newWidth;
+	_windowExtent.height = newHeight;
     vkb::Swapchain vkbSwapchain = swapchainBuilder
         .use_default_format_selection()
         .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR) // VSync
@@ -452,6 +541,22 @@ void VulkanEngine::initSwapchain() {
         vkDestroySwapchainKHR(_device, _swapchain, nullptr);
     	vmaDestroyImage(_allocator, _depthImage._image, _depthImage._allocation);
     });
+}
+
+void VulkanEngine::recreateSwapChain() { // TOOD MAKE THIS WORK
+	vkDeviceWaitIdle(_device); // Wait for GPU to not be doing anything
+
+	for (VkFramebuffer const &framebuffer : _framebuffers) {
+		vkDestroyFramebuffer(_device, framebuffer, nullptr);
+	}
+	for (VkImageView image : _swapchainImageViews) {
+		vkDestroyImageView(_device, image, nullptr);
+	}
+	vkDestroyImageView(_device, _depthImageView, nullptr);
+	VkSwapchainKHR oldSwap = _swapchain;
+	initSwapchain();
+	initFramebuffers();
+	vkDestroySwapchainKHR(_device, oldSwap, nullptr);
 }
 
 void VulkanEngine::initCommands() {
@@ -594,6 +699,7 @@ void VulkanEngine::initFramebuffers() {
     frameBufferInfo.attachmentCount = 1;
     frameBufferInfo.width = _windowExtent.width;
     frameBufferInfo.height = _windowExtent.height;
+	std::cout << frameBufferInfo.width << " | " << frameBufferInfo.height << std::endl;
     frameBufferInfo.layers = 1;
 
     const uint32_t swapChainImageCount = _swapchainImages.size();
@@ -654,6 +760,8 @@ void VulkanEngine::draw() {
     vkResetFences(_device, 1, &getCurrentFrame()._renderFence);
 	vkResetCommandBuffer(getCurrentFrame()._mainCommandBuffer, 0);
 
+	ImGui::Render();
+
     // Request image from the swapchain
     uint32_t swapchainImageIndex;
     vkAcquireNextImageKHR(_device, _swapchain, 1000000000, getCurrentFrame()._presentSemaphore, nullptr, &swapchainImageIndex);
@@ -686,6 +794,7 @@ void VulkanEngine::draw() {
     // Rendering commands go here :3
 
 	drawObjects(cmd, _renderables.data(), _renderables.size());
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
     vkCmdEndRenderPass(cmd);
     vkEndCommandBuffer(cmd);
