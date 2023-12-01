@@ -143,6 +143,7 @@ class VulkanEngine {
     int _frameNumber {0};
 
     bool freeMouse;
+    bool showDebug = false;
 
     void recreateSwapChain(); // Recreate the swapchain to deal with window resizing
 

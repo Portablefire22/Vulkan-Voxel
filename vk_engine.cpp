@@ -352,6 +352,9 @@ void VulkanEngine::run() {
         					freeMouse = true;
         					SDL_SetRelativeMouseMode(SDL_FALSE);
         					break;
+        				case SDLK_F3:
+							showDebug = !showDebug;
+        					break;
         				default:
         					break;
         			}
@@ -794,8 +797,9 @@ void VulkanEngine::draw() {
     // Rendering commands go here :3
 
 	drawObjects(cmd, _renderables.data(), _renderables.size());
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-
+	if (showDebug) {
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+	}
     vkCmdEndRenderPass(cmd);
     vkEndCommandBuffer(cmd);
 
