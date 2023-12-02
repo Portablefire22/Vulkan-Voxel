@@ -7,7 +7,9 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <glm/vec2.hpp>
+#include <glm/gtx/hash.hpp>
 
 #include "chunk.h"
 #include "../player/Player.h"
@@ -31,8 +33,8 @@ public:
     void CullChunks();
     void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
     std::vector<RenderBlock::FACE> CheckBlockFaces(chunk::chunk localChunk, glm::vec3 BlockPos);
-    void RenderChunks(VulkanEngine& engine, std::set<chunk::chunk> chunks);
-    std::set<chunk::chunk> GetChunksAroundPlayer(Player::Player &player, int horzRenderDistance, int vertRenderDistance);
+    void RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> chunks);
+    std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> GetChunksAroundPlayer(Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
     chunk::chunk GetChunk(int ChunkX, int ChunkY, int ChunkZ);
 

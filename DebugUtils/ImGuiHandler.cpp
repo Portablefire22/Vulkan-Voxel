@@ -17,6 +17,7 @@ namespace DebugUI {
         ImGui::Text("Current World: %s", engine.currentWorld.WorldName);
         ImGui::Text("Player Position: (%f,%f,%f)", player.Position.x, player.Position.y, player.Position.z);
         ImGui::Text("Current Chunk: (%f,%f,%f)", player.ChunkPosition.x, player.ChunkPosition.y, player.ChunkPosition.z);
+        ImGui::Text("Renderables: %d", engine._renderables.size());
         ImGui::End();
     }
 

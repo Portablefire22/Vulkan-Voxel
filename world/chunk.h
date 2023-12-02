@@ -38,6 +38,19 @@ public:
     chunk();
     chunk(glm::vec3 chunkPos, int height = 16, int width = 16, int depth = 16);
 
+    bool operator==(const chunk& other) const {
+        if (this->data.info.ChunkPosition.x == other.data.info.ChunkPosition.x && this->data.info.ChunkPosition.y == other.data.info.ChunkPosition.y && this->data.info.ChunkPosition.z == other.data.info.ChunkPosition.z )
+             return true;
+        return false;
+    }
+    struct HashFunction {
+        size_t operator()(const chunk& other) const {
+            size_t xHash = std::hash<int>()(other.data.info.ChunkPosition.x);
+            size_t yHash = std::hash<int>()(other.data.info.ChunkPosition.y);
+            size_t zHash = std::hash<int>()(other.data.info.ChunkPosition.z);
+            return xHash ^ yHash ^ zHash;
+        }
+    };
 };
     chunk generateChunk(glm::vec3 ChunkPos);
     Mesh GenerateChunkMesh(chunk &localChunk);

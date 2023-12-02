@@ -4,65 +4,68 @@
 
 #include "RenderBlock.h"
 
+#include <iostream>
+#include <ostream>
+
 #include "../main.h"
 #include "../vk_engine.h"
 
 
-Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face, glm::vec3 colour) {
+Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face,glm::vec3 startPos, glm::vec3 colour) {
     Mesh quadMesh{};
     quadMesh._vertices.resize(6);
     switch (face) {
-        case FRONT:
-            quadMesh._vertices[0].position = {0,0,0};
-            quadMesh._vertices[1].position = {0,tileSize,0};
-            quadMesh._vertices[2].position = {tileSize,tileSize,0};
+        case LEFT:
+            quadMesh._vertices[0].position = {startPos.x,startPos.y,startPos.z};
+            quadMesh._vertices[1].position = {startPos.x,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z};
 
-            quadMesh._vertices[3].position = {tileSize,tileSize,0};
-            quadMesh._vertices[4].position = {tileSize,0,0};
-            quadMesh._vertices[5].position = {0,0,0};
-            break;
-        case RIGHT:
-            quadMesh._vertices[0].position = {0,0,0};
-            quadMesh._vertices[1].position = {0,tileSize,0};
-            quadMesh._vertices[2].position = {0,tileSize,tileSize};
-            quadMesh._vertices[3].position = {0,tileSize,tileSize};
-            quadMesh._vertices[4].position = {0,0,tileSize};
-            quadMesh._vertices[5].position = {0,0,0};
+            quadMesh._vertices[3].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y,startPos.z};
+            quadMesh._vertices[5].position = {startPos.x,startPos.y,startPos.z};
             break;
         case BACK:
-            quadMesh._vertices[0].position = {0,0,tileSize};
-            quadMesh._vertices[1].position = {0,tileSize,tileSize};
-            quadMesh._vertices[2].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[0].position = {startPos.x,startPos.y,startPos.z};
+            quadMesh._vertices[1].position = {startPos.x,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[2].position = {startPos.x,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[3].position = {startPos.x,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[4].position = {startPos.x,startPos.y,startPos.z + tileSize};
+            quadMesh._vertices[5].position = {startPos.x,startPos.y,startPos.z};
+            break;
+        case RIGHT:
+            quadMesh._vertices[0].position = {startPos.x,startPos.y,startPos.z + tileSize};
+            quadMesh._vertices[1].position = {startPos.x,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
 
-            quadMesh._vertices[3].position = {tileSize,tileSize,tileSize};
-            quadMesh._vertices[4].position = {tileSize,0,tileSize};
-            quadMesh._vertices[5].position = {0,0,tileSize};
+            quadMesh._vertices[3].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
+            quadMesh._vertices[5].position = {startPos.x,startPos.y,startPos.z + tileSize};
         break;
-        case LEFT:
-            quadMesh._vertices[0].position = {tileSize,0,0};
-            quadMesh._vertices[1].position = {tileSize,tileSize,0};
-            quadMesh._vertices[2].position = {tileSize,tileSize,tileSize};
-            quadMesh._vertices[3].position = {tileSize,tileSize,tileSize};
-            quadMesh._vertices[4].position = {tileSize,0,tileSize};
-            quadMesh._vertices[5].position = {tileSize,0,0};
+        case FRONT:
+            quadMesh._vertices[0].position = {startPos.x + tileSize,startPos.y,startPos.z};
+            quadMesh._vertices[1].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[3].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
+            quadMesh._vertices[5].position = {startPos.x + tileSize,startPos.y,startPos.z};
         break;
         case TOP:
-            quadMesh._vertices[0].position = {0,tileSize,0};
-            quadMesh._vertices[1].position = {0,tileSize,tileSize};
-            quadMesh._vertices[2].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[0].position = {startPos.x,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[1].position = {startPos.x,startPos.y + tileSize,startPos.z + tileSize};
+            quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
 
-            quadMesh._vertices[3].position = {0,tileSize,0};
-            quadMesh._vertices[4].position = {tileSize,tileSize,0};
-            quadMesh._vertices[5].position = {tileSize,tileSize,tileSize};
+            quadMesh._vertices[3].position = {startPos.x,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[5].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
         break;
         case BOTTOM:
-                quadMesh._vertices[0].position = {0,0,0};
-                quadMesh._vertices[1].position = {0,0,tileSize};
-                quadMesh._vertices[2].position = {tileSize,0,tileSize};
+                quadMesh._vertices[0].position = {startPos.x,startPos.y,startPos.z};
+                quadMesh._vertices[1].position = {startPos.x,startPos.y,startPos.z + tileSize};
+                quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
 
-                quadMesh._vertices[3].position = {0,0,0};
-                quadMesh._vertices[4].position = {tileSize,0,0};
-                quadMesh._vertices[5].position = {tileSize,0,tileSize};
+                quadMesh._vertices[3].position = {startPos.x,startPos.y,startPos.z};
+                quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y,startPos.z};
+                quadMesh._vertices[5].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
             break;
 
         default:
@@ -102,10 +105,11 @@ bool RenderBlock::createBlocks() {
     return true;
 }
 
-void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE> faces) {
+void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE> faces, glm::vec3 Position) {
     // Only add the faces that were given
     for (FACE face : faces) {
-        Mesh tempMesh = createHorizontalQuad(1.f, face, {1,1,1}); // Colour currently goes unused
+        Mesh tempMesh = createHorizontalQuad(1.f, face, Position, {1,1,1}); // Colour currently goes unused
         chunkMesh._vertices.insert(chunkMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
     }
+
 }

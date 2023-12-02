@@ -12,39 +12,47 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_query.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
+#include <complex>
+#include <iostream>
+#include <unordered_set>
+
 #include "glm/gtx/hash.hpp"
 
 
 namespace WorldHandler {
 
-    void World::RenderChunks(VulkanEngine& engine, std::set<chunk::chunk> chunks) {
+    void World::RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> chunks) {
 
         for (chunk::chunk localChunk : chunks) {
             RenderObject chunkObject;
             std::string name = glm::to_string(localChunk.data.info.ChunkPosition);
             // Check if the chunk mesh already exists, if not then create it
-            if (engine._meshes.contains(glm::to_string(localChunk.data.info.ChunkPosition))) {
-                chunkObject.name = name.data();
-                chunkObject.mesh = engine.getMesh(name);
-                chunkObject.material = engine.getMaterial(name);
-                engine._renderables.push_back(chunkObject);
-                continue;
+            if (!engine._meshes.contains(glm::to_string(localChunk.data.info.ChunkPosition))) {
+                Mesh chunkMesh;
+                // If the mesh doesn't exist
+                for (Block::Block block : localChunk.data.Blocks) {
+                    RenderBlock::AddBlockVertices(chunkMesh, CheckBlockFaces(localChunk, block.blockState.Position), block.blockState.Position);
+                }
+                engine.uploadMesh(chunkMesh);
+                engine._meshes[name] = chunkMesh;
             }
-            Mesh chunkMesh;
-            // If the mesh doesn't exist
-            for (Block::Block block : localChunk.data.Blocks) {
+            chunkObject.name = name.data();
+            chunkObject.mesh = engine.getMesh(name);
+            chunkObject.material = engine.getMaterial("grass");
 
-            }
-            engine.uploadMesh(chunkMesh);
-            engine._meshes[name] = chunkMesh;
+            glm::mat4 translation = glm::translate(glm::mat4{1.0}, glm::vec3((int)localChunk.data.info.ChunkPosition.x << 4, (int)localChunk.data.info.ChunkPosition.y << 4,(int)localChunk.data.info.ChunkPosition.z << 4));
+            glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(0.5,0.5,0.5));
+            chunkObject.transformMatrix = translation * scale;
+            engine._renderables.push_back(chunkObject);
         }
     }
 
-    std::set<chunk::chunk> World::GetChunksAroundPlayer(Player::Player &player, int horzRenderDistance, int vertRenderDistance) {
-        std::set<chunk::chunk> chunksToRender;
-        for (int x = -horzRenderDistance; x <= horzRenderDistance; x++) {
-            for (int z = -horzRenderDistance; z <= horzRenderDistance; z++) {
-                for (int y = -vertRenderDistance; y <= vertRenderDistance; y++) {
+    std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> World::GetChunksAroundPlayer(Player::Player &player, int horzRenderDistance, int vertRenderDistance) {
+        std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> chunksToRender;
+        for (int x = player.Position.x - horzRenderDistance; x <= player.Position.x + horzRenderDistance; x++) {
+            for (int z = player.Position.z - horzRenderDistance; z <= player.Position.z + horzRenderDistance; z++) {
+                for (int y = player.Position.y - vertRenderDistance; y <= player.Position.y + vertRenderDistance; y++) {
+                    std::cout << x << "," << y << "," << z << std::endl;
                     chunksToRender.insert(GetChunk(x,y,z));
                 }
             }
@@ -78,49 +86,75 @@ namespace WorldHandler {
         glm::vec3 relativeBlockPos = {BlockPos.x - chunkPos.x,BlockPos.y - chunkPos.y,BlockPos.z - chunkPos.z};
         std::vector<RenderBlock::FACE> faces;
         for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM; faceVal++) {
+            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+            continue;
             bool addFace = false;
-            int16_t blockToCheckPos = relativeBlockPos.x + ((int)relativeBlockPos.z << 4) + ((int)relativeBlockPos.y << 8);
+            int16_t blockToCheckPos = std::abs(relativeBlockPos.x) + std::abs(((int)relativeBlockPos.z << 4)) + std::abs(((int)relativeBlockPos.y << 8));
             // Disgusting code
-            switch (static_cast<RenderBlock::FACE>(faceVal)) {
+
+            switch (static_cast<RenderBlock::FACE>(faceVal)) { // TODO FIX THIS LOGIC
+                /*
+                 * Why did I think this would even be a good idea?
+                 * This logic would only apply on chunk boundaries
+                 *
+                 * Apply this and other logic and it should work
+                 */
                 case RenderBlock::FRONT: // PosX
-                    blockToCheckPos++;
-                    if (blockToCheckPos % 16 == 0) {
-                        // Dont check if it is on the edge of the chunk (for now)
+                    // On a chunk border
+                    if (blockToCheckPos % 16 == 15) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos++;
                     break;
                 case RenderBlock::BACK: // NegX
-                    blockToCheckPos--;
                     if (blockToCheckPos % 16 == 0) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos--;
                     break;
                 case RenderBlock::LEFT: // Neg Z
-                    blockToCheckPos -= 16;
-                    if (blockToCheckPos % 256 <= 16) {
+                    if (blockToCheckPos % 256 <= 15) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos -= 16;
                     break;
                 case RenderBlock::RIGHT: // Pos Z
-                    blockToCheckPos += 16;
                     if (blockToCheckPos % 256 >= 240) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos += 16;
                     break;
-                case RenderBlock::TOP: // Pos Y
-                    blockToCheckPos += 256;
-                    if (blockToCheckPos > 4096) {
+                case RenderBlock::TOP: // Pos Y Works
+                    if (blockToCheckPos >= 3840) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos += 256;
                     break;
                 case RenderBlock::BOTTOM: // Neg Y
-                    blockToCheckPos -= 256;
-                    if (blockToCheckPos < 0) {
+                    if (blockToCheckPos <= 256) {
                         addFace = true;
+                        break;
                     }
+                    blockToCheckPos -= 256;
                     break;
                 default:
                     break;
+            }
+            //std::cout << localChunk.data.Blocks[blockToCheckPos].blockState.BlockId << std::endl;
+            std::vector<Block::Block> blockVec = localChunk.data.Blocks;
+            if (!addFace) {
+                if (blockVec.size() < blockToCheckPos || blockToCheckPos <= 0) {
+                    addFace = true;
+                }
+                if (!addFace && blockVec[blockToCheckPos].blockState.BlockId != 1) { // If it is within the vector
+                    std::cout << "SIZE: " << blockVec.size() << " CHECKING: " << blockToCheckPos - 1 << " FOUND ID: " << blockVec[blockToCheckPos - 1].blockState.BlockId << std::endl;
+                    addFace = true;
+                }
             }
             if (addFace) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));

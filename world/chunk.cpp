@@ -3,6 +3,9 @@
 //
 
 #include "chunk.h"
+
+#include <iostream>
+
 #include "../main.h"
 
 
@@ -11,7 +14,9 @@ namespace chunk {
 
 
     chunk::chunk() {
-        data.info.Width, data.info.Depth, data.info.Height = 16;
+        data.info.Width = 16;
+        data.info.Depth = 16;
+        data.info.Height = 16;
         data.info.ChunkPosition = {0,0,0};
     }
 
@@ -34,15 +39,18 @@ namespace chunk {
         // ChunkPos not currently used but will be required for when noise is used
         chunk localChunk;
         localChunk.data.info.ChunkPosition = ChunkPos;
-        for (int x = 0; x < localChunk.data.info.Width; x++) {
-            //std::cout << "X:" << x << std::endl;
-            for (int y = 0; y < localChunk.data.info.Height ; y++) {
-                for (int z = 0; z < localChunk.data.info.Depth ; z++) {
-                    Block::Block block = Block::Block(1, glm::vec3{x, y,z}, Block::POSX);
+        for (int y = 0; y < localChunk.data.info.Height ; y++) {
+            std::cout << " X ->" << std::endl;
+            for (int z = 0; z < localChunk.data.info.Depth ; z++) {
+                for (int x = 0; x < localChunk.data.info.Width; x++) {
+                    Block::Block block = Block::Block(1, glm::vec3{x + ChunkPos.x, y + ChunkPos.y,z + ChunkPos.z }, Block::POSX);
                     localChunk.data.Blocks.push_back(block);
                     //init::app->createBlockVertex({x,y,z});
+                    std::cout << x <<  " ";
                 }
+                std::cout << " Z " << std::endl;
             }
+            std::cout << std::endl << std::endl << std::endl;
         }
         return localChunk;
     }

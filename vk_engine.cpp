@@ -254,7 +254,7 @@ void VulkanEngine::uploadMesh(Mesh& mesh) {
 
 void VulkanEngine::loadImages() {
 	Texture grassSide;
-	vkUtil::loadImageFromFile(*this, "../textures/missing.png", grassSide.image);
+	vkUtil::loadImageFromFile(*this, "../textures/grid.png", grassSide.image);
 	VkImageViewCreateInfo imageInfo = vkInit::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, grassSide.image._image, VK_IMAGE_ASPECT_COLOR_BIT);
 	vkCreateImageView(_device, &imageInfo, nullptr, &grassSide.imageView);
 	_loadedTextures["grass_side_diffuse"] = grassSide;
@@ -379,7 +379,7 @@ void VulkanEngine::run() {
 
     	if (PlayerEntity.ChunkPosition != PlayerEntity.LastChunkPosition) {
 			PlayerEntity.LastChunkPosition = PlayerEntity.ChunkPosition;
-    		currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 4,4));
+    		//currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 1,1));
     	}
 
     	ImGui_ImplVulkan_NewFrame();
@@ -394,6 +394,7 @@ void VulkanEngine::run() {
 
 void VulkanEngine::initScene() {
 	currentWorld = WorldHandler::World((char*)"DEBUG WORLD");
+	currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 1,1));
 
 	VkSamplerCreateInfo samplerInfo = vkInit::samplerCreateInfo(VK_FILTER_NEAREST);
 	VkSampler blockySampler;
