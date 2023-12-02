@@ -86,8 +86,6 @@ namespace WorldHandler {
         glm::vec3 relativeBlockPos = {BlockPos.x - chunkPos.x,BlockPos.y - chunkPos.y,BlockPos.z - chunkPos.z};
         std::vector<RenderBlock::FACE> faces;
         for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM; faceVal++) {
-            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
-            continue;
             bool addFace = false;
             int16_t blockToCheckPos = std::abs(relativeBlockPos.x) + std::abs(((int)relativeBlockPos.z << 4)) + std::abs(((int)relativeBlockPos.y << 8));
             // Disgusting code
