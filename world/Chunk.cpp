@@ -120,3 +120,13 @@ namespace chunk {
     }
 
 } // chunk
+
+
+/* The cubic chunk rendering system can easily cause long load times or lag from storing chunks that shouldn't be considered.
+    This will be extremely evident when the player can only see 8 chunks above them but are also loading in 8 chunks below.
+    It can be safe to consider that these chunks need not be rendered and as such the chunk culling system should take the player's camera into consideration,
+    so only the meshes for the visible chunks are constructed / loaded and sent to the GPU
+
+    Look: Frustum culling
+    https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+*/

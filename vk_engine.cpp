@@ -71,7 +71,7 @@ void VulkanEngine::init() {
     _isInitialised = true;
 }
 
-void VulkanEngine::loadMeshes() {
+void VulkanEngine::loadMeshes() { // Currently unused but will be updated to load chunk meshes when saving is implemented
 	/*Mesh triMesh{};
 	triMesh._vertices.resize(3);
 
