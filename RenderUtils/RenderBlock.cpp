@@ -11,7 +11,7 @@
 #include "../vk_engine.h"
 
 
-Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE face,glm::vec3 startPos, glm::vec3 colour) {
+Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE& face,glm::vec3& startPos, glm::vec3 colour) {
     Mesh quadMesh{};
     quadMesh._vertices.resize(6);
     switch (face) {
@@ -97,15 +97,16 @@ bool RenderBlock::createBlocks() {
     //blockMesh._vertices.resize(36);
     for (int faceVal = FRONT; faceVal <= BOTTOM; faceVal++) {
         double r = ((double) rand() / (RAND_MAX)) + 1;
-        Mesh tempMesh = createHorizontalQuad(1.f, static_cast<FACE>(faceVal), {r,r,r});
-        blockMesh._vertices.insert(blockMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
+        glm::vec3 colour = {r,r,r};
+        //Mesh tempMesh = createHorizontalQuad(1.f, static_cast<FACE>(faceVal), &colour);
+        //blockMesh._vertices.insert(blockMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
     }
     entryPoint::engine.uploadMesh(blockMesh);
     entryPoint::engine._meshes["grass"] = blockMesh;
     return true;
 }
 
-void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE> faces, glm::vec3 Position) {
+void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE>& faces, glm::vec3& Position) {
     // Only add the faces that were given
     for (FACE face : faces) {
         Mesh tempMesh = createHorizontalQuad(1.f, face, Position, {1,1,1}); // Colour currently goes unused

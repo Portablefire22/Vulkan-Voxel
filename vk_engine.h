@@ -112,6 +112,7 @@ class VulkanEngine {
     void immediateSubmit(std::function<void(VkCommandBuffer cmd)> && function);
 
 
+    chunk::ChunkManager _ChunkManager;
 
 
     VkDescriptorSetLayout _globalSetLayout;

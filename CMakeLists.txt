@@ -19,7 +19,7 @@ set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/imgui")
 file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp)
 add_library("ImGui" STATIC ${IMGUI_SOURCES})
 
-set(PROJECT_SOURCES main.cpp world/chunk.cpp block/Block.cpp
+set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
         vk_mesh.cpp
         vk_engine.cpp
         VkBootstrap.cpp
@@ -31,7 +31,7 @@ set(PROJECT_SOURCES main.cpp world/chunk.cpp block/Block.cpp
         world/World.cpp
         vk_textures.cpp)
 
-set(PROJECT_HEADERS main.h stb_image.h Camera.h world/chunk.h block/Block.h
+set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
         vk_types.h
         vk_mesh.h
         VkBootstrap.h

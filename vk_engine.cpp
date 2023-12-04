@@ -88,7 +88,7 @@ void VulkanEngine::loadMeshes() {
 
     uploadMesh(triMesh);
 	_meshes["grass"] = triMesh;*/
-	RenderBlock::createBlocks();
+	//RenderBlock::createBlocks();
 }
 
 Material* VulkanEngine::createMaterial(VkPipeline pipeline, VkPipelineLayout layout, const std::string&name) {
@@ -393,8 +393,15 @@ void VulkanEngine::run() {
 }
 
 void VulkanEngine::initScene() {
+
 	currentWorld = WorldHandler::World((char*)"DEBUG WORLD");
-	currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 1,1));
+
+	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 8,4);
+	double t1 = SDL_GetPerformanceCounter();
+	currentWorld.RenderChunks(*this, chunksToRender);
+	double t2 = SDL_GetPerformanceCounter();
+	double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
+	std::cout << "Time: " << t3 << std::endl;
 
 	VkSamplerCreateInfo samplerInfo = vkInit::samplerCreateInfo(VK_FILTER_NEAREST);
 	VkSampler blockySampler;

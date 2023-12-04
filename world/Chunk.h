@@ -8,11 +8,12 @@
 #define CHUNK_H
 #pragma once
 
-
+#define CHUNK_SIZE 16
 
 #include <glm/vec3.hpp>
 #include <vector>
 #include "../block/Block.h"
+#include "../RenderUtils/RenderBlock.h"
 
 
 struct Mesh;
@@ -22,29 +23,29 @@ namespace Block {
 }
 
 namespace chunk {
-    struct ChunkInfo {
-        int Height;
-        int Width;
-        int Depth;
+    struct ChunkInfo { // Chunks will never be differing sizes
         glm::vec3 ChunkPosition;
     };
     struct ChunkData {
         ChunkInfo info;
-        std::vector<Block::Block> Blocks;
+        std::vector<std::byte> Blocks;
     };
-class chunk {
+class Chunk {
 public:
-    ChunkData data;
-    chunk();
-    chunk(glm::vec3 chunkPos, int height = 16, int width = 16, int depth = 16);
+    ChunkData data{};
+    Chunk();
+    Chunk(glm::vec3 chunkPos);
+    Mesh GenerateChunkMesh();
+    int GetVoxel(glm::vec3& position);
+    std::vector<RenderBlock::FACE> ShouldRenderFace(glm::vec3& originalPos);
 
-    bool operator==(const chunk& other) const {
+    bool operator==(const Chunk& other) const {
         if (this->data.info.ChunkPosition.x == other.data.info.ChunkPosition.x && this->data.info.ChunkPosition.y == other.data.info.ChunkPosition.y && this->data.info.ChunkPosition.z == other.data.info.ChunkPosition.z )
              return true;
         return false;
     }
     struct HashFunction {
-        size_t operator()(const chunk& other) const {
+        size_t operator()(const Chunk& other) const {
             size_t xHash = std::hash<int>()(other.data.info.ChunkPosition.x);
             size_t yHash = std::hash<int>()(other.data.info.ChunkPosition.y);
             size_t zHash = std::hash<int>()(other.data.info.ChunkPosition.z);
@@ -52,8 +53,12 @@ public:
         }
     };
 };
-    chunk generateChunk(glm::vec3 ChunkPos);
-    Mesh GenerateChunkMesh(chunk &localChunk);
+    class ChunkManager {
+    public:
+        Chunk generateChunk(glm::vec3 ChunkPos);
+
+    };
+    void IndexToVec(int index, glm::vec3* blockPosition);
 } // chunk
 
 #endif //CHUNK_H

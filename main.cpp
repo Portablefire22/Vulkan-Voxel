@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "world/chunk.h"
+#include "world/Chunk.h"
 
 
 

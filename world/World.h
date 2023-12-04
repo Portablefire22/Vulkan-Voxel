@@ -11,7 +11,7 @@
 #include <glm/vec2.hpp>
 #include <glm/gtx/hash.hpp>
 
-#include "chunk.h"
+#include "Chunk.h"
 #include "../player/Player.h"
 #include "../RenderUtils/RenderBlock.h"
 
@@ -25,18 +25,18 @@ class World {
 public:
     // TODO FIX
     // https://stackoverflow.com/questions/32685540/why-cant-i-compile-an-unordered-map-with-a-pair-as-key
-    std::unordered_map<glm::vec2, std::map<int32_t, chunk::chunk>> WorldMap;
+    std::unordered_map<glm::vec2, std::map<int32_t, chunk::Chunk>> WorldMap;
 
-    std::vector<chunk::chunk> ChunksToRender;
+    std::vector<chunk::Chunk> ChunksToRender;
     char* WorldName;
 
     void CullChunks();
     void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
-    std::vector<RenderBlock::FACE> CheckBlockFaces(chunk::chunk localChunk, glm::vec3 BlockPos);
-    void RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> chunks);
-    std::unordered_set<chunk::chunk, chunk::chunk::HashFunction> GetChunksAroundPlayer(Player::Player &player, int horzRenderDistance, int vertRenderDistance);
+    std::vector<RenderBlock::FACE> CheckBlockFaces(chunk::Chunk* localChunk, glm::vec3* BlockPos);
+    void RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks);
+    std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
-    chunk::chunk GetChunk(int ChunkX, int ChunkY, int ChunkZ);
+    chunk::Chunk GetChunk(VulkanEngine& engine, int ChunkX, int ChunkY, int ChunkZ);
 
     World() {
         WorldName = "Name not Set!";

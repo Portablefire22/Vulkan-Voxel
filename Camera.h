@@ -78,7 +78,7 @@ public:
     }
 
     glm::mat4 getProjectionMatrix(int width, int height) {
-        GPUData.proj = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 100.0f);
+        GPUData.proj = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 1000.0f);
         GPUData.proj[1][1] *= -1;
         return GPUData.proj;
     }
@@ -133,7 +133,7 @@ public:
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(float y)
     {
-       if (y > 0 && MovementSpeed - 0.25 <= 20.0) { // Scroll up
+       if (y > 0 && MovementSpeed - 0.25 <= 20000.0) { // Scroll up
            MovementSpeed += 0.25f;
        } if (y < 0 && MovementSpeed - 0.25 >= 0.1) { // Scroll down
            MovementSpeed -= 0.25f;
