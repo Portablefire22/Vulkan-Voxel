@@ -69,7 +69,7 @@ void VulkanEngine::init() {
 	PlayerEntity = Player::Player();
     _isInitialised = true;
 }
-
+// TODO, Texture atlas
 void VulkanEngine::initBlockTextures() {
 	loadImages("../textures/grid.png", "stone");
 	loadImages("../textures/missing.png", "grass");
