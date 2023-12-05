@@ -46,7 +46,7 @@ namespace Player {
     void Player::updatePosition() {
         Position = camera.Position;
         Position.y -= 1.75f;
-        ChunkPosition = {static_cast<int32_t>(floor(Position.x)) >> 4, static_cast<int32_t>(floor(Position.y)) >> 4, static_cast<int32_t>(floor(Position.z)) >> 4};
+        ChunkPosition = {floor(Position.x / CHUNK_SIZE), floor(Position.y / CHUNK_SIZE),floor(Position.z / CHUNK_SIZE)};
     }
 
     void Player::processMouse(float xOffset, float yOffset) {

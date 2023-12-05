@@ -29,8 +29,9 @@ public:
     std::unordered_map<glm::vec2, std::map<int32_t, chunk::Chunk>> WorldMap;
 
     std::vector<chunk::Chunk> ChunksToRender;
-    char* WorldName;
-    char* WorldSeed;
+    std::string WorldName;
+    std::string WorldSeed;
+    int testI = 0;
 
     void CullChunks();
     void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
@@ -39,13 +40,13 @@ public:
     std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
     chunk::Chunk GetChunk(VulkanEngine& engine, int ChunkX, int ChunkY, int ChunkZ);
-    void GetNoiseHeightMap(chunk::Chunk& localChunk, std::vector<double>* NoiseVec);
+    void GetNoiseHeightMap(glm::vec3& localChunk, double NoiseArr[CHUNK_SIZE][CHUNK_SIZE]);
 
     World() {
         WorldName = "Name not Set!";
         WorldSeed = "debug seed";
     }
-    World(char* worldName, char* worldSeed) {
+    World(std::string& worldName, std::string& worldSeed) {
         WorldName = worldName;
         WorldSeed = worldSeed;
     }

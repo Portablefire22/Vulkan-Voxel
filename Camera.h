@@ -22,7 +22,7 @@ enum Camera_Movement {
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
-const float SPEED       =  1.0f;
+const float SPEED       =  100.0f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
@@ -134,9 +134,9 @@ public:
     void ProcessMouseScroll(float y)
     {
        if (y > 0 && MovementSpeed - 0.25 <= 20000.0) { // Scroll up
-           MovementSpeed += 0.25f;
+           MovementSpeed += 25.f;
        } if (y < 0 && MovementSpeed - 0.25 >= 0.1) { // Scroll down
-           MovementSpeed -= 0.25f;
+           MovementSpeed -= 25.f;
        }
     }
 

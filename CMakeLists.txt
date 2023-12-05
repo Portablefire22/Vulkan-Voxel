@@ -9,6 +9,7 @@ set(destination "${CMAKE_CURRENT_BINARY_DIR}/resources")
 
 find_package(Vulkan REQUIRED)
 find_package(SDL2 REQUIRED)
+link_libraries(noise)
 
 include_directories(${SDL2_INCLUDE_DIRS})
 

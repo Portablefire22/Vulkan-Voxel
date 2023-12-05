@@ -397,10 +397,11 @@ void VulkanEngine::run() {
 }
 
 void VulkanEngine::initScene() {
+	std::string nme = "DEBUG WOPRLD";
+	std::string sed = "Debug seed";
+	currentWorld = WorldHandler::World(nme, sed);
 
-	currentWorld = WorldHandler::World((char*)"DEBUG WORLD", (char*)"debugger seed");
-
-	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 8,4);
+	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 4,2);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();
@@ -425,7 +426,7 @@ void VulkanEngine::initScene() {
 	//write to the descriptor set so that it points to our empire_diffuse texture
 	VkDescriptorImageInfo imageBufferInfo;
 	imageBufferInfo.sampler = blockySampler;
-	imageBufferInfo.imageView = _loadedTextures["grass"].imageView;
+	imageBufferInfo.imageView = _loadedTextures["stone"].imageView;
 	imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkWriteDescriptorSet texture1 = vkInit::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);

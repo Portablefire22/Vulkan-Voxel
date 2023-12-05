@@ -35,19 +35,20 @@ namespace chunk {
         Chunk localChunk;
         localChunk.data.info.ChunkPosition = ChunkPos;
         //localChunk.data.Blocks.resize(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
-        std::vector<double> NoiseVec;
         int HEIGHT;
-        entryPoint::engine.currentWorld.GetNoiseHeightMap(localChunk, &NoiseVec);
-        for (int x = 0; x < CHUNK_SIZE; x++) {
-            for (int z = 0; z < CHUNK_SIZE; z++) {
-                if (ChunkPos.y >= (64 >> 4)) {
-                    HEIGHT = NoiseVec[x + (z << 4)];
-                    std::cout << HEIGHT << std::endl;
+        double NoiseArr[CHUNK_SIZE][CHUNK_SIZE];
+        if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
+            entryPoint::engine.currentWorld.GetNoiseHeightMap(ChunkPos, NoiseArr);
+        }
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            for (int x = 0; x < CHUNK_SIZE; x++) {
+                if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
+                    HEIGHT = NoiseArr[z][x];
+                    //std::cout << HEIGHT << std::endl;
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-
                     if (y < HEIGHT) {
                         localChunk.data.Blocks[x][y][z] = (std::byte)1;
                     } else if (y == HEIGHT){
@@ -101,13 +102,20 @@ namespace chunk {
                 }
             }
         }
-        entryPoint::engine.uploadMesh(chunkMesh);
-        entryPoint::engine._meshes[name] = chunkMesh;
+        if (chunkMesh._vertices.size() > 0) {
+            entryPoint::engine.uploadMesh(chunkMesh);
+            entryPoint::engine._meshes[name] = chunkMesh;
+        }
         return chunkMesh;
     }
 
     int Chunk::GetVoxel(glm::vec3& position) {
-        return static_cast<int>(this->data.Blocks[(int)position.x][(int)position.y][(int)position.z]);
+        try {
+            return static_cast<int>(this->data.Blocks[(int)position.x][(int)position.y][(int)position.z]);
+        } catch (std::exception e) {
+            e.what();
+        }
+
     }
 
     void IndexToVec(const int index, glm::vec3* blockPosition) {
@@ -122,8 +130,10 @@ namespace chunk {
 
     std::vector<RenderBlock::FACE> Chunk::ShouldRenderFace(glm::vec3& originalPos) {
         std::vector<RenderBlock::FACE> faces;
-        glm::vec3 tempPos = originalPos;
+        glm::vec3 tempPos;
+
         for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM; faceVal++) {
+            tempPos = originalPos;
             bool chunkSide = false;
             // Convert 3D space to an index in the byte array
             switch (static_cast<RenderBlock::FACE>(faceVal)) {
@@ -133,11 +143,11 @@ namespace chunk {
                     break;
                 case RenderBlock::BACK: // NegX
                     tempPos = tempPos + glm::vec3{-1,0,0};
-                    if (tempPos.x == 0) chunkSide = true;
+                    if (tempPos.x == -1) chunkSide = true;
                     break;
                 case RenderBlock::LEFT: // Neg Z
                     tempPos = tempPos + glm::vec3{0,0,-1};
-                    if (tempPos.z == 0) chunkSide = true;
+                    if (tempPos.z == -1) chunkSide = true;
                     break;
                 case RenderBlock::RIGHT: // Pos Z
                     tempPos = tempPos + glm::vec3{0,0,1};
@@ -149,12 +159,14 @@ namespace chunk {
                     break;
                 case RenderBlock::BOTTOM: // Neg Y
                     tempPos = tempPos + glm::vec3{0,-1,0};
-                    if (tempPos.y == 0) chunkSide = true;
+                    if (tempPos.y == -1) chunkSide = true;
                     break;
                 default:
                     break;
             }
-            if (GetVoxel(tempPos) != 1 || chunkSide) {
+            if (chunkSide) {
+                faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+            } else if (GetVoxel(tempPos) == 0) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
             }
         }
