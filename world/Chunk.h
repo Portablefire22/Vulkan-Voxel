@@ -9,6 +9,7 @@
 #pragma once
 
 #define CHUNK_SIZE 16
+#define CHUNK_BLOCKS CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
 
 #include <glm/vec3.hpp>
 #include <vector>
@@ -28,7 +29,7 @@ namespace chunk {
     };
     struct ChunkData {
         ChunkInfo info;
-        std::vector<std::byte> Blocks;
+        std::byte Blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     };
 class Chunk {
 public:

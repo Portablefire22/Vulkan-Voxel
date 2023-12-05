@@ -106,11 +106,12 @@ class VulkanEngine {
     VkDescriptorSetLayout _singleTextureSetLayout;
 
     std::unordered_map<std::string, Texture> _loadedTextures;
-    void loadImages();
+    void loadImages(char* Path, char* Name);
 
     UploadContext _uploadContext;
     void immediateSubmit(std::function<void(VkCommandBuffer cmd)> && function);
 
+    void initBlockTextures();
 
     chunk::ChunkManager _ChunkManager;
 

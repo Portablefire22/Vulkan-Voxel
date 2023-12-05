@@ -21,12 +21,12 @@ namespace chunk {
     Chunk::Chunk(glm::vec3 chunkPos) {
         //std::cout << "Created: " << height << "|" << width << "|" << depth << std::endl;
         //std::cout << "@: " << chunkPos.x << "|" << chunkPos.y << "|" << chunkPos.z << std::endl;
-        std::vector<std::byte> blocks;
+        std::byte blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = { (std::byte) 0};
         data = ChunkData {
             ChunkInfo{
                 chunkPos
             },
-            blocks,
+            blocks[0][0][0],
         };
     }
 
@@ -35,14 +35,52 @@ namespace chunk {
         Chunk localChunk;
         localChunk.data.info.ChunkPosition = ChunkPos;
         //localChunk.data.Blocks.resize(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
-        for (int y = 0; y < CHUNK_SIZE; y++) {
-            for (int z = 0; z < CHUNK_SIZE ; z++) {
-                for (int x = 0; x < CHUNK_SIZE; x++) {
-                    //Block::Block block = Block::Block(1, glm::vec3{x + ChunkPos.x, y + ChunkPos.y,z + ChunkPos.z }, Block::POSX);
-                    localChunk.data.Blocks.push_back((std::byte)1);
+        std::vector<double> NoiseVec;
+        int HEIGHT;
+        entryPoint::engine.currentWorld.GetNoiseHeightMap(localChunk, &NoiseVec);
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int z = 0; z < CHUNK_SIZE; z++) {
+                if (ChunkPos.y >= (64 >> 4)) {
+                    HEIGHT = NoiseVec[x + (z << 4)];
+                    std::cout << HEIGHT << std::endl;
+                } else {
+                    HEIGHT = CHUNK_SIZE;
+                }
+                for (int y = 0; y < CHUNK_SIZE; y++) {
+
+                    if (y < HEIGHT) {
+                        localChunk.data.Blocks[x][y][z] = (std::byte)1;
+                    } else if (y == HEIGHT){
+                        localChunk.data.Blocks[x][y][z] = (std::byte)2;
+                    }
+                    else {
+                        localChunk.data.Blocks[x][y][z] = (std::byte)0;
+                    }
                 }
             }
         }
+        /*if (ChunkPos.y >= (50 >> 4)) {
+            entryPoint::engine.currentWorld.GetNoiseHeightMap(localChunk, &NoiseVec);
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE ; z++) {
+                    for (int x = 0; x < CHUNK_SIZE; x++) {
+                        if (NoiseVec[x + z << 4] <= y) {
+                            localChunk.data.Blocks.push_back((std::byte)1);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE ; z++) {
+                    for (int x = 0; x < CHUNK_SIZE; x++) {
+                        //Block::Block block = Block::Block(1, glm::vec3{x + ChunkPos.x, y + ChunkPos.y,z + ChunkPos.z }, Block::POSX);
+                        localChunk.data.Blocks.push_back((std::byte)1);
+                    }
+                }
+            }
+        }*/
+
         return localChunk;
     }
 
@@ -50,14 +88,18 @@ namespace chunk {
         Mesh chunkMesh{};
         std::string name = glm::to_string(this->data.info.ChunkPosition);
         glm::vec3 blockPosition;
-        for (int i = 0; i < this->data.Blocks.size(); i++) {
-            std::byte* pBlockId = &this->data.Blocks[i];
-            // If the block is air then just skip
-            if (*pBlockId == (std::byte)0) continue;
-            IndexToVec(i, &blockPosition);
-            std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
-            // If the mesh doesn't exist
-            RenderBlock::AddBlockVertices(chunkMesh, facesToRender, blockPosition);
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int z = 0; z < CHUNK_SIZE; z++) {
+                for (int y = 0; y < CHUNK_SIZE; y++) {
+                    std::byte* pBlockId = &this->data.Blocks[x][y][z];
+                    // If the block is air then just skip
+                    if (*pBlockId == (std::byte)0) continue;
+                    blockPosition = glm::vec3(x,y,z);
+                    std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
+                    // If the mesh doesn't exist
+                    RenderBlock::AddBlockVertices(chunkMesh, facesToRender, blockPosition);
+                }
+            }
         }
         entryPoint::engine.uploadMesh(chunkMesh);
         entryPoint::engine._meshes[name] = chunkMesh;
@@ -65,7 +107,7 @@ namespace chunk {
     }
 
     int Chunk::GetVoxel(glm::vec3& position) {
-        return static_cast<int>(this->data.Blocks[(int)position.x + ((int)position.z << 4) + ((int)position.y << 8)]);
+        return static_cast<int>(this->data.Blocks[(int)position.x][(int)position.y][(int)position.z]);
     }
 
     void IndexToVec(const int index, glm::vec3* blockPosition) {

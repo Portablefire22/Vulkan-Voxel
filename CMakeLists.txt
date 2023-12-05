@@ -46,7 +46,8 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
 
         DebugUtils/ImGuiHandler.h
 
-        Entity/Entity.h)
+        Entity/Entity.h
+        PerlinNoise.hpp)
 
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui)

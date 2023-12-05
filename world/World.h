@@ -12,6 +12,7 @@
 #include <glm/gtx/hash.hpp>
 
 #include "Chunk.h"
+#include "../PerlinNoise.hpp"
 #include "../player/Player.h"
 #include "../RenderUtils/RenderBlock.h"
 
@@ -29,6 +30,7 @@ public:
 
     std::vector<chunk::Chunk> ChunksToRender;
     char* WorldName;
+    char* WorldSeed;
 
     void CullChunks();
     void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
@@ -37,12 +39,15 @@ public:
     std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
     chunk::Chunk GetChunk(VulkanEngine& engine, int ChunkX, int ChunkY, int ChunkZ);
+    void GetNoiseHeightMap(chunk::Chunk& localChunk, std::vector<double>* NoiseVec);
 
     World() {
         WorldName = "Name not Set!";
+        WorldSeed = "debug seed";
     }
-    World(char* worldName) {
+    World(char* worldName, char* worldSeed) {
         WorldName = worldName;
+        WorldSeed = worldSeed;
     }
 
 };

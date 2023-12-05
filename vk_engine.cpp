@@ -62,13 +62,17 @@ void VulkanEngine::init() {
 	initDescriptors();
     initPipelines();
 
-	loadImages();
-    loadMeshes();
+	initBlockTextures();
 	initScene();
 	initImgui();
 
 	PlayerEntity = Player::Player();
     _isInitialised = true;
+}
+
+void VulkanEngine::initBlockTextures() {
+	loadImages("../textures/grid.png", "stone");
+	loadImages("../textures/missing.png", "grass");
 }
 
 void VulkanEngine::loadMeshes() {
@@ -252,12 +256,12 @@ void VulkanEngine::uploadMesh(Mesh& mesh) {
 	vmaDestroyBuffer(_allocator, stagingBuffer._buffer, stagingBuffer._allocation);
 }
 
-void VulkanEngine::loadImages() {
-	Texture grassSide;
-	vkUtil::loadImageFromFile(*this, "../textures/grid.png", grassSide.image);
-	VkImageViewCreateInfo imageInfo = vkInit::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, grassSide.image._image, VK_IMAGE_ASPECT_COLOR_BIT);
-	vkCreateImageView(_device, &imageInfo, nullptr, &grassSide.imageView);
-	_loadedTextures["grass_side_diffuse"] = grassSide;
+void VulkanEngine::loadImages(char* Path, char* Name) {
+	Texture temp;
+	vkUtil::loadImageFromFile(*this, Path, temp.image);
+	VkImageViewCreateInfo imageInfo = vkInit::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, temp.image._image, VK_IMAGE_ASPECT_COLOR_BIT);
+	vkCreateImageView(_device, &imageInfo, nullptr, &temp.imageView);
+	_loadedTextures[Name] = temp;
 }
 
 void VulkanEngine::initImgui() {
@@ -394,7 +398,7 @@ void VulkanEngine::run() {
 
 void VulkanEngine::initScene() {
 
-	currentWorld = WorldHandler::World((char*)"DEBUG WORLD");
+	currentWorld = WorldHandler::World((char*)"DEBUG WORLD", (char*)"debugger seed");
 
 	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 8,4);
 	double t1 = SDL_GetPerformanceCounter();
@@ -402,6 +406,7 @@ void VulkanEngine::initScene() {
 	double t2 = SDL_GetPerformanceCounter();
 	double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
 	std::cout << "Time: " << t3 << std::endl;
+
 
 	VkSamplerCreateInfo samplerInfo = vkInit::samplerCreateInfo(VK_FILTER_NEAREST);
 	VkSampler blockySampler;
@@ -420,8 +425,9 @@ void VulkanEngine::initScene() {
 	//write to the descriptor set so that it points to our empire_diffuse texture
 	VkDescriptorImageInfo imageBufferInfo;
 	imageBufferInfo.sampler = blockySampler;
-	imageBufferInfo.imageView = _loadedTextures["grass_side_diffuse"].imageView;
+	imageBufferInfo.imageView = _loadedTextures["grass"].imageView;
 	imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
 
 	VkWriteDescriptorSet texture1 = vkInit::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
 
