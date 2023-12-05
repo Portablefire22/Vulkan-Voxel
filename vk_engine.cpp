@@ -428,7 +428,6 @@ void VulkanEngine::initScene() {
 	imageBufferInfo.imageView = _loadedTextures["grass"].imageView;
 	imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-
 	VkWriteDescriptorSet texture1 = vkInit::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
 
 	vkUpdateDescriptorSets(_device, 1, &texture1, 0, nullptr);

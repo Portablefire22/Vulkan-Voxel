@@ -15,7 +15,7 @@ namespace Player {
     Player::Player(glm::vec3 position, float size) {
         Position = position;
         Size = size;
-        camera = Camera(glm::vec3(0.0,0.0,-2.0));
+        camera = Camera(glm::vec3(0.0,0.0,0.0));
     }
 
     void Player::processInput() { // Called every frame
