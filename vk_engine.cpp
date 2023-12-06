@@ -391,7 +391,7 @@ void VulkanEngine::run() {
     	//ImGui::ShowDemoWindow();
     	DebugUI::PlayerInformation(PlayerEntity, *this);
 
-    	try {
+    	try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
     		for (auto t : chunksToRender) {
     			currentWorld.RenderChunk(*this, t);
     			chunksToRender.erase(chunksToRender.find(t));
