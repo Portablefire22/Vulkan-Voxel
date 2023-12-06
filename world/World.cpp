@@ -25,7 +25,15 @@ namespace WorldHandler {
 
     void World::RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks) {
         for (chunk::Chunk localChunk : chunks) {
-
+            bool chunkExists = false;
+            for (auto t: engine._renderables) {
+                if (t.position == localChunk.data.info.ChunkPosition) {
+                    chunkExists = true;
+                }
+            }
+            if (chunkExists) {
+                continue;
+            }
 
             RenderObject chunkObject;
             std::string name = glm::to_string(localChunk.data.info.ChunkPosition);
