@@ -5,6 +5,7 @@
 #include "Chunk.h"
 
 #include <iostream>
+#include <SDL_timer.h>
 #include <glm/gtx/string_cast.hpp>
 
 #include "../main.h"
@@ -19,8 +20,6 @@ namespace chunk {
     }
 
     Chunk::Chunk(glm::vec3 chunkPos) {
-        //std::cout << "Created: " << height << "|" << width << "|" << depth << std::endl;
-        //std::cout << "@: " << chunkPos.x << "|" << chunkPos.y << "|" << chunkPos.z << std::endl;
         std::byte blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = { (std::byte) 0};
         data = ChunkData {
             ChunkInfo{
@@ -43,6 +42,7 @@ namespace chunk {
         }
         else {
             localChunk.data.isSurface = false;
+            return localChunk;
         }
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -54,28 +54,28 @@ namespace chunk {
                 for (int y = 0; y < CHUNK_SIZE; y++) {
                     if (localChunk.data.isSurface) {
                         if(ChunkPos.y > (128) / CHUNK_SIZE) {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)0;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)0;
                         }
                         else if (y < HEIGHT - 3) {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)2;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)2;
                         }
                         else if (y == HEIGHT && y <= WATER_LEVEL) {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)4;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)4;
                         }
                         else if (y == HEIGHT){
-                            localChunk.data.Blocks[x][y][z] = (std::byte)1;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)1;
                         }
                         else if (y >= HEIGHT - 3 && y < HEIGHT) {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)3;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)3;
                         }
                         else if (y > HEIGHT && y <= WATER_LEVEL) {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)5;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)5;
                         }
                         else {
-                            localChunk.data.Blocks[x][y][z] = (std::byte)0;
+                            localChunk.data.Blocks[y][z][x] = (std::byte)0;
                         }
                     } else {
-                        localChunk.data.Blocks[x][y][z] = (std::byte)2;
+                        localChunk.data.Blocks[y][z][x] = (std::byte)2;
                     }
                 }
             }
@@ -109,22 +109,27 @@ namespace chunk {
         Mesh chunkMesh{};
         std::string name = glm::to_string(this->data.info.ChunkPosition);
         glm::vec3 blockPosition;
+        double t1 = SDL_GetPerformanceCounter();
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-                    std::byte* pBlockId = &this->data.Blocks[x][y][z];
+                    if (std::all_of(data.Blocks[y], data.Blocks[y] + (CHUNK_SIZE * CHUNK_SIZE), [](bool elem) {return elem == 0;})) break; // Skip all checks if it's just air
+                    std::byte* pBlockId = &this->data.Blocks[y][z][x];
                     // If the block is air then just skip
                     if (*pBlockId == (std::byte)0) continue;
                     blockPosition = glm::vec3(x,y,z);
                     std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
                     // If the mesh doesn't exist
-                    RenderBlock::AddBlockVertices((int)this->data.Blocks[x][y][z], chunkMesh, facesToRender, blockPosition);
+                    RenderBlock::AddBlockVertices((int)this->data.Blocks[y][z][x], chunkMesh, facesToRender, blockPosition);
                 }
             }
         }
         if (chunkMesh._vertices.size() > 0) {
             entryPoint::engine.uploadMesh(chunkMesh);
             entryPoint::engine._meshes[name] = chunkMesh;
+            double t2 = SDL_GetPerformanceCounter();
+            double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
+            std::cout << "Time: " << t3 << std::endl;
         }
         return chunkMesh;
     }
@@ -187,7 +192,7 @@ namespace chunk {
 
             if (chunkSide) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
-            } else if (this->data.Blocks[x][y][z] == (std::byte)0) {
+            } else if (this->data.Blocks[y][z][x] == (std::byte)0) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
             }
         }

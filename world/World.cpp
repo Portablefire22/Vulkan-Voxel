@@ -14,6 +14,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <complex>
 #include <iostream>
+#include <SDL_timer.h>
 #include <unordered_set>
 
 #include "glm/gtx/hash.hpp"
@@ -24,15 +25,15 @@ namespace WorldHandler {
 
     void World::RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks) {
         for (chunk::Chunk localChunk : chunks) {
+
+
             RenderObject chunkObject;
             std::string name = glm::to_string(localChunk.data.info.ChunkPosition);
-            std::cout << name << std::endl;
+
 
             // Check if the chunk mesh already exists, if not then create it
             if (!engine._meshes.contains(name)) {
                 localChunk.GenerateChunkMesh();
-            } else {
-                std::cout << "CHUNK MESH: " << name << " EXISTS" << std::endl;
             }
             chunkObject.mesh = engine.getMesh(name);
             if (chunkObject.mesh == nullptr) {
@@ -40,7 +41,7 @@ namespace WorldHandler {
             }
             chunkObject.name = name;
 
-            std::cout << chunkObject.name << std::endl;
+
             chunkObject.material = engine.getMaterial("grass");
 
             glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk.data.info.ChunkPosition * (float)CHUNK_SIZE);
@@ -48,6 +49,7 @@ namespace WorldHandler {
             chunkObject.transformMatrix = translation * scale;
             chunkObject.position = localChunk.data.info.ChunkPosition;
             engine._renderables.push_back(chunkObject);
+
         }
     }
 
@@ -56,7 +58,6 @@ namespace WorldHandler {
         for (int y = player.ChunkPosition.y - vertRenderDistance; y <= player.ChunkPosition.y + vertRenderDistance; y++) {
             for (int z = player.ChunkPosition.z - horzRenderDistance; z <= player.ChunkPosition.z + horzRenderDistance; z++) {
                 for (int x = player.ChunkPosition.x - horzRenderDistance; x <= player.ChunkPosition.x + horzRenderDistance; x++) {
-                    std::cout << x  << "," << y << "," << z << std::endl;
                     chunksToRender.insert(GetChunk(engine, x,y,z));
                 }
             }
@@ -87,13 +88,10 @@ namespace WorldHandler {
 
        // const auto seed = (siv::PerlinNoise::seed_type)this->WorldSeed;
         testI++;
-        std::cout << testI << std::endl;
         noise::module::Perlin perlinMod;
         std::hash<std::string> hasher;
         perlinMod.SetSeed(412353523124);
         perlinMod.SetNoiseQuality(noise::QUALITY_BEST);
-        //const siv::PerlinNoise perlin{seed};
-        std::cout << glm::to_string(ChunkPos) << std::endl;
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 //const double noise = perlin.octave2D_01((x + (int)localChunk.data.info.ChunkPosition.x * CHUNK_SIZE), (z + (int)localChunk.data.info.ChunkPosition.z * CHUNK_SIZE), 128);
@@ -101,16 +99,9 @@ namespace WorldHandler {
                 double yNoise =  1 * (ChunkPos.y * CHUNK_SIZE);
                 double zNoise =  0.01 * (z + ChunkPos.z * CHUNK_SIZE);
                 auto noise = perlinMod.GetValue(xNoise, yNoise, zNoise);
-                //double noise;
-                //noise = sin(((double)x + (ChunkPos.x * CHUNK_SIZE))*3.14159265/180) * sin(((double)z + (ChunkPos.z * CHUNK_SIZE))*3.14159265/180);
-
-                //std::cout << noise * CHUNK_SIZE << std::endl;
                 NoiseArr[z][x] = round(abs(noise) * CHUNK_SIZE/2);
-                //NoiseArr[x][z] = localChunk.data.info.ChunkPosition.z + localChunk.data.info.ChunkPosition.x + 5;
             }
         }
-        std::cout << " NEW CHUNK " << std::endl;
-
     }
 
 
