@@ -382,10 +382,7 @@ void VulkanEngine::run() {
     		PlayerEntity.processInput(*this);
     	}
 
-    	if (PlayerEntity.ChunkPosition != PlayerEntity.LastChunkPosition) {
-			PlayerEntity.LastChunkPosition = PlayerEntity.ChunkPosition;
-    		//currentWorld.RenderChunks(*this, currentWorld.GetChunksAroundPlayer(PlayerEntity, 1,1));
-    	}
+
 
     	ImGui_ImplVulkan_NewFrame();
     	ImGui_ImplSDL2_NewFrame();
@@ -393,6 +390,17 @@ void VulkanEngine::run() {
 
     	//ImGui::ShowDemoWindow();
     	DebugUI::PlayerInformation(PlayerEntity, *this);
+
+    	try {
+    		for (auto t : chunksToRender) {
+    			currentWorld.RenderChunk(*this, t);
+    			chunksToRender.erase(chunksToRender.find(t));
+    			break;
+    		}
+    	} catch (...) {
+
+    	}
+
         draw();
     }
 }
@@ -765,6 +773,7 @@ void VulkanEngine::draw() {
     vkWaitForFences(_device, 1, &getCurrentFrame()._renderFence, true, 1000000000); // 1 second timeout, nanoseconds
     vkResetFences(_device, 1, &getCurrentFrame()._renderFence);
 	vkResetCommandBuffer(getCurrentFrame()._mainCommandBuffer, 0);
+
 
 
 	ImGui::Render();

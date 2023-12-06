@@ -80,28 +80,6 @@ namespace chunk {
                 }
             }
         }
-        /*if (ChunkPos.y >= (50 >> 4)) {
-            entryPoint::engine.currentWorld.GetNoiseHeightMap(localChunk, &NoiseVec);
-            for (int y = 0; y < CHUNK_SIZE; y++) {
-                for (int z = 0; z < CHUNK_SIZE ; z++) {
-                    for (int x = 0; x < CHUNK_SIZE; x++) {
-                        if (NoiseVec[x + z << 4] <= y) {
-                            localChunk.data.Blocks.push_back((std::byte)1);
-                        }
-                    }
-                }
-            }
-        } else {
-            for (int y = 0; y < CHUNK_SIZE; y++) {
-                for (int z = 0; z < CHUNK_SIZE ; z++) {
-                    for (int x = 0; x < CHUNK_SIZE; x++) {
-                        //Block::Block block = Block::Block(1, glm::vec3{x + ChunkPos.x, y + ChunkPos.y,z + ChunkPos.z }, Block::POSX);
-                        localChunk.data.Blocks.push_back((std::byte)1);
-                    }
-                }
-            }
-        }*/
-
         return localChunk;
     }
 

@@ -60,7 +60,8 @@ namespace Player {
 
     void Player::ChunkPositionChanged(VulkanEngine& engine) {
         engine.chunksToRender = engine.currentWorld.GetChunksAroundPlayer(engine, *this, HorzRenderDist, VertRenderDist);
-        engine.currentWorld.RenderChunks(engine, engine.chunksToRender);
+        int t = 1;
+        //engine.currentWorld.RenderChunks(engine, engine.chunksToRender);
         for (auto iter = engine._renderables.begin(); iter != engine._renderables.end();) {
             if (abs(iter->position.y - this->ChunkPosition.y) > VertRenderDist || abs(iter->position.x - this->ChunkPosition.x) > HorzRenderDist || abs(iter->position.z - this->ChunkPosition.z) > HorzRenderDist) {
                 engine._renderables.erase(iter);

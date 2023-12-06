@@ -37,6 +37,7 @@ public:
     void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
     std::vector<RenderBlock::FACE> CheckBlockFaces(chunk::Chunk* localChunk, glm::vec3* BlockPos);
     void RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks);
+    void RenderChunk(VulkanEngine& engine, chunk::Chunk& chunk);
     std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
     chunk::Chunk GetChunk(VulkanEngine& engine, int ChunkX, int ChunkY, int ChunkZ);

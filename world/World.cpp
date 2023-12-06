@@ -57,8 +57,32 @@ namespace WorldHandler {
             chunkObject.transformMatrix = translation * scale;
             chunkObject.position = localChunk.data.info.ChunkPosition;
             engine._renderables.push_back(chunkObject);
-
         }
+    }
+
+    void World::RenderChunk(VulkanEngine& engine, chunk::Chunk& localChunk) {
+        RenderObject chunkObject;
+        std::string name = glm::to_string(localChunk.data.info.ChunkPosition);
+
+
+        // Check if the chunk mesh already exists, if not then create it
+        if (!engine._meshes.contains(name)) {
+            localChunk.GenerateChunkMesh();
+        }
+        chunkObject.mesh = engine.getMesh(name);
+        if (chunkObject.mesh == nullptr) {
+            return;
+        }
+        chunkObject.name = name;
+
+
+        chunkObject.material = engine.getMaterial("grass");
+
+        glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk.data.info.ChunkPosition * (float)CHUNK_SIZE);
+        glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(1,1,1));
+        chunkObject.transformMatrix = translation * scale;
+        chunkObject.position = localChunk.data.info.ChunkPosition;
+        engine._renderables.push_back(chunkObject);
     }
 
     std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> World::GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance) {
@@ -66,7 +90,8 @@ namespace WorldHandler {
         for (int y = player.ChunkPosition.y - vertRenderDistance; y <= player.ChunkPosition.y + vertRenderDistance; y++) {
             for (int z = player.ChunkPosition.z - horzRenderDistance; z <= player.ChunkPosition.z + horzRenderDistance; z++) {
                 for (int x = player.ChunkPosition.x - horzRenderDistance; x <= player.ChunkPosition.x + horzRenderDistance; x++) {
-                    chunksToRender.insert(GetChunk(engine, x,y,z));
+                    auto c = GetChunk(engine, x,y,z);
+                    chunksToRender.insert(c);
                 }
             }
         }
