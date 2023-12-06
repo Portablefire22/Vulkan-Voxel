@@ -71,8 +71,9 @@ void VulkanEngine::init() {
 }
 // TODO, Texture atlas
 void VulkanEngine::initBlockTextures() {
-	loadImages("../textures/grid.png", "stone");
-	loadImages("../textures/missing.png", "grass");
+	/*loadImages("../textures/grid.png", "stone");
+	loadImages("../textures/missing.png", "grass");*/
+	loadImages("../textures/Atlas.png", "Atlas");
 }
 
 void VulkanEngine::loadMeshes() {
@@ -401,7 +402,7 @@ void VulkanEngine::initScene() {
 	std::string sed = "Debug seed";
 	currentWorld = WorldHandler::World(nme, sed);
 
-	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 4,2);
+	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 8,4);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();
@@ -426,7 +427,7 @@ void VulkanEngine::initScene() {
 	//write to the descriptor set so that it points to our empire_diffuse texture
 	VkDescriptorImageInfo imageBufferInfo;
 	imageBufferInfo.sampler = blockySampler;
-	imageBufferInfo.imageView = _loadedTextures["stone"].imageView;
+	imageBufferInfo.imageView = _loadedTextures["Atlas"].imageView;
 	imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkWriteDescriptorSet texture1 = vkInit::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);

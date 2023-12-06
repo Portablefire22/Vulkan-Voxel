@@ -83,7 +83,7 @@ namespace WorldHandler {
         std::cout << testI << std::endl;
         noise::module::Perlin perlinMod;
         std::hash<std::string> hasher;
-        perlinMod.SetSeed(2);
+        perlinMod.SetSeed(412353523124);
         perlinMod.SetNoiseQuality(noise::QUALITY_BEST);
         //const siv::PerlinNoise perlin{seed};
         std::cout << glm::to_string(ChunkPos) << std::endl;

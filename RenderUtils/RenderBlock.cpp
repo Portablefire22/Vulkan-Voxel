@@ -11,7 +11,7 @@
 #include "../vk_engine.h"
 
 
-Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE& face,glm::vec3& startPos, glm::vec3 colour) {
+Mesh RenderBlock::createHorizontalQuad(int blockId, float tileSize, FACE& face,glm::vec3& startPos, glm::vec3 colour) {
     Mesh quadMesh{};
     quadMesh._vertices.resize(6);
     switch (face) {
@@ -54,23 +54,35 @@ Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE& face,glm::vec3& sta
             quadMesh._vertices[1].position = {startPos.x,startPos.y + tileSize,startPos.z + tileSize};
             quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
 
-            quadMesh._vertices[3].position = {startPos.x,startPos.y + tileSize,startPos.z};
+            quadMesh._vertices[3].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
             quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z};
-            quadMesh._vertices[5].position = {startPos.x + tileSize,startPos.y + tileSize,startPos.z + tileSize};
+
+            quadMesh._vertices[5].position = {startPos.x,startPos.y + tileSize,startPos.z};
         break;
         case BOTTOM:
                 quadMesh._vertices[0].position = {startPos.x,startPos.y,startPos.z};
                 quadMesh._vertices[1].position = {startPos.x,startPos.y,startPos.z + tileSize};
                 quadMesh._vertices[2].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
 
-                quadMesh._vertices[3].position = {startPos.x,startPos.y,startPos.z};
+                quadMesh._vertices[3].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
                 quadMesh._vertices[4].position = {startPos.x + tileSize,startPos.y,startPos.z};
-                quadMesh._vertices[5].position = {startPos.x + tileSize,startPos.y,startPos.z + tileSize};
+                quadMesh._vertices[5].position = {startPos.x,startPos.y,startPos.z};
             break;
 
         default:
             break;
     }
+    double uvEnd =  ((blockId) * 16) / (128);
+    double uvStart = ((blockId - tileSize) * 16) / (128);
+
+    double xMin = (double)((blockId - tileSize) * 16) / 128;
+    double xMax = (double)(blockId * 16) / 128;
+    double yMin = (double)((blockId / 8) * 16) / 128;
+    double yMax = (double)(16 + ((blockId / 8) * 16)) / 128;
+
+    //std::cout << "BLOCK ID: " << blockId << std::endl << xMin << " | " << xMax << std::endl << yMin << " | " << yMax << std::endl;
+
+
     quadMesh._vertices[0].colour = colour;
     quadMesh._vertices[1].colour = colour;
     quadMesh._vertices[2].colour = colour;
@@ -79,12 +91,18 @@ Mesh RenderBlock::createHorizontalQuad(float tileSize, FACE& face,glm::vec3& sta
     quadMesh._vertices[4].colour = colour;
     quadMesh._vertices[5].colour = colour;
 
-    quadMesh._vertices[0].uv = {0,0};
-    quadMesh._vertices[1].uv = {0,tileSize};
-    quadMesh._vertices[2].uv = {tileSize,tileSize};
-    quadMesh._vertices[3].uv = {tileSize,tileSize};
-    quadMesh._vertices[4].uv = {tileSize,0};
-    quadMesh._vertices[5].uv = {0,0};
+    /*quadMesh._vertices[0].uv = {uvStart,uvStart};
+    quadMesh._vertices[1].uv = {uvStart,uvEnd};
+    quadMesh._vertices[2].uv = {uvEnd,uvEnd};
+    quadMesh._vertices[3].uv = {uvEnd,uvEnd};
+    quadMesh._vertices[4].uv = {uvEnd,uvStart};
+    quadMesh._vertices[5].uv = {uvStart,uvStart};*/
+    quadMesh._vertices[0].uv = {xMin,yMin};
+    quadMesh._vertices[1].uv = {xMin,yMax};
+    quadMesh._vertices[2].uv = {xMax,yMax};
+    quadMesh._vertices[3].uv = {xMax,yMax};
+    quadMesh._vertices[4].uv = {xMax,yMin};
+    quadMesh._vertices[5].uv = {xMin,yMin};
 
 
     //entryPoint::engine.uploadMesh(quadMesh);
@@ -106,10 +124,10 @@ bool RenderBlock::createBlocks() {
     return true;
 }
 
-void RenderBlock::AddBlockVertices(Mesh&chunkMesh, std::vector<FACE>& faces, glm::vec3& Position) {
+void RenderBlock::AddBlockVertices(int blockId, Mesh&chunkMesh, std::vector<FACE>& faces, glm::vec3& Position) {
     // Only add the faces that were given
     for (FACE face : faces) {
-        Mesh tempMesh = createHorizontalQuad(1.f, face, Position, {1,1,1}); // Colour currently goes unused
+        Mesh tempMesh = createHorizontalQuad(blockId, 1.f, face, Position, {1,1,1}); // Colour currently goes unused
         chunkMesh._vertices.insert(chunkMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
     }
 

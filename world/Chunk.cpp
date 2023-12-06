@@ -40,22 +40,32 @@ namespace chunk {
         if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
             entryPoint::engine.currentWorld.GetNoiseHeightMap(ChunkPos, NoiseArr);
         }
+        bool topChunk = false;
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
                     HEIGHT = NoiseArr[z][x];
+                    topChunk = true;
                     //std::cout << HEIGHT << std::endl;
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-                    if (y < HEIGHT) {
-                        localChunk.data.Blocks[x][y][z] = (std::byte)1;
-                    } else if (y == HEIGHT){
+                    if (HEIGHT != CHUNK_SIZE) {
+                        if (y < HEIGHT - 3) {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)2;
+                        }
+                        else if (y == HEIGHT){
+                            localChunk.data.Blocks[x][y][z] = (std::byte)1;
+                        }
+                        else if (y >= HEIGHT - 3 && y < HEIGHT && topChunk) {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)3;
+                        }
+                        else {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)0;
+                        }
+                    } else {
                         localChunk.data.Blocks[x][y][z] = (std::byte)2;
-                    }
-                    else {
-                        localChunk.data.Blocks[x][y][z] = (std::byte)0;
                     }
                 }
             }
@@ -98,7 +108,7 @@ namespace chunk {
                     blockPosition = glm::vec3(x,y,z);
                     std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
                     // If the mesh doesn't exist
-                    RenderBlock::AddBlockVertices(chunkMesh, facesToRender, blockPosition);
+                    RenderBlock::AddBlockVertices((int)this->data.Blocks[x][y][z], chunkMesh, facesToRender, blockPosition);
                 }
             }
         }

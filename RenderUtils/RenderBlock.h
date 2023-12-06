@@ -18,9 +18,9 @@ namespace RenderBlock {
         BOTTOM = 5
     };
 
-    Mesh createHorizontalQuad(float tileSize, FACE& face, glm::vec3& startPos, glm::vec3 colour = {0.0,0.0,0.0});
+    Mesh createHorizontalQuad(int blockId, float tileSize, FACE& face, glm::vec3& startPos, glm::vec3 colour = {0.0,0.0,0.0});
     bool createBlocks();
-    void AddBlockVertices(Mesh& chunkMesh, std::vector<FACE>& faces, glm::vec3& Position);
+    void AddBlockVertices(int blockId, Mesh& chunkMesh, std::vector<FACE>& faces, glm::vec3& Position);
 
 };
 
