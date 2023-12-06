@@ -23,34 +23,40 @@
 namespace WorldHandler {
 
     void World::RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks) {
-
         for (chunk::Chunk localChunk : chunks) {
             RenderObject chunkObject;
             std::string name = glm::to_string(localChunk.data.info.ChunkPosition);
+            std::cout << name << std::endl;
+
             // Check if the chunk mesh already exists, if not then create it
             if (!engine._meshes.contains(name)) {
                 localChunk.GenerateChunkMesh();
+            } else {
+                std::cout << "CHUNK MESH: " << name << " EXISTS" << std::endl;
             }
             chunkObject.mesh = engine.getMesh(name);
             if (chunkObject.mesh == nullptr) {
                 continue;
             }
-            chunkObject.name = name.data();
+            chunkObject.name = name;
 
+            std::cout << chunkObject.name << std::endl;
             chunkObject.material = engine.getMaterial("grass");
 
             glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk.data.info.ChunkPosition * (float)CHUNK_SIZE);
             glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(1,1,1));
             chunkObject.transformMatrix = translation * scale;
+            chunkObject.position = localChunk.data.info.ChunkPosition;
             engine._renderables.push_back(chunkObject);
         }
     }
 
     std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> World::GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance) {
         std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> chunksToRender;
-        for (int y = player.Position.y - vertRenderDistance; y <= player.Position.y + vertRenderDistance; y++) {
-            for (int z = player.Position.z - horzRenderDistance; z <= player.Position.z + horzRenderDistance; z++) {
-                for (int x = player.Position.z - horzRenderDistance; x <= player.Position.z + horzRenderDistance; x++) {
+        for (int y = player.ChunkPosition.y - vertRenderDistance; y <= player.ChunkPosition.y + vertRenderDistance; y++) {
+            for (int z = player.ChunkPosition.z - horzRenderDistance; z <= player.ChunkPosition.z + horzRenderDistance; z++) {
+                for (int x = player.ChunkPosition.x - horzRenderDistance; x <= player.ChunkPosition.x + horzRenderDistance; x++) {
+                    std::cout << x  << "," << y << "," << z << std::endl;
                     chunksToRender.insert(GetChunk(engine, x,y,z));
                 }
             }
@@ -78,6 +84,7 @@ namespace WorldHandler {
         return localChunk;
     }
     void World::GetNoiseHeightMap(glm::vec3&ChunkPos, double NoiseArr[CHUNK_SIZE][CHUNK_SIZE]) {
+
        // const auto seed = (siv::PerlinNoise::seed_type)this->WorldSeed;
         testI++;
         std::cout << testI << std::endl;
@@ -90,14 +97,14 @@ namespace WorldHandler {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 //const double noise = perlin.octave2D_01((x + (int)localChunk.data.info.ChunkPosition.x * CHUNK_SIZE), (z + (int)localChunk.data.info.ChunkPosition.z * CHUNK_SIZE), 128);
-                double xNoise =  0.001 * (x + ChunkPos.x * CHUNK_SIZE);
-                double yNoise =  0.001 * (ChunkPos.y * CHUNK_SIZE);
-                double zNoise =  0.001 * (z + ChunkPos.z * CHUNK_SIZE);
+                double xNoise =  0.01 * (x + ChunkPos.x * CHUNK_SIZE);
+                double yNoise =  1 * (ChunkPos.y * CHUNK_SIZE);
+                double zNoise =  0.01 * (z + ChunkPos.z * CHUNK_SIZE);
                 auto noise = perlinMod.GetValue(xNoise, yNoise, zNoise);
                 //double noise;
                 //noise = sin(((double)x + (ChunkPos.x * CHUNK_SIZE))*3.14159265/180) * sin(((double)z + (ChunkPos.z * CHUNK_SIZE))*3.14159265/180);
 
-                std::cout << noise * CHUNK_SIZE << std::endl;
+                //std::cout << noise * CHUNK_SIZE << std::endl;
                 NoiseArr[z][x] = round(abs(noise) * CHUNK_SIZE/2);
                 //NoiseArr[x][z] = localChunk.data.info.ChunkPosition.z + localChunk.data.info.ChunkPosition.x + 5;
             }

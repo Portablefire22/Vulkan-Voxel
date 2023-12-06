@@ -379,7 +379,7 @@ void VulkanEngine::run() {
         	}
         }
     	if (!freeMouse) {
-    		PlayerEntity.processInput();
+    		PlayerEntity.processInput(*this);
     	}
 
     	if (PlayerEntity.ChunkPosition != PlayerEntity.LastChunkPosition) {
@@ -402,7 +402,7 @@ void VulkanEngine::initScene() {
 	std::string sed = "Debug seed";
 	currentWorld = WorldHandler::World(nme, sed);
 
-	auto chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 8,4);
+	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 0,0);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();
@@ -765,6 +765,7 @@ void VulkanEngine::draw() {
     vkWaitForFences(_device, 1, &getCurrentFrame()._renderFence, true, 1000000000); // 1 second timeout, nanoseconds
     vkResetFences(_device, 1, &getCurrentFrame()._renderFence);
 	vkResetCommandBuffer(getCurrentFrame()._mainCommandBuffer, 0);
+
 
 	ImGui::Render();
 

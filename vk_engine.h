@@ -57,8 +57,9 @@ struct RenderObject {
     Mesh* mesh;
     Material* material;
     glm::mat4 transformMatrix;
-    char* name;
+    std::string name;
     glm::vec4 colour;
+    glm::vec3 position;
 };
 
 struct FrameData {
@@ -114,7 +115,7 @@ class VulkanEngine {
     void initBlockTextures();
 
     chunk::ChunkManager _ChunkManager;
-
+    std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> chunksToRender;
 
     VkDescriptorSetLayout _globalSetLayout;
     VkDescriptorSetLayout _objectSetLayout;

@@ -9,6 +9,8 @@
 #include "../Camera.h"
 #include "../Entity/Entity.h"
 
+class VulkanEngine;
+
 namespace Player {
 
 class Player{
@@ -20,9 +22,10 @@ public:
     float Size = 1.75f;
 
     explicit Player(glm::vec3 position = {0,0,0}, float size = 1.75f);
-    void processInput();
-    void updatePosition();
+    void processInput(VulkanEngine& engine);
+    void updatePosition(VulkanEngine& engine);
     void processMouse(float xOffset, float yOffset);
+    void ChunkPositionChanged(VulkanEngine& engine);
 
     private:
     std::map<int, bool> keyboard;

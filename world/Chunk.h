@@ -10,6 +10,10 @@
 
 #define CHUNK_SIZE 32
 #define CHUNK_BLOCKS CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
+#define WATER_LEVEL (2 * (CHUNK_SIZE / 16))
+
+#define HorzRenderDist 4
+#define VertRenderDist 2
 
 #include <glm/vec3.hpp>
 #include <vector>
@@ -30,6 +34,7 @@ namespace chunk {
     struct ChunkData {
         ChunkInfo info;
         std::byte Blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+        bool isSurface;
     };
 class Chunk {
 public:

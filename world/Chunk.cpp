@@ -39,27 +39,37 @@ namespace chunk {
         double NoiseArr[CHUNK_SIZE][CHUNK_SIZE];
         if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
             entryPoint::engine.currentWorld.GetNoiseHeightMap(ChunkPos, NoiseArr);
+            localChunk.data.isSurface = true;
         }
-        bool topChunk = false;
+        else {
+            localChunk.data.isSurface = false;
+        }
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
-                if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
+                if (localChunk.data.isSurface) {
                     HEIGHT = NoiseArr[z][x];
-                    topChunk = true;
-                    //std::cout << HEIGHT << std::endl;
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-                    if (HEIGHT != CHUNK_SIZE) {
-                        if (y < HEIGHT - 3) {
+                    if (localChunk.data.isSurface) {
+                        if(ChunkPos.y > (128) / CHUNK_SIZE) {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)0;
+                        }
+                        else if (y < HEIGHT - 3) {
                             localChunk.data.Blocks[x][y][z] = (std::byte)2;
+                        }
+                        else if (y == HEIGHT && y <= WATER_LEVEL) {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)4;
                         }
                         else if (y == HEIGHT){
                             localChunk.data.Blocks[x][y][z] = (std::byte)1;
                         }
-                        else if (y >= HEIGHT - 3 && y < HEIGHT && topChunk) {
+                        else if (y >= HEIGHT - 3 && y < HEIGHT) {
                             localChunk.data.Blocks[x][y][z] = (std::byte)3;
+                        }
+                        else if (y > HEIGHT && y <= WATER_LEVEL) {
+                            localChunk.data.Blocks[x][y][z] = (std::byte)5;
                         }
                         else {
                             localChunk.data.Blocks[x][y][z] = (std::byte)0;
@@ -140,43 +150,44 @@ namespace chunk {
 
     std::vector<RenderBlock::FACE> Chunk::ShouldRenderFace(glm::vec3& originalPos) {
         std::vector<RenderBlock::FACE> faces;
-        glm::vec3 tempPos;
-
         for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM; faceVal++) {
-            tempPos = originalPos;
+            int x = originalPos.x;
+            int y = originalPos.y;
+            int z = originalPos.z;
             bool chunkSide = false;
             // Convert 3D space to an index in the byte array
             switch (static_cast<RenderBlock::FACE>(faceVal)) {
                 case RenderBlock::FRONT: // PosX
-                    tempPos = tempPos + glm::vec3{1,0,0};
-                    if (tempPos.x == CHUNK_SIZE) chunkSide = true;
+                    x++;
+                    if (x == CHUNK_SIZE) chunkSide = true;
                     break;
                 case RenderBlock::BACK: // NegX
-                    tempPos = tempPos + glm::vec3{-1,0,0};
-                    if (tempPos.x == -1) chunkSide = true;
+                    x--;
+                    if (x == -1) chunkSide = true;
                     break;
                 case RenderBlock::LEFT: // Neg Z
-                    tempPos = tempPos + glm::vec3{0,0,-1};
-                    if (tempPos.z == -1) chunkSide = true;
+                    z--;
+                    if (z == -1) chunkSide = true;
                     break;
                 case RenderBlock::RIGHT: // Pos Z
-                    tempPos = tempPos + glm::vec3{0,0,1};
-                    if (tempPos.z == CHUNK_SIZE) chunkSide = true;
+                    z++;
+                    if (z == CHUNK_SIZE) chunkSide = true;
                     break;
                 case RenderBlock::TOP: // Pos Y Works
-                    tempPos = tempPos + glm::vec3{0,1,0};
-                    if (tempPos.y == CHUNK_SIZE) chunkSide = true;
+                    y++;
+                    if (y == CHUNK_SIZE) chunkSide = true;
                     break;
                 case RenderBlock::BOTTOM: // Neg Y
-                    tempPos = tempPos + glm::vec3{0,-1,0};
-                    if (tempPos.y == -1) chunkSide = true;
+                    y--;
+                    if (y == -1) chunkSide = true;
                     break;
                 default:
                     break;
             }
+
             if (chunkSide) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
-            } else if (GetVoxel(tempPos) == 0) {
+            } else if (this->data.Blocks[x][y][z] == (std::byte)0) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
             }
         }
