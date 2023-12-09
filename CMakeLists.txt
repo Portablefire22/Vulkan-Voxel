@@ -14,11 +14,13 @@ link_libraries(noise)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 link_libraries(vulkan)
-
+set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
+add_subdirectory(deps/FastNoise2)
 set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/imgui")
 
 file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp)
 add_library("ImGui" STATIC ${IMGUI_SOURCES})
+
 
 set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
         vk_mesh.cpp
@@ -48,7 +50,9 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
         DebugUtils/ImGuiHandler.h
 
         Entity/Entity.h
-        PerlinNoise.hpp)
+        PerlinNoise.hpp
+        world/Region.cpp
+        world/Region.h)
 
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
-target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui)
+target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui  FastNoise)

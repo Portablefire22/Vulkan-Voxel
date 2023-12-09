@@ -10,7 +10,10 @@
 
 #define CHUNK_SIZE 32
 #define CHUNK_BLOCKS CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
-#define WATER_LEVEL (2 * (CHUNK_SIZE / 16))
+
+#define SURFACE_LEVEL 64
+
+#define WATER_LEVEL SURFACE_LEVEL + (CHUNK_SIZE / 8)
 
 #define HorzRenderDist 4
 #define VertRenderDist 2
@@ -21,6 +24,7 @@
 #include "../RenderUtils/RenderBlock.h"
 
 
+class Region;
 struct Mesh;
 
 namespace Block {
@@ -28,13 +32,9 @@ namespace Block {
 }
 
 namespace chunk {
-    struct ChunkInfo { // Chunks will never be differing sizes
-        glm::vec3 ChunkPosition;
-    };
     struct ChunkData {
-        ChunkInfo info;
+        glm::vec3 ChunkPosition;
         std::byte Blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-        bool isSurface;
     };
 class Chunk {
 public:
@@ -45,23 +45,25 @@ public:
     int GetVoxel(glm::vec3& position);
     std::vector<RenderBlock::FACE> ShouldRenderFace(glm::vec3& originalPos);
 
+    bool generateChunk();
+
     bool operator==(const Chunk& other) const {
-        if (this->data.info.ChunkPosition.x == other.data.info.ChunkPosition.x && this->data.info.ChunkPosition.y == other.data.info.ChunkPosition.y && this->data.info.ChunkPosition.z == other.data.info.ChunkPosition.z )
+        if (this->data.ChunkPosition.x == other.data.ChunkPosition.x && this->data.ChunkPosition.y == other.data.ChunkPosition.y && this->data.ChunkPosition.z == other.data.ChunkPosition.z )
              return true;
         return false;
     }
     struct HashFunction {
         size_t operator()(const Chunk& other) const {
-            size_t xHash = std::hash<int>()(other.data.info.ChunkPosition.x);
-            size_t yHash = std::hash<int>()(other.data.info.ChunkPosition.y);
-            size_t zHash = std::hash<int>()(other.data.info.ChunkPosition.z);
+            size_t xHash = std::hash<int>()(other.data.ChunkPosition.x);
+            size_t yHash = std::hash<int>()(other.data.ChunkPosition.y);
+            size_t zHash = std::hash<int>()(other.data.ChunkPosition.z);
             return xHash ^ yHash ^ zHash;
         }
     };
 };
     class ChunkManager {
     public:
-        Chunk generateChunk(glm::vec3 ChunkPos);
+
 
     };
     void IndexToVec(int index, glm::vec3* blockPosition);

@@ -20,6 +20,7 @@ void main() {
     // Colours are vec 4
     // R G B A
     //outColour = texture(texSampler, fragTexCoord);
-    vec3 colour = texture(texture1, texCoord).xyz;
+    vec2 v_texCoord = texCoord * vec2(1.0, -1.0);
+    vec3 colour = texture(texture1, v_texCoord).xyz;
     outColour = vec4(colour, 1.0f);
 }

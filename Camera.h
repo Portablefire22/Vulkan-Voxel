@@ -78,7 +78,7 @@ public:
     }
 
     glm::mat4 getProjectionMatrix(int width, int height) {
-        GPUData.proj = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 1000.0f);
+        GPUData.proj = glm::perspective(glm::radians(Zoom), (float) width / (float) height, 0.1f, 10000000.0f);
         GPUData.proj[1][1] *= -1;
         return GPUData.proj;
     }

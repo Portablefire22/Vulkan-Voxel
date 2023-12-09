@@ -48,7 +48,7 @@ void VulkanEngine::init() {
         _windowExtent.height,
         window_flags
     );
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_SetRelativeMouseMode(SDL_FALSE); // MOUSE CAPTURE
     //glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     //glfwSetCursorPosCallback(window, mouse_callback);
 
@@ -394,7 +394,7 @@ void VulkanEngine::run() {
     	try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
     		for (auto t : chunksToRender) {
     			currentWorld.RenderChunk(*this, t);
-    			chunksToRender.erase(chunksToRender.find(t));
+    			chunksToRender.erase(chunksToRender.begin());
     			break;
     		}
     	} catch (...) {
@@ -407,10 +407,10 @@ void VulkanEngine::run() {
 
 void VulkanEngine::initScene() {
 	std::string nme = "DEBUG WOPRLD";
-	std::string sed = "Debug seed";
+	const long sed = 2412523523634;
 	currentWorld = WorldHandler::World(nme, sed);
 
-	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 0,0);
+	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 1,1);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();

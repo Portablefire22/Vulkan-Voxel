@@ -15,7 +15,7 @@ namespace DebugUI {
     void PlayerInformation(Player::Player player, VulkanEngine& engine) {
         ImGui::Begin("Player Information");
         ImGui::Text("Current World: %s", engine.currentWorld.WorldName);
-        ImGui::Text("World Seed: %s", engine.currentWorld.WorldSeed);
+        ImGui::Text("World Seed: %d", engine.currentWorld.WorldSeed);
         ImGui::Text("Player Position: (%f,%f,%f)", player.Position.x, player.Position.y, player.Position.z);
         ImGui::Text("Current Chunk: (%f,%f,%f)", player.ChunkPosition.x, player.ChunkPosition.y, player.ChunkPosition.z);
         ImGui::Text("Renderables: %d", engine._renderables.size());

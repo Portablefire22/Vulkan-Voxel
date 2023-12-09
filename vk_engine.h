@@ -115,7 +115,7 @@ class VulkanEngine {
     void initBlockTextures();
 
     chunk::ChunkManager _ChunkManager;
-    std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> chunksToRender;
+    std::vector<chunk::Chunk*> chunksToRender;
 
     VkDescriptorSetLayout _globalSetLayout;
     VkDescriptorSetLayout _objectSetLayout;

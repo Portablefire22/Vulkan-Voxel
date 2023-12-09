@@ -14,92 +14,85 @@
 
 namespace chunk {
 
-
-    Chunk::Chunk() {
-        data.info.ChunkPosition = {0,0,0};
-    }
-
     Chunk::Chunk(glm::vec3 chunkPos) {
         std::byte blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = { (std::byte) 0};
         data = ChunkData {
-            ChunkInfo{
-                chunkPos
-            },
+            chunkPos,
             blocks[0][0][0],
         };
     }
 
-    Chunk ChunkManager::generateChunk(glm::vec3 ChunkPos) {
-        // ChunkPos not currently used but will be required for when noise is used
-        Chunk localChunk;
-        localChunk.data.info.ChunkPosition = ChunkPos;
-        //localChunk.data.Blocks.resize(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+    bool Chunk::generateChunk() {
+        bool isSurface; // Stops grass from being places in a cave
+        bool isSurfaceBlock; // Stops grass from spawning inside of a mountain
+        auto ChunkRegion = *entryPoint::engine.currentWorld.GetRegion(this->data.ChunkPosition.x, this->data.ChunkPosition.z);
+        auto heightMap = ChunkRegion.getHeightMap();
         int HEIGHT;
-        double NoiseArr[CHUNK_SIZE][CHUNK_SIZE];
-        if (ChunkPos.y >= (128 / CHUNK_SIZE)) {
-            entryPoint::engine.currentWorld.GetNoiseHeightMap(ChunkPos, NoiseArr);
-            localChunk.data.isSurface = true;
+        if (this->data.ChunkPosition.y >= SURFACE_LEVEL) {
+            isSurface = true;
         }
         else {
-            localChunk.data.isSurface = false;
-            return localChunk;
+            isSurface = false;
         }
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
-                if (localChunk.data.isSurface) {
-                    HEIGHT = NoiseArr[z][x];
+                if (isSurface) {
+                    //HEIGHT = (CHUNK_SIZE/4) * (NoiseArr[x + (z * CHUNK_SIZE)]) + (CHUNK_SIZE / 8);
+                    if (const auto tmpHeight =* ChunkRegion.getBlockHeight(x, z); tmpHeight - this->data.ChunkPosition.y * CHUNK_SIZE > CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
+                        HEIGHT = 16;
+                    } else {
+                        HEIGHT = tmpHeight;
+                    }
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-                    if (localChunk.data.isSurface) {
-                        if(ChunkPos.y > (128) / CHUNK_SIZE) {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)0;
-                        }
-                        else if (y < HEIGHT - 3) {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)2;
+                    if (isSurface) {
+                        if (y < HEIGHT - 3) {
+                            this->data.Blocks[y][z][x] = (std::byte)2;
                         }
                         else if (y == HEIGHT && y <= WATER_LEVEL) {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)4;
+                            this->data.Blocks[y][z][x] = (std::byte)4;
                         }
                         else if (y == HEIGHT){
-                            localChunk.data.Blocks[y][z][x] = (std::byte)1;
+                            this->data.Blocks[y][z][x] = (std::byte)1;
                         }
                         else if (y >= HEIGHT - 3 && y < HEIGHT) {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)3;
+                            this->data.Blocks[y][z][x] = (std::byte)3;
                         }
                         else if (y > HEIGHT && y <= WATER_LEVEL) {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)5;
+                            this->data.Blocks[y][z][x] = (std::byte)5;
                         }
                         else {
-                            localChunk.data.Blocks[y][z][x] = (std::byte)0;
+                            this->data.Blocks[y][z][x] = (std::byte)0;
                         }
                     } else {
-                        localChunk.data.Blocks[y][z][x] = (std::byte)2;
+                        this->data.Blocks[y][z][x] = (std::byte)2;
                     }
                 }
             }
         }
-        return localChunk;
+        return true;
     }
 
     Mesh Chunk::GenerateChunkMesh() {
         Mesh chunkMesh{};
-        std::string name = glm::to_string(this->data.info.ChunkPosition);
+        std::string name = glm::to_string(this->data.ChunkPosition);
         glm::vec3 blockPosition;
         double t1 = SDL_GetPerformanceCounter();
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
                 for (int y = 0; y < CHUNK_SIZE; y++) {
-                    if (std::all_of(data.Blocks[y], data.Blocks[y] + (CHUNK_SIZE * CHUNK_SIZE), [](bool elem) {return elem == 0;})) break; // Skip all checks if it's just air
-                    std::byte* pBlockId = &this->data.Blocks[y][z][x];
+                    //if (std::all_of(data.Blocks[y], data.Blocks[y] + (CHUNK_SIZE * CHUNK_SIZE), [](bool elem) {return elem == 0;})) break; // Skip all checks if it's just air
                     // If the block is air then just skip
-                    if (*pBlockId == (std::byte)0) continue;
+                    if (this->data.Blocks[y][z][x] == (std::byte)0) continue;
+                    std::cout << (int) this->data.Blocks[y][z][x] << ",";
                     blockPosition = glm::vec3(x,y,z);
                     std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
                     // If the mesh doesn't exist
                     RenderBlock::AddBlockVertices((int)this->data.Blocks[y][z][x], chunkMesh, facesToRender, blockPosition);
                 }
+                std::cout << std::endl;
             }
         }
         if (chunkMesh._vertices.size() > 0) {
@@ -115,10 +108,9 @@ namespace chunk {
     int Chunk::GetVoxel(glm::vec3& position) {
         try {
             return static_cast<int>(this->data.Blocks[(int)position.x][(int)position.y][(int)position.z]);
-        } catch (std::exception e) {
+        } catch (std::exception& e) {
             e.what();
         }
-
     }
 
     void IndexToVec(const int index, glm::vec3* blockPosition) {

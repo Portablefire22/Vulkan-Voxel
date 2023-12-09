@@ -59,6 +59,7 @@ namespace Player {
 
 
     void Player::ChunkPositionChanged(VulkanEngine& engine) {
+        return;
         engine.chunksToRender = engine.currentWorld.GetChunksAroundPlayer(engine, *this, HorzRenderDist, VertRenderDist);
         int t = 1;
         //engine.currentWorld.RenderChunks(engine, engine.chunksToRender);

@@ -12,6 +12,7 @@
 #include <glm/gtx/hash.hpp>
 
 #include "Chunk.h"
+#include "Region.h"
 #include "../PerlinNoise.hpp"
 #include "../player/Player.h"
 #include "../RenderUtils/RenderBlock.h"
@@ -28,28 +29,31 @@ public:
     // https://stackoverflow.com/questions/32685540/why-cant-i-compile-an-unordered-map-with-a-pair-as-key
     std::unordered_map<glm::vec2, std::map<int32_t, chunk::Chunk>> WorldMap;
 
-    std::vector<chunk::Chunk> ChunksToRender;
+    std::map<std::pair<int,int>, Region> RegionMap;
+
+    std::vector<chunk::Chunk*> ChunksToRender;
     std::string WorldName;
-    std::string WorldSeed;
+    int WorldSeed;
     int testI = 0;
 
-    void CullChunks();
-    void TestCreateChunks(VulkanEngine& engine, int width = 16, int height = 16, int depth = 16);
-    std::vector<RenderBlock::FACE> CheckBlockFaces(chunk::Chunk* localChunk, glm::vec3* BlockPos);
-    void RenderChunks(VulkanEngine& engine, std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction>& chunks);
-    void RenderChunk(VulkanEngine& engine, chunk::Chunk& chunk);
-    std::unordered_set<chunk::Chunk, chunk::Chunk::HashFunction> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
+    void RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks);
+    void RenderChunk(VulkanEngine& engine, chunk::Chunk* chunk);
+
+    Region* GetRegion(int x, int z);
+
+    std::vector<chunk::Chunk*> GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance);
 
     chunk::Chunk GetChunk(VulkanEngine& engine, int ChunkX, int ChunkY, int ChunkZ);
-    void GetNoiseHeightMap(glm::vec3& localChunk, double NoiseArr[CHUNK_SIZE][CHUNK_SIZE]);
 
     World() {
         WorldName = "Name not Set!";
-        WorldSeed = "debug seed";
+        WorldSeed = rand() % 32767;
+        srand(WorldSeed);
     }
-    World(std::string& worldName, std::string& worldSeed) {
+    World(std::string& worldName, const long& worldSeed) {
         WorldName = worldName;
         WorldSeed = worldSeed;
+        srand(WorldSeed);
     }
 
 };
