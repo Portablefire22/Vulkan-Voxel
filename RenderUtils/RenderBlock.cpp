@@ -130,5 +130,4 @@ void RenderBlock::AddBlockVertices(int blockId, Mesh&chunkMesh, std::vector<FACE
         Mesh tempMesh = createHorizontalQuad(blockId, 1.f, face, Position, {1,1,1}); // Colour currently goes unused
         chunkMesh._vertices.insert(chunkMesh._vertices.end(), tempMesh._vertices.begin(), tempMesh._vertices.end());
     }
-
 }

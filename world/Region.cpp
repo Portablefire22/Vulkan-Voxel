@@ -74,9 +74,9 @@ bool Region::generateHeightMap() {
     try {
         std::vector<float> NoiseArr(CHUNK_SIZE * CHUNK_SIZE);
         const auto fnNoise = FastNoise::New<FastNoise::OpenSimplex2>();
-        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.002f, 456163);
+        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.02f, 456163);
         for (int i = 0; i < (CHUNK_SIZE * CHUNK_SIZE); i++) {
-            this->HeightMap[i] =  static_cast<int>(round((CHUNK_SIZE * CHUNK_SIZE) * NoiseArr[i]));
+            this->HeightMap[i] =  abs(static_cast<int>(round(16 * NoiseArr[i]))) + 2;
         }
         return true;
     } catch (std::exception& e) {

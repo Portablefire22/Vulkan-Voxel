@@ -39,7 +39,8 @@ namespace chunk {
                 if (isSurface) {
                     //HEIGHT = (CHUNK_SIZE/4) * (NoiseArr[x + (z * CHUNK_SIZE)]) + (CHUNK_SIZE / 8);
                     tmpHeight = *ChunkRegion->getBlockHeight(x,z);
-                    if (abs(tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE) > CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
+                    if (tmpHeight - abs((int)this->data.ChunkPosition.y * CHUNK_SIZE) <= 0) { HEIGHT = 0;}
+                    else if (tmpHeight - abs((int)this->data.ChunkPosition.y * CHUNK_SIZE) >= CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
                         HEIGHT = CHUNK_SIZE;
                     } else {
                         HEIGHT = tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE;
@@ -50,22 +51,22 @@ namespace chunk {
                 for (int y = 0; y < HEIGHT; y++) {
                     if (isSurface) {
                         if (y < HEIGHT - 3) {
-                            this->data.Blocks[y][z][x] = (std::byte)2;
+                            this->data.Blocks[y][z][x] = (std::byte)2; // STONE
                         }
-                        else if (y == HEIGHT && y <= WATER_LEVEL) {
-                            this->data.Blocks[y][z][x] = (std::byte)4;
+                        else if (y == HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
+                            this->data.Blocks[y][z][x] = (std::byte)4; // SAND
                         }
-                        else if (y == tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE){
-                            this->data.Blocks[y][z][x] = (std::byte)1;
+                        else if (y == HEIGHT-1){
+                            this->data.Blocks[y][z][x] = (std::byte)1; // GRASS
                         }
-                        else if (y >= HEIGHT - 3 && y < HEIGHT) {
-                            this->data.Blocks[y][z][x] = (std::byte)3;
+                        else if (y >= HEIGHT - 4 && y < HEIGHT) {
+                            this->data.Blocks[y][z][x] = (std::byte)3; // DIRT
                         }
-                        else if (y > HEIGHT && y <= WATER_LEVEL) {
-                            this->data.Blocks[y][z][x] = (std::byte)5;
+                        else if (y > HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
+                            this->data.Blocks[y][z][x] = (std::byte)5; // WATER
                         }
                         else {
-                            this->data.Blocks[y][z][x] = (std::byte)0;
+                            this->data.Blocks[y][z][x] = (std::byte)0; // AIR
                         }
                     } else {
                         this->data.Blocks[y][z][x] = (std::byte)2;
@@ -87,13 +88,11 @@ namespace chunk {
                     //if (std::all_of(data.Blocks[y], data.Blocks[y] + (CHUNK_SIZE * CHUNK_SIZE), [](bool elem) {return elem == 0;})) break; // Skip all checks if it's just air
                     // If the block is air then just skip
                     if (this->data.Blocks[y][z][x] == (std::byte)0) continue;
-                    std::cout << (int) this->data.Blocks[y][z][x] << ",";
                     blockPosition = glm::vec3(x,y,z);
                     std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
                     // If the mesh doesn't exist
                     RenderBlock::AddBlockVertices((int)this->data.Blocks[y][z][x], chunkMesh, facesToRender, blockPosition);
                 }
-                std::cout << std::endl;
             }
         }
         if (chunkMesh._vertices.size() > 0) {

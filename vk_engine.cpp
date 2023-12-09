@@ -410,7 +410,7 @@ void VulkanEngine::initScene() {
 	const long sed = 2412523523634;
 	currentWorld = WorldHandler::World(nme, sed);
 
-	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 2,10);
+	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 5,10);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();

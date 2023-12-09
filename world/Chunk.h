@@ -11,9 +11,9 @@
 #define CHUNK_SIZE 32
 #define CHUNK_BLOCKS CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE
 
-#define SURFACE_LEVEL 64
+#define SURFACE_LEVEL 0
 
-#define WATER_LEVEL SURFACE_LEVEL + (CHUNK_SIZE / 8)
+#define WATER_LEVEL (SURFACE_LEVEL + (CHUNK_SIZE / 8))
 
 #define HorzRenderDist 4
 #define VertRenderDist 2
