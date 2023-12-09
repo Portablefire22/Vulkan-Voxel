@@ -16,6 +16,9 @@ Region::Region(int x, int z) {
 }
 
 bool Region::isChunkEmpty(const int yLevel) {
+    if (!doesChunkExist(yLevel)) {
+        createChunk(yLevel);
+    }
     const auto localChunk = getChunk(yLevel);
     const auto blocks = localChunk->data.Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -61,10 +64,9 @@ bool Region::doesChunkExist(const int yLevel) const {
 
 
 bool Region::createChunk(int yLevel) {
-    chunk::Chunk localChunk(glm::vec3(this->Position.first, yLevel, this->Position.second));
-    localChunk.generateChunk();
-    chunk::Chunk* plocalChunk = &localChunk;
-    this->Chunks.insert(std::make_pair(yLevel, plocalChunk));
+    auto localChunk = new chunk::Chunk(glm::vec3(this->Position.first, yLevel, this->Position.second));
+    localChunk->generateChunk();
+    this->Chunks.insert(std::make_pair(yLevel, localChunk));
     return true;
 }
 
@@ -72,9 +74,9 @@ bool Region::generateHeightMap() {
     try {
         std::vector<float> NoiseArr(CHUNK_SIZE * CHUNK_SIZE);
         const auto fnNoise = FastNoise::New<FastNoise::OpenSimplex2>();
-        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.00522f, 456163);
+        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.002f, 456163);
         for (int i = 0; i < (CHUNK_SIZE * CHUNK_SIZE); i++) {
-            this->HeightMap[i] = static_cast<int>(round(NoiseArr[i]));
+            this->HeightMap[i] =  static_cast<int>(round((CHUNK_SIZE * CHUNK_SIZE) * NoiseArr[i]));
         }
         return true;
     } catch (std::exception& e) {

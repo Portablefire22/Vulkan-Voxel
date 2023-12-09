@@ -21,6 +21,6 @@ void main() {
     // R G B A
     //outColour = texture(texSampler, fragTexCoord);
     vec2 v_texCoord = texCoord * vec2(1.0, -1.0);
-    vec3 colour = texture(texture1, v_texCoord).xyz;
+    vec3 colour = texture(texture1, texCoord).xyz;
     outColour = vec4(colour, 1.0f);
 }

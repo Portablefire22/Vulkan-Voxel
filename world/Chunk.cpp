@@ -25,28 +25,29 @@ namespace chunk {
     bool Chunk::generateChunk() {
         bool isSurface; // Stops grass from being places in a cave
         bool isSurfaceBlock; // Stops grass from spawning inside of a mountain
-        auto ChunkRegion = *entryPoint::engine.currentWorld.GetRegion(this->data.ChunkPosition.x, this->data.ChunkPosition.z);
-        auto heightMap = ChunkRegion.getHeightMap();
+        auto ChunkRegion = entryPoint::engine.currentWorld.GetRegion(this->data.ChunkPosition.x, this->data.ChunkPosition.z);
         int HEIGHT;
-        if (this->data.ChunkPosition.y >= SURFACE_LEVEL) {
+        if (this->data.ChunkPosition.y * CHUNK_SIZE >= SURFACE_LEVEL) {
             isSurface = true;
         }
         else {
             isSurface = false;
         }
+        int tmpHeight;
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (isSurface) {
                     //HEIGHT = (CHUNK_SIZE/4) * (NoiseArr[x + (z * CHUNK_SIZE)]) + (CHUNK_SIZE / 8);
-                    if (const auto tmpHeight =* ChunkRegion.getBlockHeight(x, z); tmpHeight - this->data.ChunkPosition.y * CHUNK_SIZE > CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
-                        HEIGHT = 16;
+                    tmpHeight = *ChunkRegion->getBlockHeight(x,z);
+                    if (abs(tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE) > CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
+                        HEIGHT = CHUNK_SIZE;
                     } else {
-                        HEIGHT = tmpHeight;
+                        HEIGHT = tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE;
                     }
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
-                for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int y = 0; y < HEIGHT; y++) {
                     if (isSurface) {
                         if (y < HEIGHT - 3) {
                             this->data.Blocks[y][z][x] = (std::byte)2;
@@ -54,7 +55,7 @@ namespace chunk {
                         else if (y == HEIGHT && y <= WATER_LEVEL) {
                             this->data.Blocks[y][z][x] = (std::byte)4;
                         }
-                        else if (y == HEIGHT){
+                        else if (y == tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE){
                             this->data.Blocks[y][z][x] = (std::byte)1;
                         }
                         else if (y >= HEIGHT - 3 && y < HEIGHT) {
