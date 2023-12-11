@@ -14,20 +14,17 @@
 
 namespace chunk {
 
-    Chunk::Chunk(glm::vec3 chunkPos) {
-        std::byte blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = { (std::byte) 0};
-        data = ChunkData {
-            chunkPos,
-            blocks[0][0][0],
-        };
+    Chunk::Chunk(Region* Parent, glm::vec3 chunkPos) {
+        ChunkPosition = chunkPos;
+        ParentRegion = Parent;
     }
 
     bool Chunk::generateChunk() {
         bool isSurface; // Stops grass from being places in a cave
         bool isSurfaceBlock; // Stops grass from spawning inside of a mountain
-        auto ChunkRegion = entryPoint::engine.currentWorld.GetRegion(this->data.ChunkPosition.x, this->data.ChunkPosition.z);
+        auto ChunkRegion = entryPoint::engine.currentWorld.GetRegion(this->ChunkPosition.x, this->ChunkPosition.z);
         int HEIGHT;
-        if (this->data.ChunkPosition.y * CHUNK_SIZE >= SURFACE_LEVEL) {
+        if (this->ChunkPosition.y * CHUNK_SIZE >= SURFACE_LEVEL) {
             isSurface = true;
         }
         else {
@@ -39,37 +36,40 @@ namespace chunk {
                 if (isSurface) {
                     //HEIGHT = (CHUNK_SIZE/4) * (NoiseArr[x + (z * CHUNK_SIZE)]) + (CHUNK_SIZE / 8);
                     tmpHeight = *ChunkRegion->getBlockHeight(x,z);
-                    if (tmpHeight - abs((int)this->data.ChunkPosition.y * CHUNK_SIZE) <= 0) { HEIGHT = 0;}
-                    else if (tmpHeight - abs((int)this->data.ChunkPosition.y * CHUNK_SIZE) >= CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
+                    if (tmpHeight - abs((int)this->ChunkPosition.y * CHUNK_SIZE) <= 0) { HEIGHT = 0;}
+                    else if (tmpHeight - abs((int)this->ChunkPosition.y * CHUNK_SIZE) >= CHUNK_SIZE ) { // If the height is a bit too high then cut off at 16
                         HEIGHT = CHUNK_SIZE;
                     } else {
-                        HEIGHT = tmpHeight - (int)this->data.ChunkPosition.y * CHUNK_SIZE;
+                        HEIGHT = tmpHeight - (int)this->ChunkPosition.y * CHUNK_SIZE;
                     }
                 } else {
                     HEIGHT = CHUNK_SIZE;
                 }
-                for (int y = 0; y < HEIGHT; y++) {
+                for (int y = 0; y < CHUNK_SIZE; y++) {
                     if (isSurface) {
+                        if (HEIGHT == 0 ) {
+                            break;
+                        }
                         if (y < HEIGHT - 3) {
-                            this->data.Blocks[y][z][x] = (std::byte)2; // STONE
+                            this->Blocks[y][z][x] = (std::byte)2; // STONE
                         }
                         else if (y == HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
-                            this->data.Blocks[y][z][x] = (std::byte)4; // SAND
+                            this->Blocks[y][z][x] = (std::byte)4; // SAND
                         }
                         else if (y == HEIGHT-1){
-                            this->data.Blocks[y][z][x] = (std::byte)1; // GRASS
+                            this->Blocks[y][z][x] = (std::byte)1; // GRASS
                         }
                         else if (y >= HEIGHT - 4 && y < HEIGHT) {
-                            this->data.Blocks[y][z][x] = (std::byte)3; // DIRT
+                            this->Blocks[y][z][x] = (std::byte)3; // DIRT
                         }
                         else if (y > HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
-                            this->data.Blocks[y][z][x] = (std::byte)5; // WATER
+                            this->Blocks[y][z][x] = (std::byte)5; // WATER
                         }
                         else {
-                            this->data.Blocks[y][z][x] = (std::byte)0; // AIR
+                            break;
                         }
                     } else {
-                        this->data.Blocks[y][z][x] = (std::byte)2;
+                        this->Blocks[y][z][x] = (std::byte)2;
                     }
                 }
             }
@@ -79,7 +79,7 @@ namespace chunk {
 
     Mesh Chunk::GenerateChunkMesh() {
         Mesh chunkMesh{};
-        std::string name = glm::to_string(this->data.ChunkPosition);
+        std::string name = glm::to_string(this->ChunkPosition);
         glm::vec3 blockPosition;
         double t1 = SDL_GetPerformanceCounter();
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -87,11 +87,11 @@ namespace chunk {
                 for (int y = 0; y < CHUNK_SIZE; y++) {
                     //if (std::all_of(data.Blocks[y], data.Blocks[y] + (CHUNK_SIZE * CHUNK_SIZE), [](bool elem) {return elem == 0;})) break; // Skip all checks if it's just air
                     // If the block is air then just skip
-                    if (this->data.Blocks[y][z][x] == (std::byte)0) continue;
+                    if (this->Blocks[y][z][x] == (std::byte)0) continue;
                     blockPosition = glm::vec3(x,y,z);
                     std::vector<RenderBlock::FACE> facesToRender = ShouldRenderFace(blockPosition);
                     // If the mesh doesn't exist
-                    RenderBlock::AddBlockVertices((int)this->data.Blocks[y][z][x], chunkMesh, facesToRender, blockPosition);
+                    RenderBlock::AddBlockVertices((int)this->Blocks[y][z][x], chunkMesh, facesToRender, blockPosition);
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace chunk {
 
     int Chunk::GetVoxel(glm::vec3& position) {
         try {
-            return static_cast<int>(this->data.Blocks[(int)position.x][(int)position.y][(int)position.z]);
+            return static_cast<int>(this->Blocks[(int)position.x][(int)position.y][(int)position.z]);
         } catch (std::exception& e) {
             e.what();
         }
@@ -134,35 +134,62 @@ namespace chunk {
             switch (static_cast<RenderBlock::FACE>(faceVal)) {
                 case RenderBlock::FRONT: // PosX
                     x++;
-                    if (x == CHUNK_SIZE) chunkSide = true;
+                    if (x == CHUNK_SIZE) {
+                        if (entryPoint::engine.currentWorld.GetRegion(this->ChunkPosition.x + 1, this->ChunkPosition.z)->getChunk(this->ChunkPosition.y)->Blocks[y][z][0] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 case RenderBlock::BACK: // NegX
                     x--;
-                    if (x == -1) chunkSide = true;
+                    if (x == -1) {
+                        if (entryPoint::engine.currentWorld.GetRegion(this->ChunkPosition.x - 1, this->ChunkPosition.z)->getChunk(this->ChunkPosition.y)->Blocks[y][z][CHUNK_SIZE - 1] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 case RenderBlock::LEFT: // Neg Z
                     z--;
-                    if (z == -1) chunkSide = true;
+                    if (z == -1) {
+                        if (entryPoint::engine.currentWorld.GetRegion(this->ChunkPosition.x, this->ChunkPosition.z - 1)->getChunk(this->ChunkPosition.y)->Blocks[y][CHUNK_SIZE - 1][x] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 case RenderBlock::RIGHT: // Pos Z
                     z++;
-                    if (z == CHUNK_SIZE) chunkSide = true;
+                    if (z == CHUNK_SIZE) {
+                        if (entryPoint::engine.currentWorld.GetRegion(this->ChunkPosition.x, this->ChunkPosition.z + 1)->getChunk(this->ChunkPosition.y)->Blocks[y][0][x] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 case RenderBlock::TOP: // Pos Y Works
                     y++;
-                    if (y == CHUNK_SIZE) chunkSide = true;
+                    if (y == CHUNK_SIZE) {
+                        if (this->ParentRegion->getChunk(this->ChunkPosition.y + 1)->Blocks[0][z][x] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 case RenderBlock::BOTTOM: // Neg Y
                     y--;
-                    if (y == -1) chunkSide = true;
+                    if (y == -1) {
+                        if (this->ParentRegion->getChunk(this->ChunkPosition.y - 1)->Blocks[CHUNK_SIZE - 1][z][x] == static_cast<std::byte>(0)) {
+                            faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
+                        }
+                        chunkSide = true;
+                    }
                     break;
                 default:
                     break;
             }
-
-            if (chunkSide) {
-                faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
-            } else if (this->data.Blocks[y][z][x] == (std::byte)0) {
+            if (!chunkSide && this->Blocks[y][z][x] == (std::byte)0) {
                 faces.push_back(static_cast<RenderBlock::FACE>(faceVal));
             }
         }

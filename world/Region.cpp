@@ -20,12 +20,12 @@ bool Region::isChunkEmpty(const int yLevel) {
         createChunk(yLevel);
     }
     const auto localChunk = getChunk(yLevel);
-    const auto blocks = localChunk->data.Blocks;
+    const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x ++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this->ChunkInfo[static_cast<int>(localChunk->data.ChunkPosition.y)].isEmpty = false;
+                    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = false;
                     return false;
                 }
             }
@@ -36,18 +36,18 @@ bool Region::isChunkEmpty(const int yLevel) {
 }
 
 bool Region::isChunkEmpty(const chunk::Chunk* localChunk) {
-    const auto blocks = localChunk->data.Blocks;
+    const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x ++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this->ChunkInfo[static_cast<int>(localChunk->data.ChunkPosition.y)].isEmpty = false;
+                    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = false;
                     return false;
                 }
             }
         }
     }
-    this->ChunkInfo[static_cast<int>(localChunk->data.ChunkPosition.y)].isEmpty = true;
+    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = true;
     return true;
 }
 
@@ -64,7 +64,7 @@ bool Region::doesChunkExist(const int yLevel) const {
 
 
 bool Region::createChunk(int yLevel) {
-    auto localChunk = new chunk::Chunk(glm::vec3(this->Position.first, yLevel, this->Position.second));
+    auto localChunk = new chunk::Chunk(this, glm::vec3(this->Position.first, yLevel, this->Position.second));
     localChunk->generateChunk();
     this->Chunks.insert(std::make_pair(yLevel, localChunk));
     return true;

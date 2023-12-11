@@ -13,10 +13,10 @@
 
 #define SURFACE_LEVEL 0
 
-#define WATER_LEVEL (SURFACE_LEVEL + (CHUNK_SIZE / 8))
+#define WATER_LEVEL ((SURFACE_LEVEL +(CHUNK_SIZE / 4)) * CHUNK_SIZE)
 
-#define HorzRenderDist 4
-#define VertRenderDist 2
+#define HorzRenderDist 5
+#define VertRenderDist 5
 
 #include <glm/vec3.hpp>
 #include <vector>
@@ -32,15 +32,13 @@ namespace Block {
 }
 
 namespace chunk {
-    struct ChunkData {
-        glm::vec3 ChunkPosition;
-        std::byte Blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-    };
 class Chunk {
 public:
-    ChunkData data{};
+    glm::vec3 ChunkPosition{};
+    std::byte Blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE] = { (std::byte) 0};
+    Region* ParentRegion;
     Chunk();
-    Chunk(glm::vec3 chunkPos);
+    Chunk(Region* Parent, glm::vec3 chunkPos);
     Mesh GenerateChunkMesh();
     int GetVoxel(glm::vec3& position);
     std::vector<RenderBlock::FACE> ShouldRenderFace(glm::vec3& originalPos);
@@ -48,15 +46,15 @@ public:
     bool generateChunk();
 
     bool operator==(const Chunk& other) const {
-        if (this->data.ChunkPosition.x == other.data.ChunkPosition.x && this->data.ChunkPosition.y == other.data.ChunkPosition.y && this->data.ChunkPosition.z == other.data.ChunkPosition.z )
+        if (this->ChunkPosition.x == other.ChunkPosition.x && this->ChunkPosition.y == other.ChunkPosition.y && this->ChunkPosition.z == other.ChunkPosition.z )
              return true;
         return false;
     }
     struct HashFunction {
         size_t operator()(const Chunk& other) const {
-            size_t xHash = std::hash<int>()(other.data.ChunkPosition.x);
-            size_t yHash = std::hash<int>()(other.data.ChunkPosition.y);
-            size_t zHash = std::hash<int>()(other.data.ChunkPosition.z);
+            size_t xHash = std::hash<int>()(other.ChunkPosition.x);
+            size_t yHash = std::hash<int>()(other.ChunkPosition.y);
+            size_t zHash = std::hash<int>()(other.ChunkPosition.z);
             return xHash ^ yHash ^ zHash;
         }
     };

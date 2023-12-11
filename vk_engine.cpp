@@ -48,7 +48,7 @@ void VulkanEngine::init() {
         _windowExtent.height,
         window_flags
     );
-	SDL_SetRelativeMouseMode(SDL_FALSE); // MOUSE CAPTURE
+	SDL_SetRelativeMouseMode(SDL_TRUE); // MOUSE CAPTURE
     //glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     //glfwSetCursorPosCallback(window, mouse_callback);
 
@@ -410,7 +410,7 @@ void VulkanEngine::initScene() {
 	const long sed = 2412523523634;
 	currentWorld = WorldHandler::World(nme, sed);
 
-	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 5,10);
+	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 2,2);
 	double t1 = SDL_GetPerformanceCounter();
 	currentWorld.RenderChunks(*this, chunksToRender);
 	double t2 = SDL_GetPerformanceCounter();

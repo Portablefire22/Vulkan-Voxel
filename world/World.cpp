@@ -26,9 +26,10 @@ namespace WorldHandler {
 
     void World::RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks) {
         for (chunk::Chunk* localChunk : chunks) {
+            std::string name = glm::to_string(localChunk->ChunkPosition);
             bool chunkExists = false;
             for (auto t: engine._renderables) {
-                if (t.position == localChunk->data.ChunkPosition) {
+                if (t.name == name) {
                     chunkExists = true;
                 }
             }
@@ -37,7 +38,6 @@ namespace WorldHandler {
             }
 
             RenderObject chunkObject;
-            std::string name = glm::to_string(localChunk->data.ChunkPosition);
 
 
             // Check if the chunk mesh already exists, if not then create it
@@ -53,18 +53,27 @@ namespace WorldHandler {
 
             chunkObject.material = engine.getMaterial("grass");
 
-            glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk->data.ChunkPosition * (float)CHUNK_SIZE);
+            glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk->ChunkPosition * (float)CHUNK_SIZE);
             glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(1,1,1));
             chunkObject.transformMatrix = translation * scale;
-            chunkObject.position = localChunk->data.ChunkPosition;
+            chunkObject.position = localChunk->ChunkPosition;
             engine._renderables.push_back(chunkObject);
         }
     }
 
     void World::RenderChunk(VulkanEngine& engine, chunk::Chunk* localChunk) {
         RenderObject chunkObject;
-        std::string name = glm::to_string(localChunk->data.ChunkPosition);
+        std::string name = glm::to_string(localChunk->ChunkPosition);
 
+        bool chunkExists = false;
+        for (auto t: engine._renderables) {
+            if (t.name == name) {
+                chunkExists = true;
+            }
+        }
+        if (chunkExists) {
+            return;
+        }
 
         // Check if the chunk mesh already exists, if not then create it
         if (!engine._meshes.contains(name)) {
@@ -79,10 +88,10 @@ namespace WorldHandler {
 
         chunkObject.material = engine.getMaterial("grass");
 
-        glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk->data.ChunkPosition * (float)CHUNK_SIZE);
+        glm::mat4 translation = glm::translate(glm::mat4{1.0}, localChunk->ChunkPosition * (float)CHUNK_SIZE);
         glm::mat4 scale = glm::scale(glm::mat4{1.0}, glm::vec3(1,1,1));
         chunkObject.transformMatrix = translation * scale;
-        chunkObject.position = localChunk->data.ChunkPosition;
+        chunkObject.position = localChunk->ChunkPosition;
         engine._renderables.push_back(chunkObject);
     }
 
