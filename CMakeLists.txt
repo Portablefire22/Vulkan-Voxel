@@ -52,7 +52,8 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
         Entity/Entity.h
         PerlinNoise.hpp
         world/Region.cpp
-        world/Region.h)
+        world/Region.h
+        world/Region.cpp)
 
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui  FastNoise)

@@ -95,6 +95,8 @@ namespace WorldHandler {
         engine._renderables.push_back(chunkObject);
     }
 
+    // https://github.com/jdah/minecraft-again/blob/master/src/level/area.cpp <= Probably a good starting point
+
     std::vector<chunk::Chunk*> World::GetChunksAroundPlayer(VulkanEngine& engine, Player::Player &player, int horzRenderDistance, int vertRenderDistance) {
         std::vector<chunk::Chunk*> chunksToRender;
         for (int z = player.ChunkPosition.z - horzRenderDistance; z <= player.ChunkPosition.z + horzRenderDistance; z++) {

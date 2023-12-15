@@ -13,10 +13,10 @@
 
 #define SURFACE_LEVEL 0
 
-#define WATER_LEVEL ((SURFACE_LEVEL +(CHUNK_SIZE / 4)) * CHUNK_SIZE)
-
-#define HorzRenderDist 5
-#define VertRenderDist 5
+//#define WATER_LEVEL ((SURFACE_LEVEL +(CHUNK_SIZE / 4)) * CHUNK_SIZE)
+#define WATER_LEVEL (SURFACE_LEVEL + CHUNK_SIZE / 2)
+#define HorzRenderDist 10
+#define VertRenderDist 10
 
 #include <glm/vec3.hpp>
 #include <vector>

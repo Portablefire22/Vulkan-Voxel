@@ -30,7 +30,7 @@ class Region {
     bool isChunkEmpty(int yLevel);
     bool isChunkEmpty(const chunk::Chunk* localChunk);
     bool doesChunkExist(int yLevel) const;
-
+    void setChunkEmpty(const int yLevel, bool isEmpty);
     int* getHeightMap();
     int* getBlockHeight(int x, int z);
     bool generateHeightMap();

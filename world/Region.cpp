@@ -15,7 +15,14 @@ Region::Region(int x, int z) {
     generateHeightMap();
 }
 
+void Region::setChunkEmpty(const int yLevel, bool isEmpty) {
+    this->ChunkInfo[yLevel].isEmpty = isEmpty;
+}
+
 bool Region::isChunkEmpty(const int yLevel) {
+    if (this->ChunkInfo.contains(yLevel)) {
+        return this->ChunkInfo.at(yLevel).isEmpty;
+    }
     if (!doesChunkExist(yLevel)) {
         createChunk(yLevel);
     }
@@ -36,6 +43,9 @@ bool Region::isChunkEmpty(const int yLevel) {
 }
 
 bool Region::isChunkEmpty(const chunk::Chunk* localChunk) {
+    if (this->ChunkInfo.contains(localChunk->ChunkPosition.y)) {
+        return this->ChunkInfo.at(localChunk->ChunkPosition.y).isEmpty;
+    }
     const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -73,10 +83,13 @@ bool Region::createChunk(int yLevel) {
 bool Region::generateHeightMap() {
     try {
         std::vector<float> NoiseArr(CHUNK_SIZE * CHUNK_SIZE);
-        const auto fnNoise = FastNoise::New<FastNoise::OpenSimplex2>();
-        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.02f, 456163);
+        const auto fnSimplex = FastNoise::New<FastNoise::OpenSimplex2>();
+        const auto fnNoise = FastNoise::New<FastNoise::FractalFBm>();
+        fnNoise->SetSource(fnSimplex);
+        fnNoise->SetOctaveCount(8);
+        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.0005f, 21321);
         for (int i = 0; i < (CHUNK_SIZE * CHUNK_SIZE); i++) {
-            this->HeightMap[i] =  abs(static_cast<int>(round(16 * NoiseArr[i]))) + 2;
+            this->HeightMap[i] =  abs(static_cast<int>(round(256 * NoiseArr[i]))) + 2;
         }
         return true;
     } catch (std::exception& e) {

@@ -50,20 +50,25 @@ namespace chunk {
                         if (HEIGHT == 0 ) {
                             break;
                         }
-                        if (y < HEIGHT - 3) {
+                        if (y < HEIGHT - 3 || (y + (ChunkPosition.y * CHUNK_SIZE) >= 150 && y < HEIGHT)) {
                             this->Blocks[y][z][x] = (std::byte)2; // STONE
+                            this->ParentRegion->setChunkEmpty(this->ChunkPosition.y, false);
                         }
-                        else if (y == HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
+                        else if (y == HEIGHT && y + (ChunkPosition.y * CHUNK_SIZE) <= WATER_LEVEL) {
                             this->Blocks[y][z][x] = (std::byte)4; // SAND
+                            this->ParentRegion->setChunkEmpty(this->ChunkPosition.y, false);
                         }
                         else if (y == HEIGHT-1){
                             this->Blocks[y][z][x] = (std::byte)1; // GRASS
+                            this->ParentRegion->setChunkEmpty(this->ChunkPosition.y, false);
                         }
                         else if (y >= HEIGHT - 4 && y < HEIGHT) {
                             this->Blocks[y][z][x] = (std::byte)3; // DIRT
+                            this->ParentRegion->setChunkEmpty(this->ChunkPosition.y, false);
                         }
-                        else if (y > HEIGHT && y * CHUNK_SIZE <= WATER_LEVEL) {
+                        else if (y > HEIGHT && y + (ChunkPosition.y * CHUNK_SIZE) <= WATER_LEVEL) {
                             this->Blocks[y][z][x] = (std::byte)5; // WATER
+                            this->ParentRegion->setChunkEmpty(this->ChunkPosition.y, false);
                         }
                         else {
                             break;

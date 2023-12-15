@@ -60,7 +60,10 @@ namespace Player {
 
     void Player::ChunkPositionChanged(VulkanEngine& engine) {
         engine.chunksToRender = engine.currentWorld.GetChunksAroundPlayer(engine, *this, HorzRenderDist, VertRenderDist);
-        int t = 1;
+        int xOffset = 0;
+        int yOffset = 0;
+        int zOffset = 0;
+        glm::vec3 deltaVec = ChunkPosition - LastChunkPosition;
         //engine.currentWorld.RenderChunks(engine, engine.chunksToRender);
         for (auto iter = engine._renderables.begin(); iter != engine._renderables.end();) {
             if (abs(iter->position.y - this->ChunkPosition.y) > VertRenderDist || abs(iter->position.x - this->ChunkPosition.x) > HorzRenderDist || abs(iter->position.z - this->ChunkPosition.z) > HorzRenderDist) {
