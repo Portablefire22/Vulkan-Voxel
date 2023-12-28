@@ -151,7 +151,7 @@ class VulkanEngine {
     bool showDebug = true;
 
 
-
+    void proccess_mem_usage(double& vm_usage, double& resident_set);
     void recreateSwapChain(); // Recreate the swapchain to deal with window resizing
 
     VkExtent2D _windowExtent{ 1700 , 900 };
