@@ -4686,7 +4686,7 @@ struct DispatchTable {
 #endif
 #if (defined(VK_NV_low_latency2))
     void getLatencyTimingsNV(VkSwapchainKHR swapchain, uint32_t* pTimingCount, VkGetLatencyMarkerInfoNV* pLatencyMarkerInfo) const noexcept {
-        fp_vkGetLatencyTimingsNV(device, swapchain, pTimingCount, pLatencyMarkerInfo);
+        fp_vkGetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
     }
 #endif
 #if (defined(VK_NV_low_latency2))
