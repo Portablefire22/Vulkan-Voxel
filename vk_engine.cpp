@@ -1,7 +1,7 @@
 //
 // Created by blakey on 27/11/23.
 //
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include "vk_engine.h"
 #include <SDL2/SDL_vulkan.h>
 #include <SDL2/SDL.h>

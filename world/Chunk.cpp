@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <SDL_timer.h>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
 #include "../main.h"
