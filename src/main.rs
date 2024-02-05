@@ -1,5 +1,10 @@
+use std::sync::Arc;
+use vulkano::buffer::BufferContents;
+use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo, QueueFlags};
 use vulkano::instance::{Instance, InstanceCreateInfo};
+use vulkano::memory::allocator::StandardMemoryAllocator;
+use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
 use vulkano::VulkanLibrary;
 
 fn main() {
@@ -11,7 +16,7 @@ fn main() {
         .enumerate_physical_devices()
         .expect("could not enumerate devices")
         .next()
-        .expect("no devices available");
+        .expect("no devices available, you probably don't have a Vulkan capable graphics card :(");
 
     for family in physical_device.queue_family_properties() {
         println!(
@@ -45,4 +50,29 @@ fn main() {
     .expect("failed to create device");
 
     let queue = queues.next().unwrap();
+
+    let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
+
+    let iter = (0..128).map(|_| 4u8);
+    let buffer = Buffer::from_iter(
+        memory_allocator.clone(),
+        BufferCreateInfo {
+            usage: BufferUsage::UNIFORM_BUFFER,
+            ..Default::default()
+        },
+        AllocationCreateInfo {
+            memory_type_filter: MemoryTypeFilter::PREFER_DEVICE
+                | MemoryTypeFilter::HOST_SEQUENTIAL_WRITE,
+            ..Default::default()
+        },
+        iter,
+    )
+    .unwrap();
+
+    // Read the buffer
+    // read() gives shared access
+    // write() is exclusive access
+    let mut content = buffer.write().unwrap();
+    content[12] = 83;
+    content[7] = 3;
 }
