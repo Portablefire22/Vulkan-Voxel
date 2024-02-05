@@ -13,10 +13,9 @@ class VulkanEngine;
 
 namespace Player {
 
-class Player{
+class Player: public Entity{
 public:
     Camera camera;
-    glm::vec3 Position{};
     glm::vec3 ChunkPosition{};
     glm::vec3 LastChunkPosition{};
     float Size = 1.75f;

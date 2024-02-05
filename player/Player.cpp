@@ -1,7 +1,7 @@
 //
 // Created by blakey on 27/11/23.
 //
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include "Player.h"
 
 #include <iostream>
@@ -17,8 +17,8 @@
 namespace Player {
 
     Player::Player(glm::vec3 position, float size) {
-        Position = position;
-        Size = size;
+        this->setPosition(position);
+        this->setSize(1.75f, 0.5f);
         camera = Camera(glm::vec3(0.0,0.0,0.0));
     }
 
@@ -48,9 +48,10 @@ namespace Player {
     }
 
     void Player::updatePosition(VulkanEngine& engine) {
-        Position = camera.Position;
-        Position.y -= 1.75f;
-        ChunkPosition = {floor(Position.x / CHUNK_SIZE), floor(Position.y / CHUNK_SIZE),floor(Position.z / CHUNK_SIZE)};
+        this->setPosition(camera.Position);
+        glm::vec3 tempPos = this->getPosition();
+        this->setY(tempPos.y - 1.75f);
+        ChunkPosition = {floor(tempPos.x / CHUNK_SIZE), floor(tempPos.y / CHUNK_SIZE),floor(tempPos.z / CHUNK_SIZE)};
         if (ChunkPosition != LastChunkPosition) {
             ChunkPositionChanged(engine);
             LastChunkPosition = ChunkPosition;

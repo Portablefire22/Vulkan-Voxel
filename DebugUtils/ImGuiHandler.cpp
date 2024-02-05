@@ -2,6 +2,7 @@
 // Created by blakey on 01/12/23.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "ImGuiHandler.h"
 
 #include <iostream>
@@ -18,7 +19,8 @@ namespace DebugUI {
         ImGui::Begin("Player Information");
         ImGui::Text("Current World: %s", engine.currentWorld.WorldName);
         ImGui::Text("World Seed: %d", engine.currentWorld.WorldSeed);
-        ImGui::Text("Player Position: (%f,%f,%f)", player.Position.x, player.Position.y, player.Position.z);
+        glm::vec3 tempPos = player.getPosition();
+        ImGui::Text("Player Position: (%f,%f,%f)", tempPos.x, tempPos.y, tempPos.z);
         ImGui::Text("Current Chunk: (%f,%f,%f)", player.ChunkPosition.x, player.ChunkPosition.y, player.ChunkPosition.z);
         ImGui::Text("Renderables: %d", engine._renderables.size());
         double vm,rss;

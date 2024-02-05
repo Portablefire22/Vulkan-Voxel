@@ -1,7 +1,7 @@
 //
 // Created by blakey on 25/11/23.
 //
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include "Chunk.h"
 
 #include <iostream>

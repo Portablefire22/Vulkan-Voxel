@@ -1,7 +1,7 @@
 //
 // Created by blakey on 27/11/23.
 //
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include "vk_engine.h"
 #include <SDL2/SDL_vulkan.h>
 #include <SDL2/SDL.h>
@@ -73,7 +73,7 @@ void VulkanEngine::init() {
 void VulkanEngine::initBlockTextures() {
 	/*loadImages("../textures/grid.png", "stone");
 	loadImages("../textures/missing.png", "grass");*/
-	loadImages("../textures/Atlas.png", "Atlas");
+	loadImages("textures/Atlas.png", "Atlas");
 }
 
 void VulkanEngine::loadMeshes() {
@@ -1024,7 +1024,7 @@ bool VulkanEngine::loadShaderModule(const char* filePath, VkShaderModule* outSha
 
 void VulkanEngine::initPipelines() {
     VkShaderModule texturedMeshShader;
-	if (!loadShaderModule("../shaders/frag.spv", &texturedMeshShader))
+	if (!loadShaderModule("shaders/frag.spv", &texturedMeshShader))
 	{
 		std::cout << "Error when building the textured mesh shader module" << std::endl;
 	}
@@ -1108,7 +1108,7 @@ void VulkanEngine::initPipelines() {
 
 
 	VkShaderModule meshVertShader;
-	if (!loadShaderModule("../shaders/vert.spv", &meshVertShader))
+	if (!loadShaderModule("shaders/vert.spv", &meshVertShader))
 	{
 		std::cout << "Error when building the triangle vertex shader module" << std::endl;
 	}
