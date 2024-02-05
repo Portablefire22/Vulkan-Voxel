@@ -11,7 +11,7 @@
 #include "../RenderUtils/RenderBlock.h"
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_query.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
+
 #include <complex>
 #include <iostream>
 #include <SDL_timer.h>
