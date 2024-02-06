@@ -2,7 +2,7 @@ use std::sync::Arc;
 use vulkano::buffer::BufferContents;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo, QueueFlags};
-use vulkano::instance::{Instance, InstanceCreateInfo};
+use vulkano::instance::{Instance, InstanceCreateInfo, InstanceExtensions};
 use vulkano::memory::allocator::StandardMemoryAllocator;
 use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
 use vulkano::VulkanLibrary;
@@ -24,7 +24,10 @@ fn main() {
         title: "Vulkan Voxel".to_string(),
     };
     let window = engine::vk_engine::create_window(window_info);
-    let mut game_engine = engine::vk_engine::VulkanEngine::new(engine_info, window);
+    let instance = engine::vk_engine::create_instance(InstanceExtensions::from_iter(
+        window.vulkan_instance_extensions().unwrap(),
+    ));
+    let mut game_engine = engine::vk_engine::VulkanEngine::new(engine_info, window, instance);
     game_engine.init();
     game_engine.run();
     game_engine.cleanup();

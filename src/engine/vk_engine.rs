@@ -28,6 +28,9 @@ pub struct VulkanEngine {
     fps: usize,
     fps_time: Instant,
     framenumber: usize,
+
+    instance: alloc::sync::Arc<vulkano::instance::Instance>,
+    chosen_gpu: vulkano::device::Device,
 }
 
 fn print_type_of<T>(_: &T) {
@@ -35,29 +38,26 @@ fn print_type_of<T>(_: &T) {
 }
 
 impl VulkanEngine {
-    pub fn new(info: EngineInfo, window_vk: WindowVk) -> Self {
+    pub fn new(
+        info: EngineInfo,
+        window_vk: WindowVk,
+        instance: alloc::sync::Arc<vulkano::instance::Instance>,
+        chosen_gpu: vulkano::device::Device,
+    ) -> Self {
         VulkanEngine {
             info,
             window_vk,
             framenumber: 0,
             fps: 0,
             fps_time: Instant::now(),
+
+            instance,
+            chosen_gpu,
         }
     }
 
     pub fn init(&mut self) {
         println!("Engine is starting!");
-
-        let instance_extensions = InstanceExtensions::from_iter(
-            self.window_vk.window.vulkan_instance_extensions().unwrap(),
-        );
-
-        let instance = Instance::new(VulkanLibrary::new().unwrap(), {
-            let mut instance_info = InstanceCreateInfo::application_from_cargo_toml();
-            instance_info.enabled_extensions = instance_extensions;
-            instance_info
-        })
-        .unwrap();
 
         let surface_handle = self
             .window_vk
@@ -103,7 +103,15 @@ impl VulkanEngine {
                     _ => {}
                 }
             }
-            ::std::thread::sleep(::std::time::Duration::new(0, 1_000_000_000u32 / 60));
+            if self.window_vk.window.is_minimized() {
+                ::std::thread::sleep(::std::time::Duration::new(0, 250_000_000u32)); // Sleep for
+                                                                                     // 0.25s
+                continue;
+            }
+            // ::std::thread::sleep(::std::time::Duration::new(0, 1_000_000_000u32 / 60));
+            // ^ Sleeps to get 60 fps, this is basically useless because Vulkan should handle it
+            // with the mailbox shit
+            self.draw();
         }
     }
 
@@ -128,6 +136,17 @@ pub fn create_window(info: WindowInfo) -> WindowVk {
         sdl_context,
         info,
     }
+}
+
+pub fn create_instance(
+    instance_extensions: vulkano::instance::InstanceExtensions,
+) -> Arc<vulkano::instance::Instance> {
+    Instance::new(VulkanLibrary::new().unwrap(), {
+        let mut instance_info = InstanceCreateInfo::application_from_cargo_toml();
+        instance_info.enabled_extensions = instance_extensions;
+        instance_info
+    })
+    .unwrap()
 }
 
 pub fn create_engine_info() -> EngineInfo {
