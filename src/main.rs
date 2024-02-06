@@ -18,7 +18,13 @@ mod engine;
 // Basically just the entry point to the program
 // Probably won't do much other than that
 fn main() {
-    let mut game_engine = engine::vk_engine::VulkanEngine::new();
+    let engine_info = engine::vk_engine::create_engine_info();
+    let window_info = engine::vk_engine::WindowInfo {
+        extent: (800, 400),
+        title: "Vulkan Voxel".to_string(),
+    };
+    let window = engine::vk_engine::create_window(window_info);
+    let mut game_engine = engine::vk_engine::VulkanEngine::new(engine_info, window);
     game_engine.init();
     game_engine.run();
     game_engine.cleanup();
