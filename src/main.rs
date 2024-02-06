@@ -7,6 +7,10 @@ use vulkano::memory::allocator::StandardMemoryAllocator;
 use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
 use vulkano::VulkanLibrary;
 
+use vulkano::instance::debug::{
+    DebugUtilsMessenger, DebugUtilsMessengerCallback, DebugUtilsMessengerCreateInfo,
+};
+
 use crate::engine::vk_engine::VulkanEngine;
 
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
@@ -25,9 +29,12 @@ fn main() {
     };
     let window = engine::vk_engine::create_window(window_info);
     let instance = engine::vk_engine::create_instance(InstanceExtensions::from_iter(
-        window.vulkan_instance_extensions().unwrap(),
+        window.window.vulkan_instance_extensions().unwrap(),
     ));
-    let mut game_engine = engine::vk_engine::VulkanEngine::new(engine_info, window, instance);
+
+    let (device, queue) = engine::vk_engine::select_physical_device(&instance);
+    let mut game_engine =
+        engine::vk_engine::VulkanEngine::new(engine_info, window, instance, device);
     game_engine.init();
     game_engine.run();
     game_engine.cleanup();
