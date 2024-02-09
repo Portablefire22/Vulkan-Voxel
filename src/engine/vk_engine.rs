@@ -3,7 +3,8 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use std::sync::Arc;
 use std::time::Instant;
-use vulkano::device::{DeviceCreateInfo, QueueCreateInfo, QueueFlags};
+use vulkano::device::physical::{PhysicalDevice, PhysicalDeviceType};
+use vulkano::device::{DeviceCreateInfo, DeviceExtensions, QueueCreateInfo, QueueFlags};
 use vulkano::instance::debug::{
     DebugUtilsMessenger, DebugUtilsMessengerCallback, DebugUtilsMessengerCreateInfo,
 };
@@ -62,33 +63,6 @@ impl VulkanEngine {
 
     pub fn init(&mut self) {
         println!("Engine is starting!");
-
-        let surface_handle = self
-            .window_vk
-            .window
-            .vulkan_create_surface(self.instance.handle().as_raw() as _)
-            .unwrap();
-
-        // Don't drop window before the 'Surface' or Vulkan 'Swapchain'
-        let surface = unsafe {
-            Surface::from_handle(
-                Arc::clone(&self.instance),
-                <_ as Handle>::from_raw(surface_handle),
-                SurfaceApi::Xlib,
-                None,
-            )
-        };
-
-        /*let mut canvas = self
-            .window_vk
-            .window
-            .into_canvas()
-            .build()
-            .map_err(|e| e.to_string())
-            .expect("canvas error");
-        canvas.set_draw_color(Color::RGB(255, 0, 0));
-        canvas.clear();
-        canvas.present();*/
 
         self.window_vk.is_initialised = true;
 
@@ -159,12 +133,32 @@ pub fn create_engine_info() -> EngineInfo {
 
 pub fn select_physical_device(
     instance: &Arc<vulkano::instance::Instance>,
+    surface: &Arc<Surface>,
+    device_extensions: &DeviceExtensions,
 ) -> (Arc<vulkano::device::Device>, Arc<vulkano::device::Queue>) {
-    let physical_device = instance
+    let physical_device = instance // Only find devices with the requested extensions
         .enumerate_physical_devices()
         .expect("Could not enumerate physical devices")
-        .next()
-        .expect("No devices availaable!");
+        .filter(|p| p.supported_extensions().contains(&device_extensions))
+        .filter_map(|p| {
+            p.queue_family_properties()
+                .iter()
+                .enumerate()
+                .position(|(i, q)| {
+                    q.queue_flags.contains(QueueFlags::GRAPHICS)
+                        && p.surface_support(i as u32, &surface).unwrap_or(false)
+                })
+                .map(|q| (p, q as u32))
+        })
+        .min_by_key(|(p, _)| match p.properties().device_type {
+            // Rank the available GPUs by their type, lowest is best
+            PhysicalDeviceType::DiscreteGpu => 0,
+            PhysicalDeviceType::IntegratedGpu => 1,
+            PhysicalDeviceType::VirtualGpu => 2,
+            PhysicalDeviceType::Cpu => 3,
+            _ => 4,
+        })
+        .expect("Supported device not found!");
     let queue_family_index = physical_device
         .queue_family_properties()
         .iter()
@@ -193,3 +187,5 @@ pub fn select_physical_device(
 }
 
 pub fn create_swapchain(window_info: &WindowInfo) -> vulkano::swapchain::Swapchain {}
+
+pub fn destroy_swapchain() {}

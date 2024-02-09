@@ -2,16 +2,19 @@ use std::sync::Arc;
 use vulkano::buffer::BufferContents;
 use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
 use vulkano::device::{Device, DeviceCreateInfo, QueueCreateInfo, QueueFlags};
-use vulkano::instance::{Instance, InstanceCreateInfo, InstanceExtensions};
-use vulkano::memory::allocator::StandardMemoryAllocator;
-use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
-use vulkano::VulkanLibrary;
-
 use vulkano::instance::debug::{
     DebugUtilsMessenger, DebugUtilsMessengerCallback, DebugUtilsMessengerCreateInfo,
 };
+use vulkano::instance::{Instance, InstanceCreateInfo, InstanceExtensions};
+use vulkano::memory::allocator::StandardMemoryAllocator;
+use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
+use vulkano::swapchain::{Surface, SurfaceApi};
+use vulkano::VulkanLibrary;
 
 use crate::engine::vk_engine::VulkanEngine;
+use vulkano::device::physical::{PhysicalDevice, PhysicalDeviceType};
+use vulkano::device::{DeviceCreateInfo, DeviceExtensions, QueueCreateInfo, QueueFlags};
+use vulkano::{Handle, VulkanLibrary, VulkanObject};
 
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
 // The previous iteration of this project used the previous version of the guide, so I thought
@@ -28,11 +31,33 @@ fn main() {
         title: "Vulkan Voxel".to_string(),
     };
     let window = engine::vk_engine::create_window(window_info);
-    let instance = engine::vk_engine::create_instance(InstanceExtensions::from_iter(
-        window.window.vulkan_instance_extensions().unwrap(),
-    ));
 
-    let (device, queue) = engine::vk_engine::select_physical_device(&instance);
+    let required_extensions = Surface::required_extensions();
+
+    let instance =
+        engine::vk_engine::create_instance(InstanceExtensions::from_iter(required_extensions));
+
+    let device_extensions = DeviceExtensions {
+        khr_swapchain: true,
+        khr_ray_tracing_pipeline: true, // >:3
+        ..DeviceExtensions::empty()
+    };
+    let surface_handle = window
+        .vulkan_create_surface(self.instance.handle().as_raw() as _)
+        .unwrap();
+
+    // Don't drop window before the 'Surface' or Vulkan 'Swapchain'
+    let surface = unsafe {
+        Surface::from_handle(
+            Arc::clone(&instance),
+            <_ as Handle>::from_raw(surface_handle),
+            SurfaceApi::Xlib,
+            None,
+        )
+    };
+
+    let (device, queue) =
+        engine::vk_engine::select_physical_device(&instance, &surface, &device_extensions);
     let mut game_engine =
         engine::vk_engine::VulkanEngine::new(engine_info, window, instance, device);
     game_engine.init();
