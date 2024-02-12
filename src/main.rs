@@ -10,12 +10,16 @@ use vulkano::memory::allocator::StandardMemoryAllocator;
 use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter};
 use vulkano::swapchain::{Surface, SurfaceApi};
 use vulkano::VulkanLibrary;
+use winit::event::{Event, WindowEvent};
+use winit::event_loop::ControlFlow;
+use winit::window::WindowBuilder;
 
 use crate::engine::vk_engine::VulkanEngine;
 use vulkano::device::physical::{PhysicalDevice, PhysicalDeviceType};
 use vulkano::device::{DeviceCreateInfo, DeviceExtensions, QueueCreateInfo, QueueFlags};
 use vulkano::{Handle, VulkanLibrary, VulkanObject};
 
+use wkinit::event_loop::EventLoop;
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
 // The previous iteration of this project used the previous version of the guide, so I thought
 // that I should probably use the new version of the guide to get the best possible framework.
@@ -30,39 +34,42 @@ fn main() {
         extent: (800, 400),
         title: "Vulkan Voxel".to_string(),
     };
-    let window = engine::vk_engine::create_window(window_info);
 
-    let required_extensions = Surface::required_extensions();
+    let event_loop = EventLoop::new();
 
-    let instance =
-        engine::vk_engine::create_instance(InstanceExtensions::from_iter(required_extensions));
+    let required_extensions = Surface::required_extensions(&event_loop);
+
+    let instance = engine::vk_engine::create_instance(required_extensions);
 
     let device_extensions = DeviceExtensions {
         khr_swapchain: true,
         khr_ray_tracing_pipeline: true, // >:3
         ..DeviceExtensions::empty()
     };
-    let surface_handle = window
-        .vulkan_create_surface(self.instance.handle().as_raw() as _)
-        .unwrap();
 
-    // Don't drop window before the 'Surface' or Vulkan 'Swapchain'
-    let surface = unsafe {
-        Surface::from_handle(
-            Arc::clone(&instance),
-            <_ as Handle>::from_raw(surface_handle),
-            SurfaceApi::Xlib,
-            None,
-        )
-    };
+    let window = Arc::new(WindowBuilder::new().build(&event_loop).unwrap());
+    let surface = Surface::from_window(instance.clone(), window.clone());
 
-    let (device, queue) =
+    let (device, queue, physical_device) =
         engine::vk_engine::select_physical_device(&instance, &surface, &device_extensions);
+
+    let caps = physical_device
+        .surface_capabilities(&surface, Default::default())
+        .expect("failed to get surface capabilities");
+
     let mut game_engine =
         engine::vk_engine::VulkanEngine::new(engine_info, window, instance, device);
-    game_engine.init();
-    game_engine.run();
-    game_engine.cleanup();
+
+    event_loop.run(|event, _, control_flow| match event {
+        Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
+            ..
+        } => {
+            *control_flow = ControlFlow::Exit;
+        }
+        _ => (),
+    });
+
     println!("Bye :3");
     return;
 }

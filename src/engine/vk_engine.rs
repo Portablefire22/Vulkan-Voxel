@@ -1,6 +1,3 @@
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
 use std::sync::Arc;
 use std::time::Instant;
 use vulkano::device::physical::{PhysicalDevice, PhysicalDeviceType};
@@ -11,6 +8,8 @@ use vulkano::instance::debug::{
 use vulkano::instance::{Instance, InstanceCreateInfo, InstanceExtensions};
 use vulkano::swapchain::{Surface, SurfaceApi};
 use vulkano::{Handle, VulkanLibrary, VulkanObject};
+
+use wkinit::event_loop::EventLoop;
 
 pub struct WindowInfo {
     pub extent: (u32, u32),
@@ -100,9 +99,9 @@ impl VulkanEngine {
     pub fn draw(&mut self) {}
 }
 
-pub fn create_window(info: WindowInfo) -> WindowVk {
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
+/*pub fn create_window(info: WindowInfo, event_loop: winit::event_loop::EventLoop<>) -> WindowVk {
+    let window = Arc::new(WindowBuilder::new().build()(&event_loop).unwrap());
+
     let window = video_subsystem
         .window(&info.title, info.extent.0, info.extent.1)
         .vulkan()
@@ -114,7 +113,7 @@ pub fn create_window(info: WindowInfo) -> WindowVk {
         sdl_context,
         info,
     }
-}
+}*/
 
 pub fn create_instance(
     instance_extensions: vulkano::instance::InstanceExtensions,
@@ -135,7 +134,11 @@ pub fn select_physical_device(
     instance: &Arc<vulkano::instance::Instance>,
     surface: &Arc<Surface>,
     device_extensions: &DeviceExtensions,
-) -> (Arc<vulkano::device::Device>, Arc<vulkano::device::Queue>) {
+) -> (
+    Arc<vulkano::device::Device>,
+    Arc<vulkano::device::Queue>,
+    Arc<PhysicalDevice>,
+) {
     let physical_device = instance // Only find devices with the requested extensions
         .enumerate_physical_devices()
         .expect("Could not enumerate physical devices")
@@ -182,8 +185,7 @@ pub fn select_physical_device(
         },
     )
     .expect("Failed to create a device!");
-    print_type_of(&queues);
-    return (device, queues.next().unwrap());
+    return (device, queues.next().unwrap(), physical_device);
 }
 
 pub fn create_swapchain(window_info: &WindowInfo) -> vulkano::swapchain::Swapchain {}
