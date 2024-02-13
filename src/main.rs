@@ -207,6 +207,10 @@ fn main() {
     let mut window_resized = false;
     let mut recreate_swapchain = false;
 
+    let frames_in_flight = images.len();
+    let mut fences: Vec<Option<Arc<FenceSignalFuture<_>>>> = vec![None; frames_in_flight];
+    let mut previous_fence_i = 0;
+
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent {
             event: WindowEvent::CloseRequested,
@@ -270,7 +274,23 @@ fn main() {
                 recreate_swapchain = true;
             }
 
-            let execution = sync::now(device.clone())
+            if let Some(image_fence) = &fences[image_i as usize] {
+                image_fence.wait(None).unwrap();
+            }
+
+            let previous_future = match fences[previous_fence_i as usize].clone() {
+                // Create a NowFuture
+                None => {
+                    let mut now = sync::now(device.clone());
+                    now.cleanup_finished();
+
+                    now.boxed()
+                }
+                // Use the existing signal future
+                Some(fence) => fence.boxed(),
+            };
+
+            let future = previous_future
                 .join(acquire_future)
                 .then_execute(queue.clone(), command_buffers[image_i as usize].clone())
                 .unwrap()
@@ -280,18 +300,18 @@ fn main() {
                 )
                 .then_signal_fence_and_flush();
 
-            match execution.map_err(Validated::unwrap) {
-                Ok(future) => {
-                    // Wait for the GPU
-                    future.wait(None).unwrap();
-                }
+            fences[image_i as usize] = match future.map_err(Validated::unwrap) {
+                Ok(value) => Some(Arc::new(value)),
                 Err(VulkanError::OutOfDate) => {
                     recreate_swapchain = true;
+                    None
                 }
                 Err(e) => {
                     println!("failed to flush future: {e}");
+                    None
                 }
-            }
+            };
+            previous_fence_i = image_i;
         }
         _ => (),
     });
