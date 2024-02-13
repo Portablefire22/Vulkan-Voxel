@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::{Instant, SystemTime};
 
 use vulkano::buffer::{Buffer, BufferContents, BufferCreateInfo, BufferUsage, Subbuffer};
 use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;
@@ -39,40 +40,26 @@ use crate::engine::vk_engine;
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
 // The previous iteration of this project used the previous version of the guide, so I thought
 // that I should probably use the new version of the guide to get the best possible framework.
-#[derive(BufferContents, Vertex)]
+#[derive(BufferContents, Vertex, Clone)]
 #[repr(C)]
 struct MyVertex {
-    #[format(R32G32_SFLOAT)]
-    position: [f32; 2],
+    #[format(R32G32B32_SFLOAT)]
+    vert_position: [f32; 3],
+    #[format(R32G32B32A32_SFLOAT)]
+    vert_colour: [f32; 4],
 }
 
 mod vs {
     vulkano_shaders::shader! {
         ty: "vertex",
-        src: "
-            #version 460
-
-            layout(location = 0) in vec2 position;
-
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-            }
-        ",
+        path: "shaders/temp.vert"
     }
 }
 
 mod fs {
     vulkano_shaders::shader! {
         ty: "fragment",
-        src: "
-            #version 460
-
-            layout(location = 0) out vec4 f_color;
-
-            void main() {
-                f_color = vec4(1.0, 0.0, 0.0, 1.0);
-            }
-        ",
+        path: "shaders/temp.frag",
     }
 }
 mod engine;
@@ -150,14 +137,17 @@ fn main() {
     let framebuffers = engine::vk_engine::get_framebuffers(&images, &render_pass);
 
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
-    let vertex1 = MyVertex {
-        position: [-0.5, -0.5],
+    let mut vertex1 = MyVertex {
+        vert_position: [-0.5, 0.5, 1.0],
+        vert_colour: [0.0, 0.0, 1.0, 1.0],
     };
     let vertex2 = MyVertex {
-        position: [0.0, 0.5],
+        vert_position: [0.0, -0.5, 1.0],
+        vert_colour: [0.0, 1.0, 0.0, 1.0],
     };
     let vertex3 = MyVertex {
-        position: [0.5, -0.25],
+        vert_position: [0.5, 0.5, 1.0],
+        vert_colour: [1.0, 0.0, 0.0, 1.0],
     };
     let vertex_buffer = Buffer::from_iter(
         memory_allocator.clone(),
@@ -211,6 +201,7 @@ fn main() {
     let mut fences: Vec<Option<Arc<FenceSignalFuture<_>>>> = vec![None; frames_in_flight];
     let mut previous_fence_i = 0;
 
+    let prev_time = Instant::now();
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent {
             event: WindowEvent::CloseRequested,
@@ -313,6 +304,6 @@ fn main() {
             };
             previous_fence_i = image_i;
         }
-        _ => (),
+        _ => {}
     });
 }
