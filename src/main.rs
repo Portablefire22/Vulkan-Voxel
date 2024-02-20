@@ -42,28 +42,6 @@ mod debug;
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
 // The previous iteration of this project used the previous version of the guide, so I thought
 // that I should probably use the new version of the guide to get the best possible framework.
-#[derive(BufferContents, Vertex, Clone)]
-#[repr(C)]
-struct MyVertex {
-    #[format(R32G32B32_SFLOAT)]
-    vert_position: [f32; 3],
-    #[format(R32G32B32A32_SFLOAT)]
-    vert_colour: [f32; 4],
-}
-
-mod vs {
-    vulkano_shaders::shader! {
-        ty: "vertex",
-        path: "shaders/temp.vert"
-    }
-}
-
-mod fs {
-    vulkano_shaders::shader! {
-        ty: "fragment",
-        path: "shaders/temp.frag",
-    }
-}
 mod engine;
 
 // Basically just the entry point to the program

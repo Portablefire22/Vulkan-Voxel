@@ -36,10 +36,32 @@ use vulkano::sync::{self, GpuFuture};
 use vulkano::{Validated, VulkanError};
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
+use winit::platform::wayland::WindowBuilderExtWayland;
 use winit::window::WindowBuilder;
 
 use crate::MyVertex;
-// t
+#[derive(BufferContents, Vertex, Clone)]
+#[repr(C)]
+struct MyVertex {
+    #[format(R32G32B32_SFLOAT)]
+    vert_position: [f32; 3],
+    #[format(R32G32B32A32_SFLOAT)]
+    vert_colour: [f32; 4],
+}
+
+mod vs {
+    vulkano_shaders::shader! {
+        ty: "vertex",
+        path: "shaders/temp.vert"
+    }
+}
+
+mod fs {
+    vulkano_shaders::shader! {
+        ty: "fragment",
+        path: "shaders/temp.frag",
+    }
+}
 pub struct VulkanEngine {
     event_loop: EventLoop<()>,
     required_extensions: InstanceExtensions,
@@ -65,7 +87,98 @@ pub struct VulkanEngine {
 }
 
 impl VulkanEngine {
-    //pub fn new() -> Self {}
+    pub fn new() -> Self {
+        let event_loop = EventLoop::new();
+        let required_extensions = Surface::required_extensions(&event_loop);
+        let instance = create_instance(required_extensions);
+
+        let device_extensions = DeviceExtensions {
+            khr_swapchain: true,
+            khr_ray_tracing_pipeline: true, // >:3
+            ..DeviceExtensions::empty()
+        };
+
+        let window = Arc::new(
+            WindowBuilder::new()
+                .with_name("Vulkan Voxel", "Vulkan Voxel")
+                .with_title("OwO")
+                .build(&event_loop)
+                .unwrap(),
+        );
+
+        let surface = Surface::from_window(instance.clone(), window.clone()).unwrap();
+
+        let (physical_device, queue_family_index) =
+            select_physical_device(&instance, &surface, &device_extensions);
+
+        let (device, mut queues) = Device::new(
+            physical_device.clone(),
+            DeviceCreateInfo {
+                queue_create_infos: vec![QueueCreateInfo {
+                    queue_family_index,
+                    ..Default::default()
+                }],
+                enabled_extensions: device_extensions,
+                ..Default::default()
+            },
+        )
+        .expect("Failed to create device!");
+
+        let queue = queues.next().unwrap();
+        let capabilities = physical_device
+            .surface_capabilities(&surface, Default::default())
+            .expect("failed to get surface capabilities");
+
+        let dimensions = window.inner_size();
+        let composite_alpha = capabilities
+            .supported_composite_alpha
+            .into_iter()
+            .next()
+            .unwrap();
+
+        let image_format = Some(
+            physical_device
+                .surface_formats(&surface, Default::default())
+                .unwrap()[0]
+                .0,
+        )
+        .unwrap();
+        let (mut swapchain, images) = Swapchain::new(
+            device.clone(),
+            surface.clone(),
+            SwapchainCreateInfo {
+                min_image_count: capabilities.min_image_count + 1,
+                image_format,
+                image_extent: dimensions.into(),
+                image_usage: ImageUsage::COLOR_ATTACHMENT,
+                composite_alpha,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let render_pass = get_render_pass(device.clone(), &swapchain);
+        let framebuffers = get_framebuffers(&images, &render_pass);
+
+        let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
+
+        let vs = vs::load(device.clone()).expect("failed to create shader module");
+        let fs = fs::load(device.clone()).expect("failed to create shader module");
+
+        let mut viewport = Viewport {
+            offset: [0.0, 0.0],
+            extent: window.inner_size().into(),
+            depth_range: 0.0..=1.0,
+        };
+
+        let pipeline = get_pipeline(
+            device.clone(),
+            vs.clone(),
+            fs.clone(),
+            render_pass.clone(),
+            viewport.clone(),
+        );
+    }
 
     pub fn run(&mut self) {}
 
