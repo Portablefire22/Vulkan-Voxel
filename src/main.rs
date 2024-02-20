@@ -33,10 +33,12 @@ use vulkano::sync::{self, GpuFuture};
 use vulkano::{Validated, VulkanError};
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::WindowBuilder;
+use winit::platform::wayland::WindowBuilderExtWayland;
+use winit::window::{Fullscreen, WindowBuilder};
 
 use crate::engine::vk_engine;
-
+mod camera;
+mod debug;
 // So this is going to be an attempt to re-write the updated 'vkguide.dev' project in Rust.
 // The previous iteration of this project used the previous version of the guide, so I thought
 // that I should probably use the new version of the guide to get the best possible framework.
@@ -67,12 +69,6 @@ mod engine;
 // Basically just the entry point to the program
 // Probably won't do much other than that
 fn main() {
-    let engine_info = engine::vk_engine::create_engine_info();
-    let window_info = engine::vk_engine::WindowInfo {
-        extent: (800, 400),
-        title: "Vulkan Voxel".to_string(),
-    };
-
     let event_loop = EventLoop::new();
 
     let required_extensions = Surface::required_extensions(&event_loop);
@@ -85,7 +81,13 @@ fn main() {
         ..DeviceExtensions::empty()
     };
 
-    let window = Arc::new(WindowBuilder::new().build(&event_loop).unwrap());
+    let window = Arc::new(
+        WindowBuilder::new()
+            .with_name("Vulkan Voxel", "Vulkan Voxel")
+            .with_title("OwO")
+            .build(&event_loop)
+            .unwrap(),
+    );
     let surface = Surface::from_window(instance.clone(), window.clone()).unwrap();
 
     let (physical_device, queue_family_index) =
@@ -108,7 +110,7 @@ fn main() {
     let caps = physical_device
         .surface_capabilities(&surface, Default::default())
         .expect("failed to get surface capabilities");
-
+    // -- --- -- -
     let dimensions = window.inner_size();
     let composite_alpha = caps.supported_composite_alpha.into_iter().next().unwrap();
     let image_format = Some(
@@ -137,6 +139,7 @@ fn main() {
     let framebuffers = engine::vk_engine::get_framebuffers(&images, &render_pass);
 
     let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(device.clone()));
+
     let mut vertex1 = MyVertex {
         vert_position: [-0.5, 0.5, 1.0],
         vert_colour: [0.0, 0.0, 1.0, 1.0],
@@ -192,6 +195,11 @@ fn main() {
         &vertex_buffer,
     );
 
+    debug::print_type_of(&vertex_buffer);
+    debug::print_type_of(&viewport);
+    debug::print_type_of(&pipeline);
+    debug::print_type_of(&command_buffer_allocator);
+    debug::print_type_of(&command_buffers);
     //let mut game_engine = engine::vk_engine::VulkanEngine::new(engine_info, instance, device);
 
     let mut window_resized = false;

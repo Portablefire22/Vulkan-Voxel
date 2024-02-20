@@ -12,7 +12,7 @@ use vulkano::device::{
 };
 use vulkano::image::view::ImageView;
 use vulkano::image::{Image, ImageUsage};
-use vulkano::instance::{Instance, InstanceCreateInfo};
+use vulkano::instance::{Instance, InstanceCreateInfo, InstanceExtensions};
 use vulkano::library::VulkanLibrary;
 use vulkano::memory::allocator::{AllocationCreateInfo, MemoryTypeFilter, StandardMemoryAllocator};
 use vulkano::pipeline::graphics::color_blend::{ColorBlendAttachmentState, ColorBlendState};
@@ -23,10 +23,14 @@ use vulkano::pipeline::graphics::vertex_input::{Vertex, VertexDefinition};
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::graphics::GraphicsPipelineCreateInfo;
 use vulkano::pipeline::layout::PipelineDescriptorSetLayoutCreateInfo;
-use vulkano::pipeline::{GraphicsPipeline, PipelineLayout, PipelineShaderStageCreateInfo};
+use vulkano::pipeline::{
+    GraphicsPipeline, Pipeline, PipelineLayout, PipelineShaderStageCreateInfo,
+};
 use vulkano::render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass};
 use vulkano::shader::ShaderModule;
-use vulkano::swapchain::{self, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo};
+use vulkano::swapchain::{
+    self, Surface, SurfaceCapabilities, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+};
 use vulkano::sync::future::FenceSignalFuture;
 use vulkano::sync::{self, GpuFuture};
 use vulkano::{Validated, VulkanError};
@@ -36,58 +40,32 @@ use winit::window::WindowBuilder;
 
 use crate::MyVertex;
 
-pub struct WindowInfo {
-    pub extent: (u32, u32),
-    pub title: String,
-}
-
-pub struct WindowVk {
-    pub is_initialised: bool,
-    info: WindowInfo,
-}
-
-pub struct EngineInfo {}
-
 pub struct VulkanEngine {
-    pub info: EngineInfo,
-    //pub window_vk: WindowVk,
-    fps: usize,
-    //fps_time: Instant,
-    framenumber: usize,
-
-    instance: Arc<vulkano::instance::Instance>,
-    chosen_gpu: Arc<vulkano::device::Device>,
-}
-
-fn print_type_of<T>(_: &T) {
-    println!("{}", std::any::type_name::<T>())
+    event_loop: EventLoop<()>,
+    required_extensions: InstanceExtensions,
+    instance: Instance,
+    device_extensions: DeviceExtensions,
+    window: Arc<winit::window::Window>,
+    surface: Arc<Surface>,
+    physical_device: Arc<PhysicalDevice>,
+    queue_family_index: u32,
+    device: Arc<Device>,
+    queue: Arc<Queue>,
+    capabilities: SurfaceCapabilities,
+    swapchain: Arc<Swapchain>,
+    images: Vec<Arc<Image>>,
+    render_pass: Arc<RenderPass>,
+    framebuffers: Vec<Arc<Framebuffer>>,
+    memory_allocator: Arc<StandardMemoryAllocator>,
+    vertex_buffer: Buffer,
+    viewport: Viewport,
+    pipeline: Arc<GraphicsPipeline>,
+    command_buffer_allocator: StandardCommandBufferAllocator,
+    command_buffers: Vec<Arc<PrimaryAutoCommandBuffer>>,
 }
 
 impl VulkanEngine {
-    pub fn new(
-        info: EngineInfo,
-        //window_vk: WindowVk,
-        instance: Arc<vulkano::instance::Instance>,
-        chosen_gpu: Arc<vulkano::device::Device>,
-    ) -> Self {
-        VulkanEngine {
-            info,
-            //window_vk,
-            framenumber: 0,
-            fps: 0,
-            //fps_time: Instant::now(),
-            instance,
-            chosen_gpu,
-        }
-    }
-
-    pub fn init(&mut self) {
-        println!("Engine is starting!");
-
-        //self.window_vk.is_initialised = true;
-
-        println!("Window has been created");
-    }
+    //pub fn new() -> Self {}
 
     pub fn run(&mut self) {}
 
@@ -95,22 +73,6 @@ impl VulkanEngine {
 
     pub fn draw(&mut self) {}
 }
-
-/*pub fn create_window(info: WindowInfo, event_loop: winit::event_loop::EventLoop<>) -> WindowVk {
-    let window = Arc::new(WindowBuilder::new().build()(&event_loop).unwrap());
-
-    let window = video_subsystem
-        .window(&info.title, info.extent.0, info.extent.1)
-        .vulkan()
-        .build()
-        .unwrap();
-    WindowVk {
-        window,
-        is_initialised: false,
-        sdl_context,
-        info,
-    }
-}*/
 
 pub fn create_instance(
     instance_extensions: vulkano::instance::InstanceExtensions,
@@ -121,10 +83,6 @@ pub fn create_instance(
         instance_info
     })
     .unwrap()
-}
-
-pub fn create_engine_info() -> EngineInfo {
-    EngineInfo {}
 }
 
 pub fn select_physical_device(
