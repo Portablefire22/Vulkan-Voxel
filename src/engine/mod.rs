@@ -5,3 +5,5 @@ pub mod vk_initializers;
 pub mod vk_loader;
 pub mod vk_pipelines;
 pub mod vk_types;
+
+pub mod render;
