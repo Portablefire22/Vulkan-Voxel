@@ -1,0 +1,17 @@
+[package]
+name = "vulkan_rust_rewrite"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+imgui = "0.11.0"
+cgmath = "0.18.0"
+stb_image = "0.3.0"
+winit = "0.28.0"
+lazy_static = "1.4.0"
+bevy = "0.13.0"
+
+[profile.dev]
+opt-level = 1
