@@ -69,3 +69,5 @@ Cargo.lock
 
 .idea/
 old_cpp/
+
+!src/debug/
