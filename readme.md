@@ -3,7 +3,7 @@ If you're here then you're probably looking for a functional version of the voxe
 You aren't going to find it here! (sorry)
 
 ## So what is this?
-Well, it's the Rust rewrite! 
+Well, it's the 2nd Rust rewrite, this time it's using Bevy! 
 
 Just... 
 

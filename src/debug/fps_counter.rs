@@ -7,6 +7,7 @@ use bevy::{
     },
     hierarchy::BuildChildren,
     input::{keyboard::KeyCode, ButtonInput},
+    log::debug,
     prelude::default,
     render::{color::Color, view::Visibility},
     scene::ron::de::Position,
