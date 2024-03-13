@@ -70,4 +70,7 @@ Cargo.lock
 .idea/
 old_cpp/
 
+# Avoid any copyright issues :3
+assets/minecraft/
+
 !src/debug/

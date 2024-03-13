@@ -1,11 +1,18 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use std::env;
 
+mod assets;
 mod camera;
 mod debug;
 mod mesh;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    match args[1].as_str() {
+        "--extract-textures" => assets::texture_extractor::rip_minecraft_textures(&args),
+        _ => println!("Unknown arg: {}", args[1]),
+    }
     App::new()
         .add_plugins((
             DefaultPlugins,
