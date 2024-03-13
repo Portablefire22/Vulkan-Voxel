@@ -43,7 +43,7 @@ pub fn spawn_gltf(
     commands.spawn(PbrBundle {
         mesh: meshes.add(crate::mesh::chunk::generate_chunk_mesh()),
         material: materials.add(StandardMaterial {
-            base_color: Color::PURPLE,
+            base_color: Color::WHITE,
             perceptual_roughness: 1.0,
             ..default()
         }),

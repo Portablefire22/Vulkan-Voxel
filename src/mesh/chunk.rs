@@ -1,15 +1,19 @@
 use bevy::{
-    math::Vec3,
+    log::{debug, info},
+    math::{FloatExt, Vec3},
     render::{
         mesh::{Indices, Mesh, PrimitiveTopology},
         render_asset::RenderAssetUsages,
     },
+    ui::debug,
 };
+
+use rand::Rng;
 
 // Individual blocks mesh data, idk if this is the best way to do this
 pub struct MeshInfo {
     positions: Vec<[f32; 3]>,
-
+    colours: Vec<[f32; 4]>,
     indices: Vec<u32>, // which vertices to build which triangle
 }
 
@@ -30,7 +34,9 @@ fn generate_block_faces(
 ) -> MeshInfo {
     let mut positions: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
+    let mut colours: Vec<[f32; 4]> = Vec::new();
     let mut index: u32 = 0;
+    let mut rng = rand::thread_rng();
     for face in faces {
         match face {
             BlockFace::POSX => {
@@ -52,7 +58,6 @@ fn generate_block_faces(
                         start_pos.z + tile_size,
                     ],
                 ]);
-
                 indices.extend(vec![
                     index,
                     index + 3,
@@ -180,21 +185,59 @@ fn generate_block_faces(
                 ]);
             }
         }
+        /*colours.extend(vec![
+            [rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>(), 1.0],
+            [rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>(), 1.0],
+            [rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>(), 1.0],
+            [rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>(), 1.0],
+        ]);*/
+
+        colours.extend(vec![
+            [
+                start_pos.x / 16.0,
+                start_pos.y / 16.0,
+                start_pos.z / 16.0,
+                1.0,
+            ],
+            [
+                start_pos.x / 16.0,
+                start_pos.y / 16.0,
+                start_pos.z / 16.0,
+                1.0,
+            ],
+            [
+                start_pos.x / 16.0,
+                start_pos.y / 16.0,
+                start_pos.z / 16.0,
+                1.0,
+            ],
+            [
+                start_pos.x / 16.0,
+                start_pos.y / 16.0,
+                start_pos.z / 16.0,
+                1.0,
+            ],
+        ]);
 
         index += 4;
     }
-    MeshInfo { positions, indices }
+    MeshInfo {
+        positions,
+        colours,
+        indices,
+    }
 }
 
 pub fn generate_chunk_mesh() -> Mesh {
     // get block data
     let mut chunk_mesh_data = MeshInfo {
         positions: Vec::new(),
+        colours: Vec::new(),
         indices: Vec::new(),
     };
-    for y in 0..=2 {
-        for z in 0..=2 {
-            for x in 0..=2 {
+    for y in 0..=16 {
+        for z in 0..=16 {
+            for x in 0..=16 {
                 let tmp = generate_block_faces(
                     &vec![
                         BlockFace::POSX,
@@ -212,13 +255,15 @@ pub fn generate_chunk_mesh() -> Mesh {
                         z: z as f32,
                     },
                 );
+                let indices_offset = chunk_mesh_data.positions.len();
                 chunk_mesh_data.indices.extend(
                     tmp.indices
                         .iter()
-                        .map(|x| x + chunk_mesh_data.indices.len() as u32)
+                        .map(|x| x + indices_offset as u32)
                         .collect::<Vec<u32>>(),
                 );
                 chunk_mesh_data.positions.extend(tmp.positions);
+                chunk_mesh_data.colours.extend(tmp.colours);
             }
         }
     }
@@ -228,6 +273,7 @@ pub fn generate_chunk_mesh() -> Mesh {
         PrimitiveTopology::TriangleList,
         RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
     )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_COLOR, chunk_mesh_data.colours)
     .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, chunk_mesh_data.positions)
     .with_inserted_indices(Indices::U32(chunk_mesh_data.indices))
 }
