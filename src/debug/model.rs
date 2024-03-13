@@ -40,16 +40,16 @@ pub fn spawn_gltf(
         Rotatable { speed: 0.01 },
     ));
 
-    let debug_gltf = ass.load("debug.glb#Scene0");
-
-    commands.spawn((
-        SceneBundle {
-            scene: debug_gltf,
-            transform: Transform::from_xyz(0.0, 0.0, -1.0),
-            ..Default::default()
-        },
-        Rotatable { speed: 0.3 },
-    ));
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(crate::mesh::chunk::generate_chunk_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: Color::PURPLE,
+            perceptual_roughness: 1.0,
+            ..default()
+        }),
+        transform: Transform::from_xyz(0.0, 0.0, -1.0),
+        ..default()
+    });
 
     commands
         .spawn(PointLightBundle {

@@ -8,7 +8,7 @@ use bevy::{
     transform::components::Transform,
 };
 
-pub fn debug_projection(query_camera: Query<&Projection, With<crate::camera::PlayerCameraMarker>>) {
+pub fn debug_projection(query_camera: Query<&Projection, With<crate::camera::PlayerCamera>>) {
     let projection = query_camera.single();
     match projection {
         Projection::Perspective(persp) => {}
