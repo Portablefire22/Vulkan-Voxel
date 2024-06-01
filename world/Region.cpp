@@ -105,3 +105,9 @@ int* Region::getBlockHeight(const int x, const int z) {
 int* Region::getHeightMap() {
     return this->HeightMap;
 }
+
+Region::~Region() {
+    for (auto const& [key, val] : this->Chunks) {
+        delete(val);
+    }
+}

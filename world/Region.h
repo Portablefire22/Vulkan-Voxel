@@ -22,6 +22,7 @@ class Region {
     std::pmr::map<int, ChunkInformation> ChunkInfo;
     std::pair<int,int> Position;
 
+
     public:
     Region(int x, int z);
 
@@ -34,6 +35,7 @@ class Region {
     int* getHeightMap();
     int* getBlockHeight(int x, int z);
     bool generateHeightMap();
+    ~Region();
 };
 
 

@@ -39,7 +39,6 @@ namespace WorldHandler {
 
             RenderObject chunkObject;
 
-
             // Check if the chunk mesh already exists, if not then create it
             if (!engine._meshes.contains(name)) {
                 localChunk->GenerateChunkMesh();
