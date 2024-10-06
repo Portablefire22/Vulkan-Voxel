@@ -8,8 +8,11 @@
 
 namespace vkUtil {
 
-    bool loadImageFromFile(VulkanEngine& engine, const char* file, AllocatedImage& outImage);
+bool
+loadImageFromFile(VulkanEngine& engine,
+                  const std::string file,
+                  AllocatedImage& outImage);
 
 } // vkUtil
 
-#endif //VK_TEXTURES_H
+#endif // VK_TEXTURES_H

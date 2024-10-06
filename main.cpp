@@ -5,17 +5,17 @@
 
 #include "world/Chunk.h"
 
-
-
 Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 bool firstMouse = true;
 float lastX;
 float lastY;
 
-int main() {
+int
+main()
+{
     try {
-        //init::app->run();
+        // init::app->run();
         entryPoint::engine.init();
         entryPoint::engine.run();
         entryPoint::engine.cleanup();
@@ -25,5 +25,3 @@ int main() {
     }
     return EXIT_SUCCESS;
 }
-
-

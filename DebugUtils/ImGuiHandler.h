@@ -4,13 +4,16 @@
 
 #ifndef IMGUIHANDLER_H
 #define IMGUIHANDLER_H
-//#include "../vk_engine.h"
+// #include "../vk_engine.h"
 #include "../player/Player.h"
 
 class VulkanEngine;
 
 namespace DebugUI {
-    void PlayerInformation(Player::Player player, VulkanEngine&engine);
+void
+PlayerInformation(Player::Player player, VulkanEngine& engine);
+void
+GameSettings(VulkanEngine& engine);
 } // DebugUI
 
-#endif //IMGUIHANDLER_H
+#endif // IMGUIHANDLER_H

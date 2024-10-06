@@ -5,21 +5,26 @@
 #include "Region.h"
 
 #include <iostream>
-#include <ostream>
 #include <map>
+#include <ostream>
 
 #include "FastNoise/FastNoise.h"
 
-Region::Region(int x, int z) {
-    this->Position = std::make_pair(x,z);
+Region::Region(int x, int z)
+{
+    this->Position = std::make_pair(x, z);
     generateHeightMap();
 }
 
-void Region::setChunkEmpty(const int yLevel, bool isEmpty) {
+void
+Region::setChunkEmpty(const int yLevel, bool isEmpty)
+{
     this->ChunkInfo[yLevel].isEmpty = isEmpty;
 }
 
-bool Region::isChunkEmpty(const int yLevel) {
+bool
+Region::isChunkEmpty(const int yLevel)
+{
     if (this->ChunkInfo.contains(yLevel)) {
         return this->ChunkInfo.at(yLevel).isEmpty;
     }
@@ -30,9 +35,11 @@ bool Region::isChunkEmpty(const int yLevel) {
     const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
-            for (int x = 0; x < CHUNK_SIZE; x ++) {
+            for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = false;
+                    this
+                      ->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)]
+                      .isEmpty = false;
                     return false;
                 }
             }
@@ -42,54 +49,74 @@ bool Region::isChunkEmpty(const int yLevel) {
     return true;
 }
 
-bool Region::isChunkEmpty(const chunk::Chunk* localChunk) {
+bool
+Region::isChunkEmpty(const chunk::Chunk* localChunk)
+{
     if (this->ChunkInfo.contains(localChunk->ChunkPosition.y)) {
         return this->ChunkInfo.at(localChunk->ChunkPosition.y).isEmpty;
     }
     const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
-            for (int x = 0; x < CHUNK_SIZE; x ++) {
+            for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = false;
+                    this
+                      ->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)]
+                      .isEmpty = false;
                     return false;
                 }
             }
         }
     }
-    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty = true;
+    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty =
+      true;
     return true;
 }
 
-chunk::Chunk* Region::getChunk(const int yLevel) {
+chunk::Chunk*
+Region::getChunk(const int yLevel)
+{
     if (!doesChunkExist(yLevel)) { // Create the chunk if it doesnt exist
         this->createChunk(yLevel);
     }
     return this->Chunks[yLevel];
 }
 
-bool Region::doesChunkExist(const int yLevel) const {
+bool
+Region::doesChunkExist(const int yLevel) const
+{
     return this->Chunks.contains(yLevel);
 }
 
-
-bool Region::createChunk(int yLevel) {
-    auto localChunk = new chunk::Chunk(this, glm::vec3(this->Position.first, yLevel, this->Position.second));
+bool
+Region::createChunk(int yLevel)
+{
+    auto localChunk = new chunk::Chunk(
+      this, glm::vec3(this->Position.first, yLevel, this->Position.second));
     localChunk->generateChunk();
     this->Chunks.insert(std::make_pair(yLevel, localChunk));
     return true;
 }
 
-bool Region::generateHeightMap() {
+bool
+Region::generateHeightMap()
+{
     try {
         std::vector<float> NoiseArr(CHUNK_SIZE * CHUNK_SIZE);
         const auto fnSimplex = FastNoise::New<FastNoise::OpenSimplex2>();
         const auto fnNoise = FastNoise::New<FastNoise::FractalFBm>();
         fnNoise->SetSource(fnSimplex);
         fnNoise->SetOctaveCount(8);
-        fnNoise->GenUniformGrid2D(NoiseArr.data(),  this->Position.first*CHUNK_SIZE, this->Position.second*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE,0.0005f, 21321);
+        fnNoise->GenUniformGrid2D(NoiseArr.data(),
+                                  this->Position.first * CHUNK_SIZE,
+                                  this->Position.second * CHUNK_SIZE,
+                                  CHUNK_SIZE,
+                                  CHUNK_SIZE,
+                                  0.0005f,
+                                  21321);
         for (int i = 0; i < (CHUNK_SIZE * CHUNK_SIZE); i++) {
-            this->HeightMap[i] =  abs(static_cast<int>(round(256 * NoiseArr[i]))) + 2;
+            this->HeightMap[i] =
+              abs(static_cast<int>(round(256 * NoiseArr[i]))) + 2;
         }
         return true;
     } catch (std::exception& e) {
@@ -98,16 +125,21 @@ bool Region::generateHeightMap() {
     }
 }
 
-int* Region::getBlockHeight(const int x, const int z) {
+int*
+Region::getBlockHeight(const int x, const int z)
+{
     return &this->HeightMap[x + (z * CHUNK_SIZE)];
 }
 
-int* Region::getHeightMap() {
+int*
+Region::getHeightMap()
+{
     return this->HeightMap;
 }
 
-Region::~Region() {
+Region::~Region()
+{
     for (auto const& [key, val] : this->Chunks) {
-        delete(val);
+        delete (val);
     }
 }

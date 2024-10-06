@@ -7,13 +7,15 @@
 #define VK_TYPES_H
 #include <vk_mem_alloc.h>
 
-struct AllocatedBuffer {
+struct AllocatedBuffer
+{
     VkBuffer _buffer;
     VmaAllocation _allocation;
 };
 
-struct AllocatedImage {
+struct AllocatedImage
+{
     VkImage _image;
     VmaAllocation _allocation;
 };
-#endif //VK_TYPES_H
+#endif // VK_TYPES_H

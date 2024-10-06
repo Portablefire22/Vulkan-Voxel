@@ -6,28 +6,29 @@
 
 namespace Block {
 
-    enum DIRECTION {
-        POSX,
-        POSY,
-        POSZ,
-        NEGX,
-        NEGY,
-        NEGZ
-    };
+enum DIRECTION
+{
+    POSX,
+    POSY,
+    POSZ,
+    NEGX,
+    NEGY,
+    NEGZ
+};
 
-    struct BlockState {
-        int BlockId;
-        glm::vec3 Position;
-        DIRECTION Facing;
-    };
+struct BlockState
+{
+    int BlockId;
+    glm::vec3 Position;
+    DIRECTION Facing;
+};
 
-class Block {
+class Block
+{
 
-public:
+  public:
     BlockState blockState;
     Block(int blockId, glm::vec3 position, DIRECTION facing);
 };
 
 } // Block
-
-

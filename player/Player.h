@@ -13,20 +13,21 @@ class VulkanEngine;
 
 namespace Player {
 
-class Player: public Entity{
-public:
+class Player : public Entity
+{
+  public:
     Camera camera;
     glm::vec3 ChunkPosition{};
     glm::vec3 LastChunkPosition{};
     float Size = 1.75f;
 
-    explicit Player(glm::vec3 position = {0,0,0}, float size = 1.75f);
+    explicit Player(glm::vec3 position = { 0, 0, 0 }, float size = 1.75f);
     void processInput(VulkanEngine& engine);
     void updatePosition(VulkanEngine& engine);
     void processMouse(float xOffset, float yOffset);
     void ChunkPositionChanged(VulkanEngine& engine);
 
-    private:
+  private:
     std::map<int, bool> keyboard;
     int xMouse, yMouse;
     int lastX, lastY;
@@ -35,4 +36,4 @@ public:
 
 } // Player
 
-#endif //PLAYER_H
+#endif // PLAYER_H

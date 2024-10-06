@@ -7,14 +7,13 @@
 
 #include <glm/glm.hpp>
 
-
-class Entity {
-
+class Entity
+{
 
   private:
     double posX, posY, posZ, yaw, pitch; // Position of the entity
-    unsigned int id;                     // ID for selection & verification later on  
-    double height, width;                // Hitbox param
+    unsigned int id;      // ID for selection & verification later on
+    double height, width; // Hitbox param
 
   public:
     glm::vec3 getPosition();
@@ -24,9 +23,6 @@ class Entity {
     void setX(double x);
     void setY(double y);
     void setZ(double z);
-
 };
 
-
-
-#endif //ENTITY_H
+#endif // ENTITY_H

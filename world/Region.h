@@ -9,21 +9,21 @@
 
 #include "Chunk.h"
 
+class Region
+{
 
-class Region {
-
-    private:
-    struct ChunkInformation {
+  private:
+    struct ChunkInformation
+    {
         bool isEmpty;
     };
-    int HeightMap[CHUNK_SIZE * CHUNK_SIZE] = {0};
+    int HeightMap[CHUNK_SIZE * CHUNK_SIZE] = { 0 };
 
     std::map<int, chunk::Chunk*> Chunks;
     std::pmr::map<int, ChunkInformation> ChunkInfo;
-    std::pair<int,int> Position;
+    std::pair<int, int> Position;
 
-
-    public:
+  public:
     Region(int x, int z);
 
     chunk::Chunk* getChunk(int yLevel);
@@ -38,6 +38,4 @@ class Region {
     ~Region();
 };
 
-
-
-#endif //REGION_H
+#endif // REGION_H

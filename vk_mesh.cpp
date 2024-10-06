@@ -4,7 +4,9 @@
 
 #include "vk_mesh.h"
 
-VertexInputDescription Vertex::getVertexDescription() {
+VertexInputDescription
+Vertex::getVertexDescription()
+{
     VertexInputDescription description;
 
     VkVertexInputBindingDescription mainBinding = {};

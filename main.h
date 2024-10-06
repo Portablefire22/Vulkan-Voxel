@@ -8,10 +8,9 @@
 #include "vk_engine.h"
 
 namespace entryPoint {
-    inline VulkanEngine engine;
-    int main();
+inline VulkanEngine engine;
+int
+main();
 }
 
-
-
-#endif //MAIN_H
+#endif // MAIN_H

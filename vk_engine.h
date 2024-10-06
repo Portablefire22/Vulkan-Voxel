@@ -4,37 +4,38 @@
 
 #ifndef VK_ENGINE_H
 #define VK_ENGINE_H
-#include "vk_types.h"
 #include "vk_mesh.h"
+#include "vk_types.h"
 #include <cstdint>
-#define GLFW_INCLUDE_VULKAN
 #include <deque>
 #include <functional>
-#include <GLFW/glfw3.h>
 #include <glm/vec4.hpp>
 
+#include "DebugUtils/ImGuiHandler.h"
 #include "VkBootstrap.h"
 #include "player/Player.h"
-#include "DebugUtils/ImGuiHandler.h"
 
 #include <unordered_map>
 
 #include "world/World.h"
 
-
-struct Texture {
+struct Texture
+{
     AllocatedImage image;
     VkImageView imageView;
 };
 
-struct DeletionQueue {
+struct DeletionQueue
+{
     std::deque<std::function<void()>> deletors;
 
-    void push_function(std::function<void()>&& function) {
+    void push_function(std::function<void()>&& function)
+    {
         deletors.push_back(function);
     }
 
-    void flush() {
+    void flush()
+    {
         for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
             (*it)();
         }
@@ -42,18 +43,21 @@ struct DeletionQueue {
     }
 };
 
-struct MeshPushConstants {
+struct MeshPushConstants
+{
     glm::vec4 data;
     glm::mat4 renderMatrix;
 };
 
-struct Material {
-    VkDescriptorSet textureSet{VK_NULL_HANDLE}; // set default to null
+struct Material
+{
+    VkDescriptorSet textureSet{ VK_NULL_HANDLE }; // set default to null
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 };
 
-struct RenderObject {
+struct RenderObject
+{
     Mesh* mesh;
     Material* material;
     glm::mat4 transformMatrix;
@@ -62,7 +66,8 @@ struct RenderObject {
     glm::vec3 position;
 };
 
-struct FrameData {
+struct FrameData
+{
     VkSemaphore _presentSemaphore, _renderSemaphore;
     VkFence _renderFence;
 
@@ -76,12 +81,14 @@ struct FrameData {
     VkDescriptorSet objectDescriptor;
 };
 
-struct GPUObjectData {
+struct GPUObjectData
+{
     glm::mat4 modelMatrix;
     glm::vec4 modelColour;
 };
 
-struct GPUSceneData { // For GPU just try to stick to vec4 and mat4 for simplicity
+struct GPUSceneData
+{ // For GPU just try to stick to vec4 and mat4 for simplicity
     glm::vec4 fogColour;
     glm::vec4 fogDistances;
     glm::vec4 ambientColor;
@@ -89,7 +96,8 @@ struct GPUSceneData { // For GPU just try to stick to vec4 and mat4 for simplici
     glm::vec4 sunlightColour;
 };
 
-struct UploadContext {
+struct UploadContext
+{
     VkFence _uploadFence;
     VkCommandPool _commandPool;
     VkCommandBuffer _commandBuffer;
@@ -97,20 +105,20 @@ struct UploadContext {
 
 constexpr unsigned int FRAME_OVERLAP = 2;
 
-class VulkanEngine {
-    public:
+class VulkanEngine
+{
+  public:
     WorldHandler::World currentWorld;
 
     void initImgui();
 
-
     VkDescriptorSetLayout _singleTextureSetLayout;
 
     std::unordered_map<std::string, Texture> _loadedTextures;
-    void loadImages(char* Path, char* Name);
+    void loadImages(std::string Path, std::string Name);
 
     UploadContext _uploadContext;
-    void immediateSubmit(std::function<void(VkCommandBuffer cmd)> && function);
+    void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
     void initBlockTextures();
 
@@ -136,46 +144,49 @@ class VulkanEngine {
     std::unordered_map<std::string, Material> _materials;
     std::unordered_map<std::string, Mesh> _meshes;
 
-    Material* createMaterial(VkPipeline pipeline, VkPipelineLayout layout, const std::string& name);
+    Material* createMaterial(VkPipeline pipeline,
+                             VkPipelineLayout layout,
+                             const std::string& name);
     Material* getMaterial(const std::string& name);
     Mesh* getMesh(const std::string& name);
 
-    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+    AllocatedBuffer createBuffer(size_t allocSize,
+                                 VkBufferUsageFlags usage,
+                                 VmaMemoryUsage memoryUsage);
     void initDescriptors();
 
     DeletionQueue _mainDeletionQueue;
     bool _isInitialised{ false };
-    int _frameNumber {0};
+    int _frameNumber{ 0 };
 
     bool freeMouse;
     bool showDebug = true;
 
-
     void proccess_mem_usage(double& vm_usage, double& resident_set);
-    void recreateSwapChain(); // Recreate the swapchain to deal with window resizing
+    void
+    recreateSwapChain(); // Recreate the swapchain to deal with window resizing
 
-    VkExtent2D _windowExtent{ 1700 , 900 };
+    VkExtent2D _windowExtent{ 1700, 900 };
 
     struct SDL_Window* _window{ nullptr };
 
-    //initializes everything in the engine
+    // initializes everything in the engine
     void init();
 
-    //shuts down the engine
+    // shuts down the engine
     void cleanup();
 
-    //draw loop
+    // draw loop
     void draw();
 
-    //run main loop
+    // run main loop
     void run();
 
-    VkInstance _instance; // Vulkan library handle
+    VkInstance _instance;                      // Vulkan library handle
     VkDebugUtilsMessengerEXT _debug_messenger; // Vulkan debug output handle
     VkPhysicalDevice _chosenGPU; // GPU chosen as the default device
-    VkDevice _device; // Vulkan device for commands
-    VkSurfaceKHR _surface; // Vulkan window surface
-    GLFWwindow* window;
+    VkDevice _device;            // Vulkan device for commands
+    VkSurfaceKHR _surface;       // Vulkan window surface
 
     Player::Player PlayerEntity;
 
@@ -219,18 +230,20 @@ class VulkanEngine {
     uint64_t lastFrameTime;
     uint64_t nowFrameTime = 0;
 
+    int renderDistanceHorz = 1;
+    int renderDistanceVert = 1;
+
     void uploadMesh(Mesh& mesh);
 
-
-    private:
-
+  private:
     void initVulkan();
     void initSwapchain();
     void initCommands();
     void initDefaultRenderpass();
     void initFramebuffers();
     void initSyncStructures();
-    bool loadShaderModule(const char* filePath, VkShaderModule* outShaderModule);
+    bool loadShaderModule(const char* filePath,
+                          VkShaderModule* outShaderModule);
     void initPipelines();
     void loadMeshes();
 
@@ -238,8 +251,9 @@ class VulkanEngine {
     void drawObjects(VkCommandBuffer cmd, RenderObject* first, int count);
 };
 
-class PipelineBuilder {
-public:
+class PipelineBuilder
+{
+  public:
     std::vector<VkPipelineShaderStageCreateInfo> _shaderStages;
     VkPipelineVertexInputStateCreateInfo _vertexInputInfo;
     VkPipelineInputAssemblyStateCreateInfo _inputAssembly;
@@ -253,13 +267,6 @@ public:
     VkPipeline buildPipeline(VkDevice device, VkRenderPass pass);
 
     VkPipelineDepthStencilStateCreateInfo _depthStencil;
-
-
-
-
-
 };
 
-
-
-#endif //VK_ENGINE_H
+#endif // VK_ENGINE_H
