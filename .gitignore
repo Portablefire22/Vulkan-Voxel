@@ -49,3 +49,6 @@ _deps
 *.ninja
 /cmake-build*/*
 *.spv
+
+Debug/*
+Release/*

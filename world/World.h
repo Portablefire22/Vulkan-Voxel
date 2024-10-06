@@ -1,7 +1,10 @@
 //
 // Created by blakey on 01/12/23.
 //
-#pragma once
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+
 #ifndef WORLD_H
 #define WORLD_H
 #include <map>

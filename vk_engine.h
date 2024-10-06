@@ -6,10 +6,10 @@
 #define VK_ENGINE_H
 #include "vk_types.h"
 #include "vk_mesh.h"
+#include <cstdint>
 #define GLFW_INCLUDE_VULKAN
 #include <deque>
 #include <functional>
-#include <SDL_stdinc.h>
 #include <GLFW/glfw3.h>
 #include <glm/vec4.hpp>
 
@@ -216,8 +216,8 @@ class VulkanEngine {
     VkFormat _depthFormat;
 
     double deltaTime;
-    Uint64 lastFrameTime;
-    Uint64 nowFrameTime = 0;
+    uint64_t lastFrameTime;
+    uint64_t nowFrameTime = 0;
 
     void uploadMesh(Mesh& mesh);
 

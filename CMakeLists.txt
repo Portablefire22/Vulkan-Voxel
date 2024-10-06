@@ -3,6 +3,7 @@ project(VulkanTest)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 set(source "${CMAKE_SOURCE_DIR}")
 set(destination "${CMAKE_CURRENT_BINARY_DIR}/resources")
@@ -16,7 +17,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 link_libraries(vulkan)
 set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
 add_subdirectory(deps/FastNoise2)
-set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/imgui")
+set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/deps/imgui")
 
 file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp)
 add_library("ImGui" STATIC ${IMGUI_SOURCES})
