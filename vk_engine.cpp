@@ -389,7 +389,7 @@ void VulkanEngine::run() {
     	// ImGui::NewFrame();
 
     	//ImGui::ShowDemoWindow();
-    	DebugUI::PlayerInformation(PlayerEntity, *this);
+    	// DebugUI::PlayerInformation(PlayerEntity, *this);
 
     	try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
     		for (auto t : chunksToRender) {
@@ -407,7 +407,8 @@ void VulkanEngine::run() {
 
 void VulkanEngine::initScene() {
 	std::string nme = "DEBUG WOPRLD";
-	const long sed = 2412523523634;
+	const long sed = 23634;
+	// const long sed = 2412523523634;
 	currentWorld = WorldHandler::World(nme, sed);
 
 	chunksToRender = currentWorld.GetChunksAroundPlayer(*this, PlayerEntity, 2,2);
@@ -776,7 +777,7 @@ void VulkanEngine::draw() {
 
 
 
-	ImGui::Render();
+	// ImGui::Render();
 
     // Request image from the swapchain
     uint32_t swapchainImageIndex;
