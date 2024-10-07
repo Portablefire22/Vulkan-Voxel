@@ -4,18 +4,13 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "World.h"
 
-#include "../RenderUtils/RenderBlock.h"
 #include "../vulkan/vk_engine.h"
 #include <cstdlib>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_query.hpp>
 #include <glm/vec4.hpp>
-#include <set>
 
 #include <SDL2/SDL_timer.h>
-
-#include "FastNoise/FastNoise.h"
-#include <noise/noise.h>
 
 namespace WorldHandler {
 

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 set(CMAKE_CXX_STANDARD 23)
 project(VulkanTest)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -54,7 +55,6 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
         DebugUtils/ImGuiHandler.h
 
         Entity/Entity.h
-        PerlinNoise.hpp
         world/Region.cpp
         world/Region.h
         world/Region.cpp)

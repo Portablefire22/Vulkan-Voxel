@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-std=c++20, -I deps/]
+  Add: [-std=c++20, -I deps/FastNoise2/include/]

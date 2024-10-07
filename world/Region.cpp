@@ -1,14 +1,16 @@
 //
 // Created by blakey on 08/12/23.
 //
+#include <cmath>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "Region.h"
+
+#include <FastNoise/FastNoise.h>
 
 #include <iostream>
 #include <map>
 #include <ostream>
 
-#include "FastNoise/FastNoise.h"
 
 Region::Region(int x, int z)
 {
