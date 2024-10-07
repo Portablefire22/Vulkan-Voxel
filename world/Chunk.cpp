@@ -142,6 +142,7 @@ Chunk::GetVoxel(glm::vec3& position)
           this->Blocks[(int)position.x][(int)position.y][(int)position.z]);
     } catch (std::exception& e) {
         e.what();
+        return -1;
     }
 }
 

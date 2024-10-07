@@ -1,6 +1,7 @@
 //
 // Created by blakey on 27/11/23.
 //
+#include <vulkan/vulkan_core.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "vk_engine.h"
 #include <SDL2/SDL.h>
@@ -17,9 +18,9 @@
 #include "../deps/imgui/imgui.h"
 #include "../deps/imgui/imgui_impl_sdl2.h"
 #include "../deps/imgui/imgui_impl_vulkan.h"
+#include "../world/World.h"
 #include "vk_initialisers.h"
 #include "vk_textures.h"
-#include "../world/World.h"
 
 #define VK_CHECK(x)                                                            \
     do {                                                                       \
@@ -76,6 +77,8 @@ VulkanEngine::initBlockTextures()
     /*loadImages("../textures/grid.png", "stone");
     loadImages("../textures/missing.png", "grass");*/
     loadImages("../textures/Atlas.png", "Atlas");
+
+
 }
 
 void
@@ -325,6 +328,10 @@ VulkanEngine::loadImages(std::string Path, std::string Name)
       VK_FORMAT_R8G8B8A8_SRGB, temp.image._image, VK_IMAGE_ASPECT_COLOR_BIT);
     vkCreateImageView(_device, &imageInfo, nullptr, &temp.imageView);
     _loadedTextures[Name] = temp;
+
+    _mainDeletionQueue.push_function([=, this]() {
+        vkDestroyImageView(_device, temp.imageView, nullptr);
+    });
 }
 
 void
@@ -374,8 +381,8 @@ VulkanEngine::initImgui()
     immediateSubmit(
       [&](VkCommandBuffer cmd) { ImGui_ImplVulkan_CreateFontsTexture(); });
     _mainDeletionQueue.push_function([=, this]() {
-        vkDestroyDescriptorPool(_device, imguiPool, nullptr);
         ImGui_ImplVulkan_Shutdown();
+        vkDestroyDescriptorPool(_device, imguiPool, nullptr);
     });
 }
 
@@ -511,6 +518,10 @@ VulkanEngine::initScene()
                                    0);
 
     vkUpdateDescriptorSets(_device, 1, &texture1, 0, nullptr);
+
+    _mainDeletionQueue.push_function([=, this]() {
+        vkDestroySampler(_device, blockySampler, nullptr);
+    });
 }
 
 FrameData&
@@ -574,6 +585,8 @@ VulkanEngine::initVulkan()
               << _gpuProperties.limits.minUniformBufferOffsetAlignment
               << std::endl;
     std::cout << "============= Features =============" << std::endl;
+
+
 }
 
 size_t
@@ -636,9 +649,10 @@ VulkanEngine::initSwapchain()
     vkCreateImageView(_device, &depthViewInfo, nullptr, &_depthImageView);
 
     _mainDeletionQueue.push_function([=, this]() {
-        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
         vmaDestroyImage(
           _allocator, _depthImage._image, _depthImage._allocation);
+        vkDestroyImageView(_device, _depthImageView, nullptr);
+        vkDestroySwapchainKHR(_device, _swapchain, nullptr);
     });
 }
 
@@ -885,8 +899,8 @@ VulkanEngine::initSyncStructures()
                                    nullptr,
                                    &_frames[i]._renderSemaphore));
         _mainDeletionQueue.push_function([=, this]() {
-            vkDestroySemaphore(_device, _presentSemaphore, nullptr);
-            vkDestroySemaphore(_device, _renderSemaphore, nullptr);
+            vkDestroySemaphore(_device, _frames[i]._presentSemaphore, nullptr);
+            vkDestroySemaphore(_device, _frames[i]._renderSemaphore, nullptr);
         });
     }
 }
@@ -1165,6 +1179,8 @@ VulkanEngine::initDescriptors()
                          _sceneParameterBuffer._buffer,
                          _sceneParameterBuffer._allocation);
         vkDestroyDescriptorSetLayout(_device, _objectSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(_device, _singleTextureSetLayout, nullptr);
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
     });
 }
 
@@ -1412,7 +1428,11 @@ VulkanEngine::cleanup()
     if (_isInitialised) {
         vkWaitForFences(
           _device, 1, &getCurrentFrame()._renderFence, true, 1000000000);
+
+
         std::cout << "Cleaning up!" << std::endl;
+
+        vkDeviceWaitIdle(_device);
         _mainDeletionQueue.flush();
         vmaDestroyAllocator(_allocator);
         vkDestroyDevice(_device, nullptr);
