@@ -11,6 +11,8 @@
 #include <functional>
 #include <glm/vec4.hpp>
 
+#include "../threadpool/ThreadPool.hpp"
+
 #include "../DebugUtils/ImGuiHandler.h"
 #include "../player/Player.h"
 #include "VkBootstrap.h"
@@ -121,6 +123,10 @@ class VulkanEngine
     void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
     void initBlockTextures();
+    
+    bool _player_position_changed;
+
+    // std::mutex _renderables_mtx;
 
     chunk::ChunkManager _ChunkManager;
     std::vector<chunk::Chunk*> chunksToRender;

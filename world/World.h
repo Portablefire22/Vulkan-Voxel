@@ -10,17 +10,17 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/vec2.hpp>
 #include <map>
-#include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
-#include "../RenderUtils/RenderBlock.h"
 #include "../player/Player.h"
 #include "Chunk.h"
 #include "Region.h"
 
+#include "../threadpool/ThreadPool.hpp"
+
 class VulkanEngine;
+struct RenderObject;
 
 namespace WorldHandler {
 
@@ -41,15 +41,18 @@ class World
     long WorldSeed;
     int testI = 0;
 
+    RenderObject SetToRender(VulkanEngine &engine, chunk::Chunk* localChunk);
+
     void RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks);
     void RenderChunk(VulkanEngine& engine, chunk::Chunk* chunk);
 
     Region* GetRegion(int x, int z);
 
-    std::vector<chunk::Chunk*> GetChunksAroundPlayer(VulkanEngine& engine,
+    std::queue<chunk::Chunk*> GetChunksAroundPlayer(VulkanEngine& engine,
                                                      Player::Player& player,
                                                      int horzRenderDistance,
-                                                     int vertRenderDistance);
+                                                     int vertRenderDistance,
+                                                     ThreadPool *pool);
 
     chunk::Chunk GetChunk(VulkanEngine& engine,
                           int ChunkX,

@@ -1,6 +1,11 @@
 //
 // Created by blakey on 27/11/23.
 //
+#include <algorithm>
+#include <functional>
+#include <future>
+#include <thread>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "vk_engine.h"
@@ -14,6 +19,8 @@
 #define VMA_IMPLEMENTATION
 #include "../Camera.h"
 #include "vk_mem_alloc.h"
+
+#include "../threadpool/ThreadPool.hpp"
 
 #include "../deps/imgui/imgui.h"
 #include "../deps/imgui/imgui_impl_sdl2.h"
@@ -389,6 +396,17 @@ VulkanEngine::run()
     SDL_Event e;
     bool bQuit = false;
 
+    ThreadPool pool(std::thread::hardware_concurrency());
+
+    std::queue<std::future<int>> tst;
+
+    tst.push(pool.enqueue([=, this] { return 1; }));
+
+    while (!tst.empty()) {
+        std::cout << tst.front().get() << std::endl;
+        tst.pop();
+    }
+
     // main loop
     while (!bQuit) {
         lastFrameTime = nowFrameTime;
@@ -458,15 +476,61 @@ VulkanEngine::run()
         DebugUI::PlayerInformation(PlayerEntity, *this);
         DebugUI::GameSettings(*this);
 
-        try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
-            for (auto t : chunksToRender) {
-                currentWorld.RenderChunk(*this, t);
-                chunksToRender.erase(chunksToRender.begin());
-                break;
-            }
-        } catch (...) {
+        std::queue<chunk::Chunk*> chunks;
+        if (_player_position_changed) {
+            std::cout << "Chagged" << std::endl;
+
+            chunks = currentWorld.GetChunksAroundPlayer(*this,
+                                                        PlayerEntity,
+                                                        renderDistanceHorz,
+                                                        renderDistanceVert,
+                                                        &pool);
+            std::cout << chunks.size() << std::endl;
+            _player_position_changed = false;
         }
 
+        // std::queue<std::future<chunk::Chunk*>> chunk_futures;
+
+        // std::queue<chunk::Chunk*> chunk_queue;
+
+        // while(!chunk_futures.empty()) {
+        //     if (chunk_futures.front().valid()) {
+        //         chunk_queue.push(chunk_futures.front().get());
+        //         chunk_futures.pop();
+        //     }
+        // }
+
+        std::queue<std::future<RenderObject>> chunk_mesh_futures;
+
+        try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
+            while (!chunks.empty()) {
+                chunk_mesh_futures.push(pool.enqueue([&chunks, this] {
+                    auto chunk = std::move(chunks.front());
+                    chunks.pop();
+                    auto t = this->currentWorld.SetToRender(*this, chunk);
+                    return t;
+                }));
+            }
+            while (!chunk_mesh_futures.empty()) {
+                if (chunk_mesh_futures.front().valid()) {
+                    auto x = chunk_mesh_futures.front().get();
+                    if (x.mesh != nullptr) {
+                        this->_renderables.push_back(
+                          chunk_mesh_futures.front().get());
+                    }
+                    chunk_mesh_futures.pop();
+                }
+            }
+
+        } catch (...) {
+        }
+        size_t i = 0;
+        while (!chunk_mesh_futures.empty()) {
+            auto chunk = std::move(chunksToRender.front());
+            chunksToRender.erase(chunksToRender.begin());
+            currentWorld.RenderChunk(*this, chunk);
+            i++;
+        }
         draw();
     }
 }
@@ -478,10 +542,12 @@ VulkanEngine::initScene()
     const long sed = 2412523523634;
     currentWorld = WorldHandler::World(nme, sed);
 
-    chunksToRender = currentWorld.GetChunksAroundPlayer(
-      *this, PlayerEntity, this->renderDistanceHorz, this->renderDistanceVert);
+    // chunksToRender = currentWorld.GetChunksAroundPlayer(
+    //   *this, PlayerEntity, this->renderDistanceHorz,
+    //   this->renderDistanceVert);
     double t1 = SDL_GetPerformanceCounter();
-    currentWorld.RenderChunks(*this, chunksToRender);
+    // _player_position_changed = true;
+    // currentWorld.RenderChunks(*this, chunksToRender);
     double t2 = SDL_GetPerformanceCounter();
     double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
     std::cout << "Time: " << t3 << std::endl;

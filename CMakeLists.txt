@@ -36,6 +36,8 @@ set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
         player/Player.cpp
         RenderUtils/RenderBlock.cpp
         DebugUtils/ImGuiHandler.cpp
+        threadpool/ThreadPool.cpp
+        threadpool/QueueSafe.cpp
         world/World.cpp
         vulkan/vk_textures.cpp)
 
@@ -53,6 +55,9 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
         world/World.h
 
         DebugUtils/ImGuiHandler.h
+
+        threadpool/ThreadPool.hpp
+        threadpool/QueueSafe.hpp
 
         Entity/Entity.h
         world/Region.cpp

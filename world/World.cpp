@@ -1,6 +1,10 @@
 //
 // Created by blakey on 01/12/23.
 //
+#include "Chunk.h"
+#include <iostream>
+#include <mutex>
+#include <utility>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "World.h"
 
@@ -13,6 +17,43 @@
 #include <SDL2/SDL_timer.h>
 
 namespace WorldHandler {
+
+RenderObject
+World::SetToRender(VulkanEngine& engine, chunk::Chunk* localChunk)
+{
+    RenderObject chunkObject;
+    std::cout << localChunk->ChunkPosition.x << " | " << localChunk->ChunkPosition.y << " | " << localChunk->ChunkPosition.z << "[]"<< std::endl;
+    std::string name = glm::to_string(localChunk->ChunkPosition);
+
+    bool chunkExists = false;
+    for (auto t : engine._renderables) {
+        if (t.name == name) {
+            return t;
+        }
+    }
+
+    // Check if the chunk exists or not
+
+    // Check if the chunk mesh already exists, if not then create it
+    if (!engine._meshes.contains(name)) {
+        localChunk->GenerateChunkMesh();
+    }
+    chunkObject.mesh = engine.getMesh(name);
+    if (chunkObject.mesh == nullptr) {
+        std::cout << "ERROR: NULLPTR MESH!!!" << std::endl;
+        return chunkObject;
+    }
+    chunkObject.name = name;
+
+    chunkObject.material = engine.getMaterial("grass");
+
+    glm::mat4 translation = glm::translate(
+      glm::mat4{ 1.0 }, localChunk->ChunkPosition * (float)CHUNK_SIZE);
+    glm::mat4 scale = glm::scale(glm::mat4{ 1.0 }, glm::vec3(1, 1, 1));
+    chunkObject.transformMatrix = translation * scale;
+    chunkObject.position = localChunk->ChunkPosition;
+    return chunkObject;
+}
 
 void
 World::RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks)
@@ -58,20 +99,20 @@ World::RenderChunk(VulkanEngine& engine, chunk::Chunk* localChunk)
     RenderObject chunkObject;
     std::string name = glm::to_string(localChunk->ChunkPosition);
 
-    bool chunkExists = false;
-    for (auto t : engine._renderables) {
-        if (t.name == name) {
-            chunkExists = true;
-        }
-    }
-    if (chunkExists) {
-        return;
-    }
+    // bool chunkExists = false;
+    // for (auto t : engine._renderables) {
+    //     if (t.name == name) {
+    //         chunkExists = true;
+    //     }
+    // }
+    // if (chunkExists) {
+    //     return;
+    // }
 
-    // Check if the chunk mesh already exists, if not then create it
-    if (!engine._meshes.contains(name)) {
-        localChunk->GenerateChunkMesh();
-    }
+    // // Check if the chunk mesh already exists, if not then create it
+    // if (!engine._meshes.contains(name)) {
+    //     localChunk->GenerateChunkMesh();
+    // }
     chunkObject.mesh = engine.getMesh(name);
     if (chunkObject.mesh == nullptr) {
         return;
@@ -91,27 +132,45 @@ World::RenderChunk(VulkanEngine& engine, chunk::Chunk* localChunk)
 // https://github.com/jdah/minecraft-again/blob/master/src/level/area.cpp <=
 // Probably a good starting point
 
-std::vector<chunk::Chunk*>
+std::queue<chunk::Chunk*>
 World::GetChunksAroundPlayer(VulkanEngine& engine,
                              Player::Player& player,
                              int horzRenderDistance,
-                             int vertRenderDistance)
+                             int vertRenderDistance,
+                             ThreadPool* pool)
 {
-    std::vector<chunk::Chunk*> chunksToRender;
+    std::queue<chunk::Chunk*> chunksToRender;
+    std::queue<std::future<std::queue<chunk::Chunk*>>> regionQueue;
     for (int z = player.ChunkPosition.z - horzRenderDistance;
          z <= player.ChunkPosition.z + horzRenderDistance;
          z++) {
         for (int x = player.ChunkPosition.x - horzRenderDistance;
              x <= player.ChunkPosition.x + horzRenderDistance;
              x++) {
-            auto tempRegion = GetRegion(x, z);
-            for (int y = player.ChunkPosition.y - vertRenderDistance;
-                 y <= player.ChunkPosition.y + vertRenderDistance;
-                 y++) {
-                if (!tempRegion->isChunkEmpty(y)) {
-                    chunksToRender.push_back(tempRegion->getChunk(y));
+            regionQueue.push(pool->enqueue([=, this] {
+                std::queue<chunk::Chunk*> tmp;
+                auto tempRegion = GetRegion(x, z);
+                for (int y = player.ChunkPosition.y - vertRenderDistance;
+                     y <= player.ChunkPosition.y + vertRenderDistance;
+                     y++) {
+                    if (!tempRegion->isChunkEmpty(y)) {
+                        tmp.push(tempRegion->getChunk(y));
+                    }
                 }
-            }
+                std::cout << tmp.size() << std::endl;
+                return tmp;
+            }));
+        }
+    }
+    while (!regionQueue.empty()) {
+        if (regionQueue.front().valid()) {
+            auto t = regionQueue.front().get();
+            while (!t.empty()) {
+                chunksToRender.push(std::move(t.front()));
+                t.pop();
+            } 
+        } else {
+            regionQueue.pop();
         }
     }
     return chunksToRender;

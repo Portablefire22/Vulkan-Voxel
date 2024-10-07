@@ -57,35 +57,36 @@ Player::updatePosition(VulkanEngine& engine)
                       floor(tempPos.y / CHUNK_SIZE),
                       floor(tempPos.z / CHUNK_SIZE) };
     if (ChunkPosition != LastChunkPosition) {
-        ChunkPositionChanged(engine);
+        // ChunkPositionChanged(engine);
+        engine._player_position_changed = true;
         LastChunkPosition = ChunkPosition;
     }
 }
 
-void
-Player::ChunkPositionChanged(VulkanEngine& engine)
-{
-    engine.chunksToRender = engine.currentWorld.GetChunksAroundPlayer(
-      engine, *this, engine.renderDistanceHorz, engine.renderDistanceVert);
-    int xOffset = 0;
-    int yOffset = 0;
-    int zOffset = 0;
-    glm::vec3 deltaVec = ChunkPosition - LastChunkPosition;
-    // engine.currentWorld.RenderChunks(engine, engine.chunksToRender);
-    for (auto iter = engine._renderables.begin();
-         iter != engine._renderables.end();) {
-        if (abs(iter->position.y - this->ChunkPosition.y) >
-              engine.renderDistanceVert ||
-            abs(iter->position.x - this->ChunkPosition.x) >
-              engine.renderDistanceHorz ||
-            abs(iter->position.z - this->ChunkPosition.z) >
-              engine.renderDistanceHorz) {
-            engine._renderables.erase(iter);
-        } else {
-            ++iter;
-        }
-    }
-}
+// void
+// Player::ChunkPositionChanged(VulkanEngine& engine)
+// {
+//     engine.chunksToRender = engine.currentWorld.GetChunksAroundPlayer(
+//       engine, *this, engine.renderDistanceHorz, engine.renderDistanceVert);
+//     int xOffset = 0;
+//     int yOffset = 0;
+//     int zOffset = 0;
+//     glm::vec3 deltaVec = ChunkPosition - LastChunkPosition;
+//     engine.currentWorld.RenderChunks(engine, engine.chunksToRender);
+//     for (auto iter = engine._renderables.begin();
+//          iter != engine._renderables.end();) {
+//         if (abs(iter->position.y - this->ChunkPosition.y) >
+//               engine.renderDistanceVert ||
+//             abs(iter->position.x - this->ChunkPosition.x) >
+//               engine.renderDistanceHorz ||
+//             abs(iter->position.z - this->ChunkPosition.z) >
+//               engine.renderDistanceHorz) {
+//             engine._renderables.erase(iter);
+//         } else {
+//             ++iter;
+//         }
+//     }
+// }
 
 void
 Player::processMouse(float xOffset, float yOffset)
