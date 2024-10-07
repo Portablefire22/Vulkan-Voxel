@@ -18,6 +18,8 @@ include_directories(${SDL2_INCLUDE_DIRS})
 link_libraries(vulkan)
 set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
 add_subdirectory(deps/FastNoise2)
+
+
 set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/deps/imgui")
 
 file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp)
