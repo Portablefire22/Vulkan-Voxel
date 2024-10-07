@@ -5,7 +5,7 @@
 
 #ifndef VK_TYPES_H
 #define VK_TYPES_H
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 struct AllocatedBuffer
 {

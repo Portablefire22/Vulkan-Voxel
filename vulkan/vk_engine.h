@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <SDL_stdinc.h>
 #include <glm/vec4.hpp>
 
 #include "../player/Player.h"
@@ -190,8 +191,8 @@ class VulkanEngine
     VkInstance _instance;                      // Vulkan library handle
     VkDebugUtilsMessengerEXT _debug_messenger; // Vulkan debug output handle
     VkPhysicalDevice _chosenGPU; // GPU chosen as the default device
-    VkDevice _device;            // Vulkan device for commands
-    VkSurfaceKHR _surface;       // Vulkan window surface
+    VkDevice _device; // Vulkan device for commands
+    VkSurfaceKHR _surface; // Vulkan window surface
 
     Player::Player PlayerEntity;
 

@@ -7,6 +7,9 @@
 
 #include "../vulkan/vk_engine.h"
 #include "../deps/imgui/imgui.h"
+#include "../deps/imgui/imgui_impl_sdl2.h"
+#include "../deps/imgui/imgui_impl_osx.h"
+#include "../deps/imgui/imgui_internal.h"
 #include "../player/Player.h"
 #include "../vulkan/vk_engine.h"
 

@@ -10,19 +10,20 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(source "${CMAKE_SOURCE_DIR}")
 set(destination "${CMAKE_CURRENT_BINARY_DIR}/resources")
 
-find_package(Vulkan REQUIRED)
+#find_package(Vulkan REQUIRED)
 find_package(SDL2 REQUIRED)
-link_libraries(noise)
 
 include_directories(${SDL2_INCLUDE_DIRS})
 add_subdirectory(deps/vk-bootstrap)
 
-link_libraries(vulkan)
+include_directories(/Users/blakey/VulkanSDK/1.3.290.0/macOS/include)
+add_subdirectory(deps/vk-bootstrap)
+
 set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
 add_subdirectory(deps/FastNoise2)
-
-
 set(IMGUI_PATH "${CMAKE_SOURCE_DIR}/deps/imgui")
+
+find_package(Vulkan COMPONENTS MoltenVK)
 
 file(GLOB IMGUI_SOURCES ${IMGUI_PATH}/*.cpp)
 add_library("ImGui" STATIC ${IMGUI_SOURCES})
@@ -69,3 +70,4 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
 add_executable(VulkanTest ${PROJECT_SOURCES} ${PROJECT_HEADERS})
 target_link_libraries(VulkanTest ${SDL2_LIBRARIES} ImGui  FastNoise)
 target_link_libraries(VulkanTest vk-bootstrap::vk-bootstrap)
+target_link_libraries(VulkanTest Vulkan::Vulkan)
