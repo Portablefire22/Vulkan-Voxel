@@ -11,16 +11,15 @@
 #include <unistd.h>
 
 #define VMA_IMPLEMENTATION
-#include "Camera.h"
+#include "../Camera.h"
 #include "vk_mem_alloc.h"
 
-#include "deps/imgui/imgui.h"
-#include "deps/imgui/imgui_impl_sdl2.h"
-#include "deps/imgui/imgui_impl_vulkan.h"
-#include "deps/imgui/imgui_internal.h"
+#include "../deps/imgui/imgui.h"
+#include "../deps/imgui/imgui_impl_sdl2.h"
+#include "../deps/imgui/imgui_impl_vulkan.h"
 #include "vk_initialisers.h"
 #include "vk_textures.h"
-#include "world/World.h"
+#include "../world/World.h"
 
 #define VK_CHECK(x)                                                            \
     do {                                                                       \

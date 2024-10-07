@@ -5,7 +5,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 #pragma once
-#include "vk_engine.h"
+#include "vulkan/vk_engine.h"
 
 namespace entryPoint {
 inline VulkanEngine engine;

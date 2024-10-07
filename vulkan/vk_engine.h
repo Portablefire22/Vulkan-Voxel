@@ -11,13 +11,13 @@
 #include <functional>
 #include <glm/vec4.hpp>
 
-#include "DebugUtils/ImGuiHandler.h"
+#include "../DebugUtils/ImGuiHandler.h"
 #include "VkBootstrap.h"
-#include "player/Player.h"
+#include "../player/Player.h"
 
 #include <unordered_map>
 
-#include "world/World.h"
+#include "../world/World.h"
 
 struct Texture
 {

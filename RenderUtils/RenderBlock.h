@@ -4,7 +4,7 @@
 
 #ifndef RENDERBLOCK_H
 #define RENDERBLOCK_H
-#include "../vk_mesh.h"
+#include "../vulkan/vk_mesh.h"
 
 namespace RenderBlock {
 

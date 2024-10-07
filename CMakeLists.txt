@@ -27,27 +27,27 @@ add_library("ImGui" STATIC ${IMGUI_SOURCES})
 
 
 set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
-        vk_mesh.cpp
-        vk_engine.cpp
-        VkBootstrap.cpp
-        vk_initialisers.cpp
+        vulkan/vk_mesh.cpp
+        vulkan/vk_engine.cpp
+        vulkan/VkBootstrap.cpp
+        vulkan/vk_initialisers.cpp
         Entity/Entity.cpp
         player/Player.cpp
         RenderUtils/RenderBlock.cpp
         DebugUtils/ImGuiHandler.cpp
         world/World.cpp
-        vk_textures.cpp)
+        vulkan/vk_textures.cpp)
 
 set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
-        vk_types.h
-        vk_mesh.h
-        VkBootstrap.h
-        VkBootstrapDispatch.h
-        vk_engine.h
-        vk_initialisers.h
+        vulkan/vk_types.h
+        vulkan/vk_mesh.h
+        vulkan/VkBootstrap.h
+        vulkan/VkBootstrapDispatch.h
+        vulkan/vk_engine.h
+        vulkan/vk_initialisers.h
         player/Player.h
         RenderUtils/RenderBlock.h
-        vk_textures.h
+        vulkan/vk_textures.h
 
         world/World.h
 

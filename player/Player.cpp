@@ -4,12 +4,12 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "Player.h"
 
-#include <SDL_keyboard.h>
+#include <SDL2/SDL_keyboard.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
 #include "../main.h"
-#include "../vk_engine.h"
+#include "../vulkan/vk_engine.h"
 
 namespace Player {
 

@@ -5,20 +5,16 @@
 #include "World.h"
 
 #include "../RenderUtils/RenderBlock.h"
-#include "../vk_engine.h"
+#include "../vulkan/vk_engine.h"
 #include <cstdlib>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_query.hpp>
 #include <glm/vec4.hpp>
 #include <set>
 
-#include <SDL_timer.h>
-#include <complex>
-#include <iostream>
-#include <unordered_set>
+#include <SDL2/SDL_timer.h>
 
-#include "../deps/FastNoise2/include/FastNoise/FastNoise.h"
-#include "glm/gtx/hash.hpp"
+#include "FastNoise/FastNoise.h"
 #include <noise/noise.h>
 
 namespace WorldHandler {

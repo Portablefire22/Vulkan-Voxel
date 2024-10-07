@@ -10,7 +10,7 @@
 // #include "../deps/imgui/imgui_impl_vulkan.h"
 #include "../deps/imgui/imgui_internal.h"
 #include "../player/Player.h"
-#include "../vk_engine.h"
+#include "../vulkan/vk_engine.h"
 
 namespace DebugUI {
 void

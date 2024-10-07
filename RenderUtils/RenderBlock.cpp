@@ -4,11 +4,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "RenderBlock.h"
 
-#include <iostream>
-#include <ostream>
-
 #include "../main.h"
-#include "../vk_engine.h"
+#include "../vulkan/vk_engine.h"
 
 Mesh
 RenderBlock::createHorizontalQuad(int blockId,
