@@ -7,11 +7,11 @@
 
 #ifndef WORLD_H
 #define WORLD_H
-#include <string>
 #include <glm/gtx/hash.hpp>
 #include <glm/vec2.hpp>
 #include <map>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 

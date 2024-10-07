@@ -11,7 +11,6 @@
 #include <map>
 #include <ostream>
 
-
 Region::Region(int x, int z)
 {
     this->Position = std::make_pair(x, z);

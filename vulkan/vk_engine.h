@@ -12,8 +12,8 @@
 #include <glm/vec4.hpp>
 
 #include "../DebugUtils/ImGuiHandler.h"
-#include "VkBootstrap.h"
 #include "../player/Player.h"
+#include "VkBootstrap.h"
 
 #include <unordered_map>
 

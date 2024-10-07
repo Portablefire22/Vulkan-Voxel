@@ -77,8 +77,6 @@ VulkanEngine::initBlockTextures()
     /*loadImages("../textures/grid.png", "stone");
     loadImages("../textures/missing.png", "grass");*/
     loadImages("../textures/Atlas.png", "Atlas");
-
-
 }
 
 void
@@ -329,9 +327,8 @@ VulkanEngine::loadImages(std::string Path, std::string Name)
     vkCreateImageView(_device, &imageInfo, nullptr, &temp.imageView);
     _loadedTextures[Name] = temp;
 
-    _mainDeletionQueue.push_function([=, this]() {
-        vkDestroyImageView(_device, temp.imageView, nullptr);
-    });
+    _mainDeletionQueue.push_function(
+      [=, this]() { vkDestroyImageView(_device, temp.imageView, nullptr); });
 }
 
 void
@@ -519,9 +516,8 @@ VulkanEngine::initScene()
 
     vkUpdateDescriptorSets(_device, 1, &texture1, 0, nullptr);
 
-    _mainDeletionQueue.push_function([=, this]() {
-        vkDestroySampler(_device, blockySampler, nullptr);
-    });
+    _mainDeletionQueue.push_function(
+      [=, this]() { vkDestroySampler(_device, blockySampler, nullptr); });
 }
 
 FrameData&
@@ -585,8 +581,6 @@ VulkanEngine::initVulkan()
               << _gpuProperties.limits.minUniformBufferOffsetAlignment
               << std::endl;
     std::cout << "============= Features =============" << std::endl;
-
-
 }
 
 size_t
@@ -1428,7 +1422,6 @@ VulkanEngine::cleanup()
     if (_isInitialised) {
         vkWaitForFences(
           _device, 1, &getCurrentFrame()._renderFence, true, 1000000000);
-
 
         std::cout << "Cleaning up!" << std::endl;
 
