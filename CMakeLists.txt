@@ -38,6 +38,7 @@ set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
         DebugUtils/ImGuiHandler.cpp
         threadpool/ThreadPool.cpp
         threadpool/QueueSafe.cpp
+        threadpool/ChunkPool.cpp
         world/World.cpp
         vulkan/vk_textures.cpp)
 
@@ -58,6 +59,7 @@ set(PROJECT_HEADERS main.h stb_image.h Camera.h world/Chunk.h block/Block.h
 
         threadpool/ThreadPool.hpp
         threadpool/QueueSafe.hpp
+        threadpool/ChunkPool.hpp
 
         Entity/Entity.h
         world/Region.cpp

@@ -11,12 +11,12 @@
 #include <vector>
 class ThreadPool
 {
-  private:
-    int _n_threads;
+  protected:
     QueueSafe<std::function<void()>> _task_queue;
     std::vector<std::thread> _threads;
     std::mutex _mtx;
     std::condition_variable _cv;
+    int _n_threads;
     bool _stop;
 
   public:
@@ -24,8 +24,6 @@ class ThreadPool
     explicit ThreadPool();
     ~ThreadPool();
 
-    // template<typename T> std::future<decltype(T())> enqueue(std::function<void()> task);
-    // template<typename T> auto enqueue(T task) -> std::future<decltype(task())>;
   template<typename T> auto enqueue(T task) -> std::future<decltype(task())> {
     auto wrapper = std::make_shared<std::packaged_task<decltype(task()) ()>>(std::move(task));
     _task_queue.push([=] {
