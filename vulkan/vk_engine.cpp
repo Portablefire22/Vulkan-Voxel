@@ -470,6 +470,7 @@ VulkanEngine::run()
         DebugUI::GameSettings(*this);
 
         std::queue<chunk::Chunk*> chunks;
+        std::string name; 
         if (_player_position_changed) {
             chunks = currentWorld.GetChunksAroundPlayer(*this,
                                                         PlayerEntity,
@@ -479,16 +480,14 @@ VulkanEngine::run()
             while (!chunks.empty()) {
                 auto localChunk = std::move(chunks.front());
                 chunks.pop();
+                name = glm::to_string(localChunk->ChunkPosition);
                 try {
-                    std::string name = glm::to_string(localChunk->ChunkPosition);
                     if (_meshes.contains(name) && getMesh(name) == nullptr) {
                         std::cout << "Exists but is nullptr" << std::endl;
                         continue;
                     }
-                    pool.enqueue([=, this]() {
-                        // return currentWorld.SetToRender(*localChunk);
-                        RenderObject chunk;
-                        return chunk;
+                    pool.enqueue([&]() {
+                        return currentWorld.SetToRender(*this, localChunk);
                     });
                 } catch (std::exception e) {
                     std::cout << e.what() << std::endl;
@@ -498,15 +497,15 @@ VulkanEngine::run()
             _player_position_changed = false;
         }
 
-        std::cout << "Tasks: " << pool._task_queue.size() << std::endl;
-
         while(!pool._chunkMeshQueue.empty()) {
             std::cout << "Should be pushing?" << std::endl;
-            {
-               _renderables.push_back(pool._chunkMeshQueue.pop()); 
+            auto x = pool._chunkMeshQueue.pop();
+            if (x.mesh->_vertices.size() > 0) {
+                uploadMesh(*x.mesh);
+                _meshes[x.name] = *x.mesh;
+               _renderables.push_back(x); 
             }
         }
-
         draw();
     }
 }

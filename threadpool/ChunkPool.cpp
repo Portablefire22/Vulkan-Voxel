@@ -6,6 +6,7 @@ void
 ChunkPool::enqueue(std::function<RenderObject()> task)
 {
     _task_queue.push(task);
+    _cv.notify_one();
 }
 
 ChunkPool::ChunkPool(int num_threads)
@@ -21,17 +22,17 @@ ChunkPool::ChunkPool(int num_threads)
                 {
                     std::unique_lock<std::mutex> lock(_mtx);
                     // If there is nothing to do, then submit meshes for rendering
-                    // if (_task_queue.empty()) {
-                    //     std::cout << "Task queue empty" << std::endl;
-                    //     {
-                    //         std::unique_lock<std::mutex> lock(_mtx);
-                    //         while (!render_queue.empty()) {
-                    //             std::cout << "Pushing" << std::endl;
-                    //             _chunkMeshQueue.push(std::move(render_queue.front()));
-                    //             render_queue.pop();
-                    //         }
-                    //     }
-                    // } 
+                    if (_task_queue.empty()) {
+                        std::cout << "Task queue empty" << std::endl;
+                        {
+                            // std::unique_lock<std::mutex> lock(_mtx);
+                            while (!render_queue.empty()) {
+                                std::cout << "Pushing" << std::endl;
+                                _chunkMeshQueue.push(std::move(render_queue.front()));
+                                render_queue.pop();
+                            }
+                        }
+                    } 
                     // Wait until there is a task, or if the queue was stopped
                     _cv.wait(lock,
                              [=, &render_queue, this] {

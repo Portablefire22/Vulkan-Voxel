@@ -41,7 +41,7 @@ class World
     long WorldSeed;
     int testI = 0;
 
-    RenderObject SetToRender(chunk::Chunk localChunk);
+    RenderObject SetToRender(VulkanEngine &engine, chunk::Chunk* localChunk);
 
     void RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks);
     void RenderChunk(VulkanEngine& engine, chunk::Chunk* chunk);
