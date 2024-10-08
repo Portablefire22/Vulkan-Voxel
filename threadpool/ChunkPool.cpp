@@ -21,7 +21,8 @@ ChunkPool::ChunkPool(int num_threads)
                 // threads to queue tasks
                 {
                     std::unique_lock<std::mutex> lock(_mtx);
-                    // If there is nothing to do, then submit meshes for rendering
+                    // If there is nothing to do, then submit meshes for
+                    // rendering
                     if (_task_queue.empty()) {
                         {
                             // std::unique_lock<std::mutex> lock(_mtx);
@@ -31,21 +32,21 @@ ChunkPool::ChunkPool(int num_threads)
                                 _chunkMeshQueue.push(std::move(x));
                             }
                         }
-                    } 
+                    }
                     // Wait until there is a task, or if the queue was stopped
-                    _cv.wait(lock,
-                             [=, &render_queue, this] {
-                             return !_task_queue.empty() || _stop; 
-                             });
+                    _cv.wait(lock, [=, &render_queue, this] {
+                        return !_task_queue.empty() || _stop;
+                    });
 
                     if (_task_queue.empty() && _stop)
                         return;
                     task = _task_queue.pop();
                 }
-                // This specialised chunkpool should always return a chunk-mesh from it's tasks. 
+                // This specialised chunkpool should always return a chunk-mesh
+                // from it's tasks.
                 render_queue.push(task());
-                 // If there is nothing to do, then submit meshes for rendering
-           }
+                // If there is nothing to do, then submit meshes for rendering
+            }
         });
     }
 }

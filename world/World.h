@@ -41,7 +41,7 @@ class World
     long WorldSeed;
     int testI = 0;
 
-    RenderObject SetToRender(VulkanEngine &engine, chunk::Chunk localChunk);
+    RenderObject SetToRender(VulkanEngine& engine, chunk::Chunk localChunk);
 
     void RenderChunks(VulkanEngine& engine, std::vector<chunk::Chunk*>& chunks);
     void RenderChunk(VulkanEngine& engine, chunk::Chunk* chunk);
@@ -49,10 +49,9 @@ class World
     Region* GetRegion(int x, int z);
 
     std::queue<chunk::Chunk*> GetChunksAroundPlayer(VulkanEngine& engine,
-                                                     Player::Player& player,
-                                                     int horzRenderDistance,
-                                                     int vertRenderDistance
-                                                    );
+                                                    Player::Player& player,
+                                                    int horzRenderDistance,
+                                                    int vertRenderDistance);
 
     chunk::Chunk GetChunk(VulkanEngine& engine,
                           int ChunkX,

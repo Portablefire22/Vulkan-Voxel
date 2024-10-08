@@ -123,7 +123,7 @@ class VulkanEngine
     void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 
     void initBlockTextures();
-    
+
     bool _player_position_changed;
 
     // std::mutex _renderables_mtx;

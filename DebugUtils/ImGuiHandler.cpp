@@ -45,7 +45,7 @@ GameSettings(VulkanEngine& engine)
       "Horizontal Render distance", &engine.renderDistanceHorz, 0, 100);
     ImGui::SliderInt(
       "Vertical Render distance", &engine.renderDistanceVert, 0, 100);
-    ImGui::Checkbox("Stop chunk loading?", &engine.stopLoadChunks);  
+    ImGui::Checkbox("Stop chunk loading?", &engine.stopLoadChunks);
     ImGui::End();
 }
 

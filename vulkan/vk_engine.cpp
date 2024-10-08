@@ -493,7 +493,8 @@ VulkanEngine::run()
                     if (chunkExists)
                         continue;
                     pool.enqueue([=, this]() {
-                        return currentWorld.SetToRender(*this, std::move(*localChunk));
+                        return currentWorld.SetToRender(*this,
+                                                        std::move(*localChunk));
                     });
                 } catch (std::exception e) {
                     std::cout << e.what() << std::endl;

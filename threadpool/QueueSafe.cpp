@@ -43,15 +43,26 @@ QueueSafe<T>::size()
     return _queue.size();
 }
 
-template bool QueueSafe<std::function<void()>>::empty();
-template void QueueSafe<std::function<void()>>::push(std::function<void()> const val);
-template std::function<void()> QueueSafe<std::function<void()>>::pop();
+template bool
+QueueSafe<std::function<void()>>::empty();
+template void
+QueueSafe<std::function<void()>>::push(std::function<void()> const val);
+template std::function<void()>
+QueueSafe<std::function<void()>>::pop();
 
-template bool QueueSafe<std::function<RenderObject()>>::empty();
-template void QueueSafe<std::function<RenderObject()>>::push(std::function<RenderObject()> const val);
-template size_t QueueSafe<std::function<RenderObject()>>::size();
-template std::function<RenderObject()> QueueSafe<std::function<RenderObject()>>::pop();
+template bool
+QueueSafe<std::function<RenderObject()>>::empty();
+template void
+QueueSafe<std::function<RenderObject()>>::push(
+  std::function<RenderObject()> const val);
+template size_t
+QueueSafe<std::function<RenderObject()>>::size();
+template std::function<RenderObject()>
+QueueSafe<std::function<RenderObject()>>::pop();
 
-template RenderObject QueueSafe<RenderObject>::pop();
-template bool QueueSafe<RenderObject>::empty();
-template void QueueSafe<RenderObject>::push(RenderObject const val);
+template RenderObject
+QueueSafe<RenderObject>::pop();
+template bool
+QueueSafe<RenderObject>::empty();
+template void
+QueueSafe<RenderObject>::push(RenderObject const val);

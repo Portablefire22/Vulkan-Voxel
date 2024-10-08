@@ -1,6 +1,6 @@
 
-#include "QueueSafe.hpp"
 #include "ThreadPool.hpp"
+#include "QueueSafe.hpp"
 #include <functional>
 #include <future>
 #include <mutex>
@@ -35,7 +35,10 @@ ThreadPool::ThreadPool(int num_threads)
     }
 }
 
-ThreadPool::ThreadPool() : ThreadPool::ThreadPool(std::thread::hardware_concurrency()) {}
+ThreadPool::ThreadPool()
+  : ThreadPool::ThreadPool(std::thread::hardware_concurrency())
+{
+}
 
 ThreadPool::~ThreadPool()
 {
@@ -53,11 +56,11 @@ ThreadPool::~ThreadPool()
 // {
 //     _task_queue.push(task);
 // }
-// template<typename T> std::future<decltype(T())> ThreadPool::enqueue(std::function<void()> task) {
-//   auto wrapper = std::make_shared<std::packaged_task<decltype(task()) ()>>(std::move(task));
-//   _task_queue.push([=] {
+// template<typename T> std::future<decltype(T())>
+// ThreadPool::enqueue(std::function<void()> task) {
+//   auto wrapper = std::make_shared<std::packaged_task<decltype(task())
+//   ()>>(std::move(task)); _task_queue.push([=] {
 //     (*wrapper)();
 //   });
 //   return wrapper->get_future();
 // }
-
