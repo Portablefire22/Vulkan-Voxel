@@ -23,13 +23,12 @@ ChunkPool::ChunkPool(int num_threads)
                     std::unique_lock<std::mutex> lock(_mtx);
                     // If there is nothing to do, then submit meshes for rendering
                     if (_task_queue.empty()) {
-                        std::cout << "Task queue empty" << std::endl;
                         {
                             // std::unique_lock<std::mutex> lock(_mtx);
                             while (!render_queue.empty()) {
-                                std::cout << "Pushing" << std::endl;
-                                _chunkMeshQueue.push(std::move(render_queue.front()));
+                                auto x = std::move(render_queue.front());
                                 render_queue.pop();
+                                _chunkMeshQueue.push(std::move(x));
                             }
                         }
                     } 

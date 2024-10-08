@@ -97,10 +97,10 @@ Chunk::generateChunk()
     return true;
 }
 
-Mesh
+Mesh*
 Chunk::GenerateChunkMesh()
 {
-    Mesh chunkMesh{};
+    Mesh* chunkMesh = new Mesh;
     std::string name = glm::to_string(this->ChunkPosition);
     glm::vec3 blockPosition;
     double t1 = SDL_GetPerformanceCounter();
@@ -118,7 +118,7 @@ Chunk::GenerateChunkMesh()
                   ShouldRenderFace(blockPosition);
                 // If the mesh doesn't exist
                 RenderBlock::AddBlockVertices((int)this->Blocks[y][z][x],
-                                              chunkMesh,
+                                              *chunkMesh,
                                               facesToRender,
                                               blockPosition);
             }

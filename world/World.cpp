@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <ostream>
 #include <syncstream>
 #include <thread>
 #include <utility>
@@ -22,35 +23,26 @@
 namespace WorldHandler {
 
 RenderObject
-World::SetToRender(VulkanEngine& engine, chunk::Chunk* localChunk)
+World::SetToRender(VulkanEngine& engine, chunk::Chunk localChunk)
 {
     RenderObject chunkObject;
-    std::string name = glm::to_string(localChunk->ChunkPosition);
-
-    bool chunkExists = false;
-    for (auto t : engine._renderables) {
-        if (t.name == name) {
-            return t;
-        }
-    }
-
-    // Check if the chunk exists or not
-
+    std::string name = glm::to_string(localChunk.ChunkPosition);
+    
     // Check if the chunk mesh already exists, if not then create it
-    auto t = localChunk->GenerateChunkMesh();
-    chunkObject.mesh = &t;
+    auto t = localChunk.GenerateChunkMesh();
+    chunkObject.mesh = t;
     chunkObject.name = name;
 
     chunkObject.material = engine.getMaterial("grass");
 
     glm::mat4 translation = glm::translate(
-      glm::mat4{ 1.0 }, localChunk->ChunkPosition * (float)CHUNK_SIZE);
+      glm::mat4{ 1.0 }, localChunk.ChunkPosition * (float)CHUNK_SIZE);
     glm::mat4 scale = glm::scale(glm::mat4{ 1.0 }, glm::vec3(1, 1, 1));
     chunkObject.transformMatrix = translation * scale;
-    chunkObject.position = localChunk->ChunkPosition;
-    std::osyncstream(std::cout) << "Pushing Mesh: [" << localChunk->ChunkPosition.x << ","
-              << localChunk->ChunkPosition.y << ","
-              << localChunk->ChunkPosition.z << "]" << "Thread ID: " << std::this_thread::get_id() << '\n';
+    chunkObject.position = localChunk.ChunkPosition;
+    // std::osyncstream(std::cout) << "Pushing Mesh: [" << localChunk->ChunkPosition.x << ","
+    //           << localChunk->ChunkPosition.y << ","
+    //           << localChunk->ChunkPosition.z << "]" << "Thread ID: " << std::this_thread::get_id() << '\n';
     return chunkObject;
 }
 
@@ -166,5 +158,4 @@ World::GetRegion(int x, int z)
     }
     return &RegionMap.at(std::make_pair(x, z));
 }
-
 }

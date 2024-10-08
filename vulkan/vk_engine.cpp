@@ -398,7 +398,7 @@ VulkanEngine::run()
     SDL_Event e;
     bool bQuit = false;
 
-    ChunkPool pool(std::thread::hardware_concurrency());
+    ChunkPool pool;
 
     // main loop
     while (!bQuit) {
@@ -470,40 +470,44 @@ VulkanEngine::run()
         DebugUI::GameSettings(*this);
 
         std::queue<chunk::Chunk*> chunks;
-        std::string name; 
-        if (_player_position_changed) {
-            chunks = currentWorld.GetChunksAroundPlayer(*this,
-                                                        PlayerEntity,
-                                                        renderDistanceHorz,
-                                                        renderDistanceVert
-                                                    );
+
+        if (_player_position_changed && !stopLoadChunks) {
+            chunks = currentWorld.GetChunksAroundPlayer(
+              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert);
             while (!chunks.empty()) {
                 auto localChunk = std::move(chunks.front());
                 chunks.pop();
-                name = glm::to_string(localChunk->ChunkPosition);
+                std::string name = glm::to_string(localChunk->ChunkPosition);
+                // std::cout << "[VK_ENGINE:] " << name << std::endl;
                 try {
                     if (_meshes.contains(name) && getMesh(name) == nullptr) {
                         std::cout << "Exists but is nullptr" << std::endl;
                         continue;
                     }
-                    pool.enqueue([&]() {
-                        return currentWorld.SetToRender(*this, localChunk);
+                    bool chunkExists = false;
+                    for (auto t : _renderables) {
+                        if (t.name == name) {
+                            chunkExists = true;
+                        }
+                    }
+                    if (chunkExists)
+                        continue;
+                    pool.enqueue([=, this]() {
+                        return currentWorld.SetToRender(*this, std::move(*localChunk));
                     });
                 } catch (std::exception e) {
                     std::cout << e.what() << std::endl;
                 }
-
             }
             _player_position_changed = false;
         }
 
-        while(!pool._chunkMeshQueue.empty()) {
-            std::cout << "Should be pushing?" << std::endl;
+        while (!pool._chunkMeshQueue.empty()) {
             auto x = pool._chunkMeshQueue.pop();
             if (x.mesh->_vertices.size() > 0) {
                 uploadMesh(*x.mesh);
                 _meshes[x.name] = *x.mesh;
-               _renderables.push_back(x); 
+                _renderables.push_back(x);
             }
         }
         draw();

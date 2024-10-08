@@ -236,8 +236,9 @@ class VulkanEngine
     uint64_t lastFrameTime;
     uint64_t nowFrameTime = 0;
 
-    int renderDistanceHorz = 1;
-    int renderDistanceVert = 1;
+    int renderDistanceHorz = 10;
+    int renderDistanceVert = 10;
+    bool stopLoadChunks = false;
 
     void uploadMesh(Mesh& mesh);
 
