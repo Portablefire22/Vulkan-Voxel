@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <functional>
 #include <future>
+#include <syncstream>
 #include <thread>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -20,7 +21,7 @@
 #include "../Camera.h"
 #include "vk_mem_alloc.h"
 
-#include "../threadpool/ThreadPool.hpp"
+#include "../threadpool/ChunkPool.hpp"
 
 #include "../deps/imgui/imgui.h"
 #include "../deps/imgui/imgui_impl_sdl2.h"
@@ -29,6 +30,7 @@
 #include "vk_initialisers.h"
 #include "vk_textures.h"
 
+#include <glm/gtx/string_cast.hpp>
 #define VK_CHECK(x)                                                            \
     do {                                                                       \
         VkResult err = x;                                                      \
@@ -396,16 +398,7 @@ VulkanEngine::run()
     SDL_Event e;
     bool bQuit = false;
 
-    ThreadPool pool(std::thread::hardware_concurrency());
-
-    std::queue<std::future<int>> tst;
-
-    tst.push(pool.enqueue([=, this] { return 1; }));
-
-    while (!tst.empty()) {
-        std::cout << tst.front().get() << std::endl;
-        tst.pop();
-    }
+    ChunkPool pool(std::thread::hardware_concurrency());
 
     // main loop
     while (!bQuit) {
@@ -478,59 +471,42 @@ VulkanEngine::run()
 
         std::queue<chunk::Chunk*> chunks;
         if (_player_position_changed) {
-            std::cout << "Chagged" << std::endl;
-
             chunks = currentWorld.GetChunksAroundPlayer(*this,
                                                         PlayerEntity,
                                                         renderDistanceHorz,
-                                                        renderDistanceVert,
-                                                        &pool);
-            std::cout << chunks.size() << std::endl;
+                                                        renderDistanceVert
+                                                    );
+            while (!chunks.empty()) {
+                auto localChunk = std::move(chunks.front());
+                chunks.pop();
+                try {
+                    std::string name = glm::to_string(localChunk->ChunkPosition);
+                    if (_meshes.contains(name) && getMesh(name) == nullptr) {
+                        std::cout << "Exists but is nullptr" << std::endl;
+                        continue;
+                    }
+                    pool.enqueue([=, this]() {
+                        // return currentWorld.SetToRender(*localChunk);
+                        RenderObject chunk;
+                        return chunk;
+                    });
+                } catch (std::exception e) {
+                    std::cout << e.what() << std::endl;
+                }
+
+            }
             _player_position_changed = false;
         }
 
-        // std::queue<std::future<chunk::Chunk*>> chunk_futures;
+        std::cout << "Tasks: " << pool._task_queue.size() << std::endl;
 
-        // std::queue<chunk::Chunk*> chunk_queue;
-
-        // while(!chunk_futures.empty()) {
-        //     if (chunk_futures.front().valid()) {
-        //         chunk_queue.push(chunk_futures.front().get());
-        //         chunk_futures.pop();
-        //     }
-        // }
-
-        std::queue<std::future<RenderObject>> chunk_mesh_futures;
-
-        try { // TODO Multi-threading OR Pushing it to GPU & Greedy Mesh
-            while (!chunks.empty()) {
-                chunk_mesh_futures.push(pool.enqueue([&chunks, this] {
-                    auto chunk = std::move(chunks.front());
-                    chunks.pop();
-                    auto t = this->currentWorld.SetToRender(*this, chunk);
-                    return t;
-                }));
+        while(!pool._chunkMeshQueue.empty()) {
+            std::cout << "Should be pushing?" << std::endl;
+            {
+               _renderables.push_back(pool._chunkMeshQueue.pop()); 
             }
-            while (!chunk_mesh_futures.empty()) {
-                if (chunk_mesh_futures.front().valid()) {
-                    auto x = chunk_mesh_futures.front().get();
-                    if (x.mesh != nullptr) {
-                        this->_renderables.push_back(
-                          chunk_mesh_futures.front().get());
-                    }
-                    chunk_mesh_futures.pop();
-                }
-            }
+        }
 
-        } catch (...) {
-        }
-        size_t i = 0;
-        while (!chunk_mesh_futures.empty()) {
-            auto chunk = std::move(chunksToRender.front());
-            chunksToRender.erase(chunksToRender.begin());
-            currentWorld.RenderChunk(*this, chunk);
-            i++;
-        }
         draw();
     }
 }

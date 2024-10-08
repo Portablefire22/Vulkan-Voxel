@@ -19,6 +19,7 @@ class QueueSafe
 
     T pop();
     bool empty();
+    size_t size();
 
 };
 

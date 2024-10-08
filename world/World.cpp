@@ -3,7 +3,10 @@
 //
 #include "Chunk.h"
 #include <iostream>
+#include <memory>
 #include <mutex>
+#include <syncstream>
+#include <thread>
 #include <utility>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "World.h"
@@ -19,39 +22,35 @@
 namespace WorldHandler {
 
 RenderObject
-World::SetToRender(VulkanEngine& engine, chunk::Chunk* localChunk)
+World::SetToRender(chunk::Chunk localChunk)
 {
     RenderObject chunkObject;
-    std::cout << localChunk->ChunkPosition.x << " | " << localChunk->ChunkPosition.y << " | " << localChunk->ChunkPosition.z << "[]"<< std::endl;
-    std::string name = glm::to_string(localChunk->ChunkPosition);
+    // std::string name = glm::to_string(localChunk->ChunkPosition);
 
-    bool chunkExists = false;
-    for (auto t : engine._renderables) {
-        if (t.name == name) {
-            return t;
-        }
-    }
+    // bool chunkExists = false;
+    // for (auto t : engine._renderables) {
+    //     if (t.name == name) {
+    //         return t;
+    //     }
+    // }
 
     // Check if the chunk exists or not
 
     // Check if the chunk mesh already exists, if not then create it
-    if (!engine._meshes.contains(name)) {
-        localChunk->GenerateChunkMesh();
-    }
-    chunkObject.mesh = engine.getMesh(name);
-    if (chunkObject.mesh == nullptr) {
-        std::cout << "ERROR: NULLPTR MESH!!!" << std::endl;
-        return chunkObject;
-    }
-    chunkObject.name = name;
+    // auto t = localChunk->GenerateChunkMesh();
+    // chunkObject.mesh = &t;
+    // chunkObject.name = name;
 
-    chunkObject.material = engine.getMaterial("grass");
+    // chunkObject.material = engine.getMaterial("grass");
 
-    glm::mat4 translation = glm::translate(
-      glm::mat4{ 1.0 }, localChunk->ChunkPosition * (float)CHUNK_SIZE);
-    glm::mat4 scale = glm::scale(glm::mat4{ 1.0 }, glm::vec3(1, 1, 1));
-    chunkObject.transformMatrix = translation * scale;
-    chunkObject.position = localChunk->ChunkPosition;
+    // glm::mat4 translation = glm::translate(
+    //   glm::mat4{ 1.0 }, localChunk->ChunkPosition * (float)CHUNK_SIZE);
+    // glm::mat4 scale = glm::scale(glm::mat4{ 1.0 }, glm::vec3(1, 1, 1));
+    // chunkObject.transformMatrix = translation * scale;
+    // chunkObject.position = localChunk->ChunkPosition;
+    // std::osyncstream(std::cout) << "Pushing Mesh: [" << localChunk->ChunkPosition.x << ","
+    //           << localChunk->ChunkPosition.y << ","
+    //           << localChunk->ChunkPosition.z << "]" << "Thread ID: " << std::this_thread::get_id() << '\n';
     return chunkObject;
 }
 
@@ -136,41 +135,23 @@ std::queue<chunk::Chunk*>
 World::GetChunksAroundPlayer(VulkanEngine& engine,
                              Player::Player& player,
                              int horzRenderDistance,
-                             int vertRenderDistance,
-                             ThreadPool* pool)
+                             int vertRenderDistance)
 {
     std::queue<chunk::Chunk*> chunksToRender;
-    std::queue<std::future<std::queue<chunk::Chunk*>>> regionQueue;
     for (int z = player.ChunkPosition.z - horzRenderDistance;
          z <= player.ChunkPosition.z + horzRenderDistance;
          z++) {
         for (int x = player.ChunkPosition.x - horzRenderDistance;
              x <= player.ChunkPosition.x + horzRenderDistance;
              x++) {
-            regionQueue.push(pool->enqueue([=, this] {
-                std::queue<chunk::Chunk*> tmp;
-                auto tempRegion = GetRegion(x, z);
-                for (int y = player.ChunkPosition.y - vertRenderDistance;
-                     y <= player.ChunkPosition.y + vertRenderDistance;
-                     y++) {
-                    if (!tempRegion->isChunkEmpty(y)) {
-                        tmp.push(tempRegion->getChunk(y));
-                    }
+            auto tempRegion = GetRegion(x, z);
+            for (int y = player.ChunkPosition.y - vertRenderDistance;
+                 y <= player.ChunkPosition.y + vertRenderDistance;
+                 y++) {
+                if (!tempRegion->isChunkEmpty(y)) {
+                    chunksToRender.push(tempRegion->getChunk(y));
                 }
-                std::cout << tmp.size() << std::endl;
-                return tmp;
-            }));
-        }
-    }
-    while (!regionQueue.empty()) {
-        if (regionQueue.front().valid()) {
-            auto t = regionQueue.front().get();
-            while (!t.empty()) {
-                chunksToRender.push(std::move(t.front()));
-                t.pop();
-            } 
-        } else {
-            regionQueue.pop();
+            }
         }
     }
     return chunksToRender;

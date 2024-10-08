@@ -1,4 +1,7 @@
 #include "ChunkPool.hpp"
+#include <iostream>
+#include <ostream>
+#include <syncstream>
 void
 ChunkPool::enqueue(std::function<RenderObject()> task)
 {
@@ -17,31 +20,32 @@ ChunkPool::ChunkPool(int num_threads)
                 // threads to queue tasks
                 {
                     std::unique_lock<std::mutex> lock(_mtx);
-
+                    // If there is nothing to do, then submit meshes for rendering
+                    // if (_task_queue.empty()) {
+                    //     std::cout << "Task queue empty" << std::endl;
+                    //     {
+                    //         std::unique_lock<std::mutex> lock(_mtx);
+                    //         while (!render_queue.empty()) {
+                    //             std::cout << "Pushing" << std::endl;
+                    //             _chunkMeshQueue.push(std::move(render_queue.front()));
+                    //             render_queue.pop();
+                    //         }
+                    //     }
+                    // } 
                     // Wait until there is a task, or if the queue was stopped
                     _cv.wait(lock,
-                             [this] { return !_task_queue.empty() || _stop; });
+                             [=, &render_queue, this] {
+                             return !_task_queue.empty() || _stop; 
+                             });
 
                     if (_task_queue.empty() && _stop)
                         return;
-
-                    // If there is nothing to do, then submit meshes for rendering
-                    if (_task_queue.empty()) {
-                        {
-                            std::unique_lock<std::mutex> lock(_mtx);
-                            while (!render_queue.empty()) {
-                                _chunkMeshQueue.push(std::move(render_queue.front()));
-                                render_queue.pop();
-                            }
-                        }
-                    }
-
                     task = _task_queue.pop();
                 }
                 // This specialised chunkpool should always return a chunk-mesh from it's tasks. 
-                
                 render_queue.push(task());
-            }
+                 // If there is nothing to do, then submit meshes for rendering
+           }
         });
     }
 }

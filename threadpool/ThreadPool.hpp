@@ -12,7 +12,6 @@
 class ThreadPool
 {
   protected:
-    QueueSafe<std::function<void()>> _task_queue;
     std::vector<std::thread> _threads;
     std::mutex _mtx;
     std::condition_variable _cv;
@@ -22,6 +21,8 @@ class ThreadPool
   public:
     explicit ThreadPool(int num_threads);
     explicit ThreadPool();
+
+    QueueSafe<std::function<void()>> _task_queue;
     ~ThreadPool();
 
   template<typename T> auto enqueue(T task) -> std::future<decltype(task())> {

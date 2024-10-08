@@ -124,13 +124,13 @@ Chunk::GenerateChunkMesh()
             }
         }
     }
-    if (chunkMesh._vertices.size() > 0) {
-        entryPoint::engine.uploadMesh(chunkMesh);
-        entryPoint::engine._meshes[name] = chunkMesh;
-        double t2 = SDL_GetPerformanceCounter();
-        double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
-        std::cout << "Time: " << t3 << std::endl;
-    }
+    // if (chunkMesh._vertices.size() > 0) {
+    //     entryPoint::engine.uploadMesh(chunkMesh);
+    //     entryPoint::engine._meshes[name] = chunkMesh;
+    //     double t2 = SDL_GetPerformanceCounter();
+    //     double t3 = (double)(t2 - t1) * 1000 / SDL_GetPerformanceFrequency();
+    //     std::cout << "Time: " << t3 << std::endl;
+    // }
     return chunkMesh;
 }
 

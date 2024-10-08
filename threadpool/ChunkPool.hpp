@@ -8,8 +8,9 @@
 #include "../vulkan/vk_engine.h"
 
 class ChunkPool: protected ThreadPool {
-  QueueSafe<RenderObject> _chunkMeshQueue;
+public:
   QueueSafe<std::function<RenderObject()>> _task_queue;
+  QueueSafe<RenderObject> _chunkMeshQueue;
   ChunkPool(int num_threads);
   ChunkPool();
   void enqueue(std::function<RenderObject()>);
