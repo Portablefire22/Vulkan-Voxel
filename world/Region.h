@@ -5,25 +5,19 @@
 #ifndef REGION_H
 #define REGION_H
 #include <map>
-#include <set>
+#include "../threadpool/MapSafe.hpp"
 
 #include "Chunk.h"
-
-class Region
-{
-
-  private:
-    struct ChunkInformation
+  struct ChunkInformation
     {
         bool isEmpty;
     };
-    int HeightMap[CHUNK_SIZE * CHUNK_SIZE] = { 0 };
+class Region
+{
 
-    std::map<int, chunk::Chunk*> Chunks;
-    std::pmr::map<int, ChunkInformation> ChunkInfo;
-    std::pair<int, int> Position;
-
+  
   public:
+
     Region(int x, int z);
 
     chunk::Chunk* getChunk(int yLevel);
@@ -36,6 +30,15 @@ class Region
     int* getBlockHeight(int x, int z);
     bool generateHeightMap();
     ~Region();
+    Region();
+
+private:
+    int HeightMap[CHUNK_SIZE * CHUNK_SIZE] = { 0 };
+
+    std::map<int, chunk::Chunk*> Chunks;
+    MapSafe<int, ChunkInformation>* ChunkInfo;
+    std::pair<int, int> Position;
+
 };
 
 #endif // REGION_H

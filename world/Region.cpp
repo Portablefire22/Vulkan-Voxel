@@ -20,14 +20,15 @@ Region::Region(int x, int z)
 void
 Region::setChunkEmpty(const int yLevel, bool isEmpty)
 {
-    this->ChunkInfo[yLevel].isEmpty = isEmpty;
+    this->ChunkInfo->at_ptr(yLevel).isEmpty = isEmpty;
 }
 
 bool
 Region::isChunkEmpty(const int yLevel)
 {
-    if (this->ChunkInfo.contains(yLevel)) {
-        return this->ChunkInfo.at(yLevel).isEmpty;
+  
+    if (this->ChunkInfo->contains(yLevel)) {
+        return this->ChunkInfo->at(yLevel).isEmpty;
     }
     if (!doesChunkExist(yLevel)) {
         createChunk(yLevel);
@@ -39,22 +40,22 @@ Region::isChunkEmpty(const int yLevel)
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
                     this
-                      ->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)]
+                      ->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y))
                       .isEmpty = false;
                     return false;
                 }
             }
         }
     }
-    this->ChunkInfo[yLevel].isEmpty = true;
+    this->ChunkInfo->at_ptr(yLevel).isEmpty = true;
     return true;
 }
 
 bool
 Region::isChunkEmpty(const chunk::Chunk* localChunk)
 {
-    if (this->ChunkInfo.contains(localChunk->ChunkPosition.y)) {
-        return this->ChunkInfo.at(localChunk->ChunkPosition.y).isEmpty;
+    if (this->ChunkInfo->contains(localChunk->ChunkPosition.y)) {
+        return this->ChunkInfo->at(localChunk->ChunkPosition.y).isEmpty;
     }
     const auto blocks = localChunk->Blocks;
     for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -62,14 +63,13 @@ Region::isChunkEmpty(const chunk::Chunk* localChunk)
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
                     this
-                      ->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)]
-                      .isEmpty = false;
-                    return false;
+                      ->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y)).isEmpty = false;
+                  return false;
                 }
             }
         }
     }
-    this->ChunkInfo[static_cast<int>(localChunk->ChunkPosition.y)].isEmpty =
+    this->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y)).isEmpty =
       true;
     return true;
 }
@@ -138,9 +138,14 @@ Region::getHeightMap()
     return this->HeightMap;
 }
 
+Region::Region() {
+  ChunkInfo = new MapSafe<int, ChunkInformation>;
+}
+
 Region::~Region()
 {
     for (auto const& [key, val] : this->Chunks) {
         delete (val);
     }
+    // delete (ChunkInfo);
 }

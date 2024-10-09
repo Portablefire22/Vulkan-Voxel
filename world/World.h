@@ -9,15 +9,14 @@
 #define WORLD_H
 #include <glm/gtx/hash.hpp>
 #include <glm/vec2.hpp>
-#include <map>
 #include <string>
-#include <unordered_map>
 
 #include "../player/Player.h"
 #include "Chunk.h"
 #include "Region.h"
+#include <queue>
 
-#include "../threadpool/ThreadPool.hpp"
+#include "../threadpool/MapSafe.hpp"
 
 class VulkanEngine;
 struct RenderObject;
@@ -32,9 +31,8 @@ class World
   public:
     // TODO FIX
     // https://stackoverflow.com/questions/32685540/why-cant-i-compile-an-unordered-map-with-a-pair-as-key
-    std::unordered_map<glm::vec2, std::map<int32_t, chunk::Chunk>> WorldMap;
 
-    std::map<std::pair<int, int>, Region> RegionMap;
+    MapSafe<std::pair<int, int>, Region>* RegionMap;
 
     std::vector<chunk::Chunk*> ChunksToRender;
     std::string WorldName;
@@ -60,16 +58,20 @@ class World
 
     World()
     {
+        RegionMap = new MapSafe<std::pair<int, int>, Region>;
         WorldName = "Name not Set!";
         WorldSeed = rand() % 32767;
         srand(WorldSeed);
     }
     World(std::string& worldName, const long& worldSeed)
     {
+        RegionMap = new MapSafe<std::pair<int, int>, Region>;
         WorldName = worldName;
         WorldSeed = worldSeed;
         srand(WorldSeed);
     }
+
+    // ~World() { delete RegionMap; }
 };
 
 } // WorldHandler

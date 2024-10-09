@@ -2,12 +2,7 @@
 // Created by blakey on 01/12/23.
 //
 #include "Chunk.h"
-#include <iostream>
 #include <memory>
-#include <mutex>
-#include <ostream>
-#include <syncstream>
-#include <thread>
 #include <utility>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "World.h"
@@ -154,10 +149,11 @@ World::GetChunksAroundPlayer(VulkanEngine& engine,
 Region*
 World::GetRegion(int x, int z)
 {
-    if (!RegionMap.contains(std::make_pair(x, z))) {
+    if (!RegionMap->contains(std::make_pair(x, z))) {
         auto tempRegion = Region(x, z);
-        RegionMap.insert(std::make_pair(std::make_pair(x, z), tempRegion));
+        RegionMap->insert(std::make_pair(x, z), tempRegion);
     }
-    return &RegionMap.at(std::make_pair(x, z));
+    auto t = RegionMap->at(std::make_pair(x,z));
+    return &t;
 }
 }
