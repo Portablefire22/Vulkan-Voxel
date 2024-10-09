@@ -150,10 +150,10 @@ Region*
 World::GetRegion(int x, int z)
 {
     if (!RegionMap->contains(std::make_pair(x, z))) {
-        auto tempRegion = Region(x, z);
+        auto tempRegion = new Region(x, z);
         RegionMap->insert(std::make_pair(x, z), tempRegion);
     }
     auto t = RegionMap->at(std::make_pair(x,z));
-    return &t;
+    return t;
 }
 }

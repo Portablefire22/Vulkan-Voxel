@@ -13,9 +13,13 @@
 
 Region::Region(int x, int z)
 {
+    ChunkInfo = new MapSafe<int, ChunkInformation>;
     this->Position = std::make_pair(x, z);
     generateHeightMap();
 }
+
+Region::Region() : Region::Region(-69, -1337){}
+
 
 void
 Region::setChunkEmpty(const int yLevel, bool isEmpty)
@@ -138,9 +142,6 @@ Region::getHeightMap()
     return this->HeightMap;
 }
 
-Region::Region() {
-  ChunkInfo = new MapSafe<int, ChunkInformation>;
-}
 
 Region::~Region()
 {

@@ -32,7 +32,7 @@ class World
     // TODO FIX
     // https://stackoverflow.com/questions/32685540/why-cant-i-compile-an-unordered-map-with-a-pair-as-key
 
-    MapSafe<std::pair<int, int>, Region>* RegionMap;
+    MapSafe<std::pair<int, int>, Region*>* RegionMap;
 
     std::vector<chunk::Chunk*> ChunksToRender;
     std::string WorldName;
@@ -58,14 +58,14 @@ class World
 
     World()
     {
-        RegionMap = new MapSafe<std::pair<int, int>, Region>;
+        RegionMap = new MapSafe<std::pair<int, int>, Region*>;
         WorldName = "Name not Set!";
         WorldSeed = rand() % 32767;
         srand(WorldSeed);
     }
     World(std::string& worldName, const long& worldSeed)
     {
-        RegionMap = new MapSafe<std::pair<int, int>, Region>;
+        RegionMap = new MapSafe<std::pair<int, int>, Region*>;
         WorldName = worldName;
         WorldSeed = worldSeed;
         srand(WorldSeed);

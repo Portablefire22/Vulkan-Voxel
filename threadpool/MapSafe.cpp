@@ -49,11 +49,9 @@ MapSafe<T, X>::at_ptr(T key)
 
 
     // MapSafe<int, ChunkInformation> ChunkInfo;
-template void MapSafe<std::pair<int, int>, Region>::insert(std::pair<int, int>, Region);
-template Region MapSafe<std::pair<int, int>, Region>::at(std::pair<int, int>);
-template bool MapSafe<std::pair<int, int>, Region>::contains(std::pair<int, int>);
-template Region& MapSafe<std::pair<int, int>, Region>::operator[](std::pair<int, int>);
-template Region& MapSafe<std::pair<int, int>, Region>::at_ptr(std::pair<int, int>);
+template void MapSafe<std::pair<int, int>, Region*>::insert(std::pair<int, int>, Region*);
+template Region* MapSafe<std::pair<int, int>, Region*>::at(std::pair<int, int>);
+template bool MapSafe<std::pair<int, int>, Region*>::contains(std::pair<int, int>);
 
 template void MapSafe<int, ChunkInformation>::insert(int, ChunkInformation);
 template ChunkInformation MapSafe<int, ChunkInformation>::at(int);
