@@ -52,6 +52,7 @@ World::SetToRender(VulkanEngine& engine, chunk::Chunk localChunk)
     //           << localChunk->ChunkPosition.y << ","
     //           << localChunk->ChunkPosition.z << "]" << "Thread ID: " <<
     //           std::this_thread::get_id() << '\n';
+    localChunk.ParentRegion->setChunkRendered(localChunk.ChunkPosition.y, true);
     return chunkObject;
 }
 
@@ -98,7 +99,6 @@ World::RenderChunk(VulkanEngine& engine, chunk::Chunk* localChunk)
 {
     RenderObject chunkObject;
     std::string name = glm::to_string(localChunk->ChunkPosition);
-
     // bool chunkExists = false;
     // for (auto t : engine._renderables) {
     //     if (t.name == name) {

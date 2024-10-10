@@ -11,6 +11,7 @@
 struct ChunkInformation
 {
     bool isEmpty;
+    bool isRendered;
 };
 class Region
 {
@@ -21,9 +22,11 @@ class Region
     chunk::Chunk* getChunk(int yLevel);
     bool createChunk(int yLevel);
     bool isChunkEmpty(int yLevel);
+    bool isChunkRendered(int yLevel);
     bool isChunkEmpty(const chunk::Chunk* localChunk);
     bool doesChunkExist(int yLevel) const;
     void setChunkEmpty(const int yLevel, bool isEmpty);
+    void setChunkRendered(const int yLevel, bool isEmpty);
     int* getHeightMap();
     int* getBlockHeight(int x, int z);
     bool generateHeightMap();

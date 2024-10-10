@@ -30,6 +30,18 @@ Region::setChunkEmpty(const int yLevel, bool isEmpty)
     this->ChunkInfo->at_ptr(yLevel).isEmpty = isEmpty;
 }
 
+void
+Region::setChunkRendered(const int yLevel, bool isEmpty)
+{
+    this->ChunkInfo->at_ptr(yLevel).isRendered = isEmpty;
+}
+
+bool
+Region::isChunkRendered(const int yLevel)
+{
+    return this->ChunkInfo->at_ptr(yLevel).isRendered;
+}
+
 bool
 Region::isChunkEmpty(const int yLevel)
 {
@@ -96,6 +108,9 @@ Region::doesChunkExist(const int yLevel) const
 {
     return this->Chunks->contains(yLevel);
 }
+
+
+
 
 bool
 Region::createChunk(int yLevel)

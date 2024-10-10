@@ -1,10 +1,10 @@
 //
 // Created by blakey on 27/11/23.
 //
-#include <queue>
 #include <algorithm>
 #include <functional>
 #include <future>
+#include <queue>
 #include <syncstream>
 #include <thread>
 #include <vector>
@@ -476,49 +476,41 @@ VulkanEngine::run()
             chunks.push(std::move(x));
         }
         if (_player_position_changed && !stopLoadChunks) {
-            currentWorld.GetChunksAroundPlayer(
-              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert, search_pool, thread_pool);
-            while (!chunks.empty()) {
-                auto localChunk = std::move(chunks.front());
-                chunks.pop();
-                std::string name = glm::to_string(localChunk->ChunkPosition);
-                try {
-                    if (_meshes.contains(name) && getMesh(name) == nullptr) {
-                        std::cout << "Exists but is nullptr" << std::endl;
-                        continue;
-                    }
-                    bool chunkExists = false;
-                    for (auto t : _renderables) {
-                        if (t.name == name) {
-                            chunkExists = true;
-                        }
-                    }
-                    if (chunkExists)
-                        continue;
-                    pool.enqueue([=, this]() {
-                        return currentWorld.SetToRender(*this,
-                                                        std::move(*localChunk));
-                    });
-                } catch (std::exception e) {
-                    std::cout << e.what() << std::endl;
-                }
-            }
+            currentWorld.GetChunksAroundPlayer(*this,
+                                               PlayerEntity,
+                                               renderDistanceHorz,
+                                               renderDistanceVert,
+                                               search_pool,
+                                               thread_pool);
             _player_position_changed = false;
         }
-
-
+        while (!chunks.empty()) {
+            auto localChunk = std::move(chunks.front());
+            chunks.pop();
+            try {
+                if (localChunk->ParentRegion->isChunkRendered(
+                      localChunk->ChunkPosition.y))
+                    continue;
+                pool.enqueue([=, this]() {
+                    return currentWorld.SetToRender(*this,
+                                                    std::move(*localChunk));
+                });
+            } catch (std::exception e) {
+                std::cout << e.what() << std::endl;
+            }
+        }
 
         while (!pool._chunkQueue.empty()) {
             auto x = pool._chunkQueue.pop();
             if (x.mesh->_vertices.size() > 0) {
                 uploadMesh(*x.mesh);
-                _meshes[x.name] = *x.mesh;
+                // _meshes[x.name] = *x.mesh;
                 _renderables.push_back(x);
             }
         }
         draw();
     }
-    delete(search_pool);
+    delete (search_pool);
 }
 
 void
