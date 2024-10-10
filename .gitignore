@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 
+.DS_Store
+
 # Compiled Object files
 *.slo
 *.lo
@@ -31,7 +33,7 @@
 *.out
 *.app
 
-.cache
+.cache/*/*
 
 CMakeLists.txt.user
 CMakeCache.txt
@@ -50,6 +52,5 @@ CTestTestfile.cmake
 /cmake-build*/*
 *.spv
 
-Debug/*
-Release/*
-
+Debug/
+Release/

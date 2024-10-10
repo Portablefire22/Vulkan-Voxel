@@ -17,9 +17,11 @@
 #include "../player/Player.h"
 #include "VkBootstrap.h"
 
+#include "../player/Player.h"
 #include <unordered_map>
 
 #include "../world/World.h"
+#include "../world/Chunk.h"
 
 struct Texture
 {

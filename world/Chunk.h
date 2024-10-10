@@ -39,7 +39,14 @@ class Chunk
     Chunk(Region* Parent, glm::vec3 chunkPos);
     Mesh* GenerateChunkMesh();
     int GetVoxel(glm::vec3& position);
-    std::vector<RenderBlock::FACE> ShouldRenderFace(glm::vec3& originalPos);
+    std::vector<RenderBlock::FACE> ShouldRenderFace(glm::vec3& originalPos,
+        Chunk*,
+        Chunk*,
+        Chunk*,
+        Chunk*,
+        Chunk*,
+        Chunk*
+    );
 
     bool generateChunk();
 

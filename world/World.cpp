@@ -2,6 +2,7 @@
 // Created by blakey on 01/12/23.
 //
 #include "Chunk.h"
+#include <cstddef>
 #include <memory>
 #include <utility>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -9,9 +10,20 @@
 
 #include "../vulkan/vk_engine.h"
 #include <cstdlib>
+#include <set>
+#include <glm/vec4.hpp>
+#include "../vulkan/vk_engine.h"
+#include "../RenderUtils/RenderBlock.h"
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_query.hpp>
-#include <glm/vec4.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <complex>
+#include <iostream>
+#include <SDL_timer.h>
+#include <unordered_set>
+
+#include "glm/gtx/hash.hpp"
+#include "../deps/FastNoise2/include/FastNoise/FastNoise.h"
 
 #include <SDL2/SDL_timer.h>
 
@@ -124,7 +136,8 @@ std::queue<chunk::Chunk*>
 World::GetChunksAroundPlayer(VulkanEngine& engine,
                              Player::Player& player,
                              int horzRenderDistance,
-                             int vertRenderDistance)
+                             int vertRenderDistance,
+                             ChunkPool<chunk::Chunk*> *pool)
 {
     std::queue<chunk::Chunk*> chunksToRender;
     for (int z = player.ChunkPosition.z - horzRenderDistance;
@@ -134,15 +147,22 @@ World::GetChunksAroundPlayer(VulkanEngine& engine,
              x <= player.ChunkPosition.x + horzRenderDistance;
              x++) {
             auto tempRegion = GetRegion(x, z);
+
             for (int y = player.ChunkPosition.y - vertRenderDistance;
                  y <= player.ChunkPosition.y + vertRenderDistance;
                  y++) {
-                if (!tempRegion->isChunkEmpty(y)) {
-                    chunksToRender.push(tempRegion->getChunk(y));
-                }
+                     pool->enqueue([=, this] {
+                        return tempRegion->getChunk(y);
+                    });
             }
         }
     }
+    // while (!pool->_task_queue.empty() && !pool->_chunkQueue.empty()) {
+    //     auto t = pool->_chunkQueue.pop();
+    //     chunksToRender.push(std::move(t));
+    //     std::cout << "Popped: #" <<  pool->_task_queue.size() << std::endl;
+    //     std::cout << "Pushed: #" <<  chunksToRender.size() << std::endl;
+    // }
     return chunksToRender;
 }
 
@@ -153,7 +173,7 @@ World::GetRegion(int x, int z)
         auto tempRegion = new Region(x, z);
         RegionMap->insert(std::make_pair(x, z), tempRegion);
     }
-    auto t = RegionMap->at(std::make_pair(x, z));
-    return t;
+    return RegionMap->at(std::make_pair(x, z));
+
 }
 }

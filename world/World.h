@@ -1,10 +1,12 @@
 //
 // Created by blakey on 01/12/23.
 //
+
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 
+#pragma once
 #ifndef WORLD_H
 #define WORLD_H
 #include <glm/gtx/hash.hpp>
@@ -17,6 +19,7 @@
 #include <queue>
 
 #include "../threadpool/MapSafe.hpp"
+#include "../threadpool/ChunkPool.hpp"
 
 class VulkanEngine;
 struct RenderObject;
@@ -49,7 +52,8 @@ class World
     std::queue<chunk::Chunk*> GetChunksAroundPlayer(VulkanEngine& engine,
                                                     Player::Player& player,
                                                     int horzRenderDistance,
-                                                    int vertRenderDistance);
+                                                    int vertRenderDistance,
+                                                    ChunkPool<chunk::Chunk*> *pool);
 
     chunk::Chunk GetChunk(VulkanEngine& engine,
                           int ChunkX,

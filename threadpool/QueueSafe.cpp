@@ -66,3 +66,20 @@ template bool
 QueueSafe<RenderObject>::empty();
 template void
 QueueSafe<RenderObject>::push(RenderObject const val);
+
+template bool
+QueueSafe<std::function<chunk::Chunk*()>>::empty();
+template void
+QueueSafe<std::function<chunk::Chunk*()>>::push(
+  std::function<chunk::Chunk*()> const val);
+template size_t
+QueueSafe<std::function<chunk::Chunk*()>>::size();
+template std::function<chunk::Chunk*()>
+QueueSafe<std::function<chunk::Chunk*()>>::pop();
+
+template chunk::Chunk*
+QueueSafe<chunk::Chunk*>::pop();
+template bool
+QueueSafe<chunk::Chunk*>::empty();
+template void
+QueueSafe<chunk::Chunk*>::push(chunk::Chunk* const val);

@@ -5,15 +5,14 @@
 #include "ThreadPool.hpp"
 #include <functional>
 
-#include "../vulkan/vk_engine.h"
-
+template <typename T>
 class ChunkPool: protected ThreadPool {
 public:
-  QueueSafe<std::function<RenderObject()>> _task_queue;
-  QueueSafe<RenderObject> _chunkMeshQueue;
-  ChunkPool(int num_threads);
-  ChunkPool();
-  void enqueue(std::function<RenderObject()>);
-}; 
+  QueueSafe<std::function<T()>> _task_queue;
+  QueueSafe<T> _chunkQueue;
+  ChunkPool<T>(int num_threads);
+  ChunkPool<T>();
+  void enqueue(std::function<T()>);
+};
 
 #endif

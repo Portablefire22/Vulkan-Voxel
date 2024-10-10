@@ -1,6 +1,7 @@
 //
 // Created by blakey on 27/11/23.
 //
+#include <queue>
 #include <algorithm>
 #include <functional>
 #include <future>
@@ -30,6 +31,7 @@
 #include "vk_initialisers.h"
 #include "vk_textures.h"
 
+#include "../DebugUtils/ImGuiHandler.h"
 #include <glm/gtx/string_cast.hpp>
 #define VK_CHECK(x)                                                            \
     do {                                                                       \
@@ -83,8 +85,6 @@ VulkanEngine::init()
 void
 VulkanEngine::initBlockTextures()
 {
-    /*loadImages("../textures/grid.png", "stone");
-    loadImages("../textures/missing.png", "grass");*/
     loadImages("../textures/Atlas.png", "Atlas");
 }
 
@@ -398,7 +398,9 @@ VulkanEngine::run()
     SDL_Event e;
     bool bQuit = false;
 
-    ChunkPool pool;
+    ChunkPool<RenderObject> pool;
+    ChunkPool<chunk::Chunk*>* search_pool = new ChunkPool<chunk::Chunk*>(1);
+    std::queue<chunk::Chunk*> chunks;
 
     // main loop
     while (!bQuit) {
@@ -465,15 +467,16 @@ VulkanEngine::run()
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // ImGui::ShowDemoWindow();
         DebugUI::PlayerInformation(PlayerEntity, *this);
         DebugUI::GameSettings(*this);
 
-        std::queue<chunk::Chunk*> chunks;
-
+        while (!search_pool->_chunkQueue.empty()) {
+            auto x = search_pool->_chunkQueue.pop();
+            chunks.push(std::move(x));
+        }
         if (_player_position_changed && !stopLoadChunks) {
-            chunks = currentWorld.GetChunksAroundPlayer(
-              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert);
+            currentWorld.GetChunksAroundPlayer(
+              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert, search_pool);
             while (!chunks.empty()) {
                 auto localChunk = std::move(chunks.front());
                 chunks.pop();
@@ -503,8 +506,10 @@ VulkanEngine::run()
             _player_position_changed = false;
         }
 
-        while (!pool._chunkMeshQueue.empty()) {
-            auto x = pool._chunkMeshQueue.pop();
+
+
+        while (!pool._chunkQueue.empty()) {
+            auto x = pool._chunkQueue.pop();
             if (x.mesh->_vertices.size() > 0) {
                 uploadMesh(*x.mesh);
                 _meshes[x.name] = *x.mesh;
@@ -513,6 +518,7 @@ VulkanEngine::run()
         }
         draw();
     }
+    delete(search_pool);
 }
 
 void

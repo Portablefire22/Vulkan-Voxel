@@ -6,7 +6,10 @@
 
 #include <SDL2/SDL_timer.h>
 #include <iostream>
+#include <SDL_timer.h>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 
 #include "../main.h"
@@ -119,6 +122,26 @@ Chunk::GenerateChunkMesh()
     Mesh* chunkMesh = new Mesh;
     std::string name = glm::to_string(this->ChunkPosition);
     glm::vec3 blockPosition;
+    chunk::Chunk* BottomChunk =
+      this->ParentRegion->getChunk(this->ChunkPosition.y - 1);
+    chunk::Chunk* TopChunk =
+      this->ParentRegion->getChunk(this->ChunkPosition.y + 1);
+    chunk::Chunk* RightChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z + 1)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* LeftChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z - 1)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* ForwardChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x + 1, this->ChunkPosition.z)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* BackChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x - 1, this->ChunkPosition.z)
+        ->getChunk(this->ChunkPosition.y);
     double t1 = SDL_GetPerformanceCounter();
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -131,7 +154,7 @@ Chunk::GenerateChunkMesh()
                     continue;
                 blockPosition = glm::vec3(x, y, z);
                 std::vector<RenderBlock::FACE> facesToRender =
-                  ShouldRenderFace(blockPosition);
+                  ShouldRenderFace(blockPosition, BottomChunk, TopChunk, RightChunk, LeftChunk, ForwardChunk, BackChunk);
                 // If the mesh doesn't exist
                 RenderBlock::AddBlockVertices((int)this->Blocks[y][z][x],
                                               *chunkMesh,
@@ -178,28 +201,14 @@ VecToIndex(glm::vec3& blockPosition)
 }
 
 std::vector<RenderBlock::FACE>
-Chunk::ShouldRenderFace(glm::vec3& originalPos)
+Chunk::ShouldRenderFace(glm::vec3& originalPos,
+    chunk::Chunk* BC,
+    chunk::Chunk* TC,
+    chunk::Chunk* RC,
+    chunk::Chunk* LC,
+    chunk::Chunk* FC,
+    chunk::Chunk* BCKC)
 {
-    chunk::Chunk* BottomChunk =
-      this->ParentRegion->getChunk(this->ChunkPosition.y - 1);
-    chunk::Chunk* TopChunk =
-      this->ParentRegion->getChunk(this->ChunkPosition.y + 1);
-    chunk::Chunk* RightChunk =
-      entryPoint::engine.currentWorld
-        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z + 1)
-        ->getChunk(this->ChunkPosition.y);
-    chunk::Chunk* LeftChunk =
-      entryPoint::engine.currentWorld
-        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z - 1)
-        ->getChunk(this->ChunkPosition.y);
-    chunk::Chunk* ForwardChunk =
-      entryPoint::engine.currentWorld
-        .GetRegion(this->ChunkPosition.x + 1, this->ChunkPosition.z)
-        ->getChunk(this->ChunkPosition.y);
-    chunk::Chunk* BackChunk =
-      entryPoint::engine.currentWorld
-        .GetRegion(this->ChunkPosition.x - 1, this->ChunkPosition.z)
-        ->getChunk(this->ChunkPosition.y);
     std::vector<RenderBlock::FACE> faces;
     for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM;
          faceVal++) {
@@ -212,7 +221,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::FRONT: // PosX
                 x++;
                 if (x == CHUNK_SIZE) {
-                    if (ForwardChunk->Blocks[y][z][0] ==
+                    if (FC->Blocks[y][z][0] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -223,7 +232,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::BACK: // NegX
                 x--;
                 if (x == -1) {
-                    if (BackChunk->Blocks[y][z][CHUNK_SIZE - 1] ==
+                    if (BCKC->Blocks[y][z][CHUNK_SIZE - 1] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -234,7 +243,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::LEFT: // Neg Z
                 z--;
                 if (z == -1) {
-                    if (LeftChunk->Blocks[y][CHUNK_SIZE - 1][x] ==
+                    if (LC->Blocks[y][CHUNK_SIZE - 1][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -245,7 +254,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::RIGHT: // Pos Z
                 z++;
                 if (z == CHUNK_SIZE) {
-                    if (RightChunk->Blocks[y][0][x] ==
+                    if (RC->Blocks[y][0][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -256,7 +265,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::TOP: // Pos Y Works
                 y++;
                 if (y == CHUNK_SIZE) {
-                    if (TopChunk->Blocks[0][z][x] ==
+                    if (TC->Blocks[0][z][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -267,7 +276,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::BOTTOM: // Neg Y
                 y--;
                 if (y == -1) {
-                    if (BottomChunk->Blocks[CHUNK_SIZE - 1][z][x] ==
+                    if (BC->Blocks[CHUNK_SIZE - 1][z][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
