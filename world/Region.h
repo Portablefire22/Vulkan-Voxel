@@ -35,7 +35,7 @@ class Region
 private:
     int HeightMap[CHUNK_SIZE * CHUNK_SIZE] = { 0 };
 
-    std::map<int, chunk::Chunk*> Chunks;
+    MapSafe<int, chunk::Chunk*>* Chunks;
     MapSafe<int, ChunkInformation>* ChunkInfo;
     std::pair<int, int> Position;
 

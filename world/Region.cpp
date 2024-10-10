@@ -14,6 +14,7 @@
 Region::Region(int x, int z)
 {
     ChunkInfo = new MapSafe<int, ChunkInformation>;
+    Chunks = new MapSafe<int, chunk::Chunk*>;
     this->Position = std::make_pair(x, z);
     generateHeightMap();
 }
@@ -84,13 +85,13 @@ Region::getChunk(const int yLevel)
     if (!doesChunkExist(yLevel)) { // Create the chunk if it doesnt exist
         this->createChunk(yLevel);
     }
-    return this->Chunks[yLevel];
+    return this->Chunks->at(yLevel);
 }
 
 bool
 Region::doesChunkExist(const int yLevel) const
 {
-    return this->Chunks.contains(yLevel);
+    return this->Chunks->contains(yLevel);
 }
 
 bool
@@ -99,7 +100,7 @@ Region::createChunk(int yLevel)
     auto localChunk = new chunk::Chunk(
       this, glm::vec3(this->Position.first, yLevel, this->Position.second));
     localChunk->generateChunk();
-    this->Chunks.insert(std::make_pair(yLevel, localChunk));
+    this->Chunks->insert(yLevel, localChunk);
     return true;
 }
 
@@ -145,8 +146,6 @@ Region::getHeightMap()
 
 Region::~Region()
 {
-    for (auto const& [key, val] : this->Chunks) {
-        delete (val);
-    }
+    this->Chunks->del();
     // delete (ChunkInfo);
 }

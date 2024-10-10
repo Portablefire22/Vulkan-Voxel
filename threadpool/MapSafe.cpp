@@ -1,12 +1,14 @@
 
 #include "MapSafe.hpp"
 #include <glm/ext/vector_float2.hpp>
+#include <ios>
+#include <iterator>
 #include <map>
 #include <mutex>
 #include <utility>
 
 #include "../world/Region.h"
-
+#include "../world/Chunk.h"
 
 template<typename T, typename X>
 void
@@ -47,11 +49,36 @@ MapSafe<T, X>::at_ptr(T key)
     return _map[key];
 }
 
+template<typename T, typename X>
+auto MapSafe<T, X>::begin() -> decltype(_map.begin())
+{
+    std::unique_lock<std::mutex> lock(_mtx);
+    return _map.begin();
+}
+template<typename T, typename X>
+auto MapSafe<T, X>::end()
+{
+    std::unique_lock<std::mutex> lock(_mtx);
+    return _map.end();
+}
+
+template<typename T, typename X>
+void MapSafe<T, X>::del() {
+  for (auto const& [key, val] : _map) {
+    delete(val);
+  }
+}
 
     // MapSafe<int, ChunkInformation> ChunkInfo;
 template void MapSafe<std::pair<int, int>, Region*>::insert(std::pair<int, int>, Region*);
 template Region* MapSafe<std::pair<int, int>, Region*>::at(std::pair<int, int>);
 template bool MapSafe<std::pair<int, int>, Region*>::contains(std::pair<int, int>);
+template void MapSafe<std::pair<int, int>, Region*>::del();
+
+template void MapSafe<int, chunk::Chunk*>::insert(int, chunk::Chunk*);
+template chunk::Chunk* MapSafe<int, chunk::Chunk*>::at(int);
+template bool MapSafe<int, chunk::Chunk*>::contains(int);
+template void MapSafe<int, chunk::Chunk*>::del();
 
 template void MapSafe<int, ChunkInformation>::insert(int, ChunkInformation);
 template ChunkInformation MapSafe<int, ChunkInformation>::at(int);
