@@ -400,6 +400,7 @@ VulkanEngine::run()
 
     ChunkPool<RenderObject> pool;
     ChunkPool<chunk::Chunk*>* search_pool = new ChunkPool<chunk::Chunk*>(1);
+    ThreadPool* thread_pool = new ThreadPool();
     std::queue<chunk::Chunk*> chunks;
 
     // main loop
@@ -476,7 +477,7 @@ VulkanEngine::run()
         }
         if (_player_position_changed && !stopLoadChunks) {
             currentWorld.GetChunksAroundPlayer(
-              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert, search_pool);
+              *this, PlayerEntity, renderDistanceHorz, renderDistanceVert, search_pool, thread_pool);
             while (!chunks.empty()) {
                 auto localChunk = std::move(chunks.front());
                 chunks.pop();

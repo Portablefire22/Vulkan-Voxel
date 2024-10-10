@@ -53,7 +53,8 @@ class World
                                                     Player::Player& player,
                                                     int horzRenderDistance,
                                                     int vertRenderDistance,
-                                                    ChunkPool<chunk::Chunk*> *pool);
+                                                    ChunkPool<chunk::Chunk*> *pool,
+                                                    ThreadPool *thread_pool);
 
     chunk::Chunk GetChunk(VulkanEngine& engine,
                           int ChunkX,

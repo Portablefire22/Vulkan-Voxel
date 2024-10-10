@@ -137,26 +137,32 @@ World::GetChunksAroundPlayer(VulkanEngine& engine,
                              Player::Player& player,
                              int horzRenderDistance,
                              int vertRenderDistance,
-                             ChunkPool<chunk::Chunk*> *pool)
+                             ChunkPool<chunk::Chunk*> *pool,
+                             ThreadPool *search_pool)
 {
     std::queue<chunk::Chunk*> chunksToRender;
+    search_pool->enqueue([=, this] {
     for (int z = player.ChunkPosition.z - horzRenderDistance;
          z <= player.ChunkPosition.z + horzRenderDistance;
          z++) {
+        search_pool->enqueue([=, this] {
         for (int x = player.ChunkPosition.x - horzRenderDistance;
              x <= player.ChunkPosition.x + horzRenderDistance;
              x++) {
             auto tempRegion = GetRegion(x, z);
-
-            for (int y = player.ChunkPosition.y - vertRenderDistance;
-                 y <= player.ChunkPosition.y + vertRenderDistance;
-                 y++) {
-                     pool->enqueue([=, this] {
-                        return tempRegion->getChunk(y);
-                    });
-            }
+            search_pool->enqueue([=, this] {
+              for (int y = player.ChunkPosition.y - vertRenderDistance;
+                   y <= player.ChunkPosition.y + vertRenderDistance;
+                   y++) {
+                       pool->enqueue([=, this] {
+                          return tempRegion->getChunk(y);
+                      });
+              }
+             });
         }
+         });
     }
+  });
     // while (!pool->_task_queue.empty() && !pool->_chunkQueue.empty()) {
     //     auto t = pool->_chunkQueue.pop();
     //     chunksToRender.push(std::move(t));
