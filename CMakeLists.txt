@@ -35,8 +35,8 @@ set(PROJECT_SOURCES main.cpp world/Chunk.cpp block/Block.cpp
         Entity/Entity.cpp
         player/Player.cpp
         RenderUtils/RenderBlock.cpp
-        DebugUtils/ImGuiHandler.cpp
         threadpool/ThreadPool.cpp
+        DebugUtils/ImGuiHandler.cpp
         threadpool/QueueSafe.cpp
         threadpool/ChunkPool.cpp
         threadpool/MapSafe.cpp

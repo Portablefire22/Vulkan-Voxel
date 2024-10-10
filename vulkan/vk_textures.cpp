@@ -9,9 +9,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb_image.h"
 
-bool vkUtil::loadImageFromFile(VulkanEngine&engine, const char* file, AllocatedImage&outImage) {
+bool vkUtil::loadImageFromFile(VulkanEngine&engine, const std::string file, AllocatedImage&outImage) {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(file.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
     if (!pixels) {
         std::cout << "Failed to load texture file: " << file << std::endl;

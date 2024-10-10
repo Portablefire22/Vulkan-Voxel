@@ -28,7 +28,8 @@ template<typename T, typename X>
 bool
 MapSafe<T, X>::contains(T key)
 {
-    std::shared_lock<std::shared_mutex> lock(_mtx);
+    // std::shared_lock<std::shared_mutex> lock(_mtx);
+    std::unique_lock<std::shared_mutex> lock(_mtx);
     return _map.contains(key);
 }
 
