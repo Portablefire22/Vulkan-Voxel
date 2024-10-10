@@ -17,9 +17,11 @@ MapSafe<T, X>::insert(T key, X value)
 
 template<typename T, typename X>
 X
-MapSafe<T, X>::at(T key) {
-  std::shared_lock<std::shared_mutex> lock(_mtx);
-  return _map.at(key);
+MapSafe<T, X>::at(T key)
+{
+    std::shared_lock<std::shared_mutex> lock(_mtx);
+    return _map[key]; // Seems to be faster due to no fuckery, we just straight
+                      // getting the value
 }
 
 template<typename T, typename X>
@@ -47,38 +49,54 @@ MapSafe<T, X>::at_ptr(T key)
 }
 
 template<typename T, typename X>
-auto MapSafe<T, X>::begin() -> decltype(_map.begin())
+auto
+MapSafe<T, X>::begin() -> decltype(_map.begin())
 {
     std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map.begin();
 }
 template<typename T, typename X>
-auto MapSafe<T, X>::end()
+auto
+MapSafe<T, X>::end()
 {
     std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map.end();
 }
 
 template<typename T, typename X>
-void MapSafe<T, X>::del() {
-  for (auto const& [key, val] : _map) {
-    delete(val);
-  }
+void
+MapSafe<T, X>::del()
+{
+    for (auto const& [key, val] : _map) {
+        delete (val);
+    }
 }
 
-    // MapSafe<int, ChunkInformation> ChunkInfo;
-template void MapSafe<std::pair<int, int>, Region*>::insert(std::pair<int, int>, Region*);
+// MapSafe<int, ChunkInformation> ChunkInfo;
+template void
+MapSafe<std::pair<int, int>, Region*>::insert(std::pair<int, int>, Region*);
 template Region* MapSafe<std::pair<int, int>, Region*>::at(std::pair<int, int>);
-template bool MapSafe<std::pair<int, int>, Region*>::contains(std::pair<int, int>);
-template void MapSafe<std::pair<int, int>, Region*>::del();
+template bool MapSafe<std::pair<int, int>, Region*>::contains(
+  std::pair<int, int>);
+template void
+MapSafe<std::pair<int, int>, Region*>::del();
 
-template void MapSafe<int, chunk::Chunk*>::insert(int, chunk::Chunk*);
-template chunk::Chunk* MapSafe<int, chunk::Chunk*>::at(int);
-template bool MapSafe<int, chunk::Chunk*>::contains(int);
-template void MapSafe<int, chunk::Chunk*>::del();
+template void
+MapSafe<int, chunk::Chunk*>::insert(int, chunk::Chunk*);
+template chunk::Chunk*
+MapSafe<int, chunk::Chunk*>::at(int);
+template bool
+MapSafe<int, chunk::Chunk*>::contains(int);
+template void
+MapSafe<int, chunk::Chunk*>::del();
 
-template void MapSafe<int, ChunkInformation>::insert(int, ChunkInformation);
-template ChunkInformation MapSafe<int, ChunkInformation>::at(int);
-template bool MapSafe<int, ChunkInformation>::contains(int);
-template ChunkInformation& MapSafe<int, ChunkInformation>::operator[](int);
-template ChunkInformation& MapSafe<int, ChunkInformation>::at_ptr(int);
+template void
+MapSafe<int, ChunkInformation>::insert(int, ChunkInformation);
+template ChunkInformation
+MapSafe<int, ChunkInformation>::at(int);
+template bool
+MapSafe<int, ChunkInformation>::contains(int);
+template ChunkInformation&
+MapSafe<int, ChunkInformation>::operator[](int);
+template ChunkInformation&
+MapSafe<int, ChunkInformation>::at_ptr(int);

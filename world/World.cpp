@@ -153,7 +153,7 @@ World::GetRegion(int x, int z)
         auto tempRegion = new Region(x, z);
         RegionMap->insert(std::make_pair(x, z), tempRegion);
     }
-    auto t = RegionMap->at(std::make_pair(x,z));
+    auto t = RegionMap->at(std::make_pair(x, z));
     return t;
 }
 }

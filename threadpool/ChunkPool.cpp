@@ -23,7 +23,7 @@ ChunkPool::ChunkPool(int num_threads)
                     std::unique_lock<std::mutex> lock(_mtx);
                     // If there is nothing to do, then submit meshes for
                     // rendering
-                    
+
                     // Wait until there is a task, or if the queue was stopped
                     _cv.wait(lock, [=, &render_queue, this] {
                         return !_task_queue.empty() || _stop;
@@ -37,22 +37,21 @@ ChunkPool::ChunkPool(int num_threads)
                 // from it's tasks.
                 render_queue.push(task());
 
-                if (_task_queue.empty() 
-                        || (render_queue.size() % 25 == 0 && render_queue.size() != 0)
-                    ) {
-                        if (_data_mtx.try_lock()){
-                            // std::unique_lock<std::mutex> lock(_mtx);
-                            while (!render_queue.empty() ) {
-                                auto x = std::move(render_queue.front());
-                                render_queue.pop();
-                                _chunkMeshQueue.push(std::move(x));
-                            }
-                            _data_mtx.unlock();
+                if (_task_queue.empty() || (render_queue.size() % 25 == 0 &&
+                                            render_queue.size() != 0)) {
+                    if (_data_mtx.try_lock()) {
+                        // std::unique_lock<std::mutex> lock(_mtx);
+                        while (!render_queue.empty()) {
+                            auto x = std::move(render_queue.front());
+                            render_queue.pop();
+                            _chunkMeshQueue.push(std::move(x));
                         }
+                        _data_mtx.unlock();
                     }
-        // auto x = std::move(render_queue.front());
-        //                         render_queue.pop();
-        //                         _chunkMeshQueue.push(std::move(x));
+                }
+                // auto x = std::move(render_queue.front());
+                //                         render_queue.pop();
+                //                         _chunkMeshQueue.push(std::move(x));
                 // If there is nothing to do, then submit meshes for rendering
             }
         });

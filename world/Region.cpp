@@ -19,8 +19,10 @@ Region::Region(int x, int z)
     generateHeightMap();
 }
 
-Region::Region() : Region::Region(-69, -1337){}
-
+Region::Region()
+  : Region::Region(-69, -1337)
+{
+}
 
 void
 Region::setChunkEmpty(const int yLevel, bool isEmpty)
@@ -31,7 +33,7 @@ Region::setChunkEmpty(const int yLevel, bool isEmpty)
 bool
 Region::isChunkEmpty(const int yLevel)
 {
-  
+
     if (this->ChunkInfo->contains(yLevel)) {
         return this->ChunkInfo->at(yLevel).isEmpty;
     }
@@ -44,8 +46,8 @@ Region::isChunkEmpty(const int yLevel)
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this
-                      ->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y))
+                    this->ChunkInfo
+                      ->at_ptr(static_cast<int>(localChunk->ChunkPosition.y))
                       .isEmpty = false;
                     return false;
                 }
@@ -67,15 +69,16 @@ Region::isChunkEmpty(const chunk::Chunk* localChunk)
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int x = 0; x < CHUNK_SIZE; x++) {
                 if (blocks[y][z][x] != static_cast<std::byte>(0)) {
-                    this
-                      ->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y)).isEmpty = false;
-                  return false;
+                    this->ChunkInfo
+                      ->at_ptr(static_cast<int>(localChunk->ChunkPosition.y))
+                      .isEmpty = false;
+                    return false;
                 }
             }
         }
     }
-    this->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y)).isEmpty =
-      true;
+    this->ChunkInfo->at_ptr(static_cast<int>(localChunk->ChunkPosition.y))
+      .isEmpty = true;
     return true;
 }
 
@@ -142,7 +145,6 @@ Region::getHeightMap()
 {
     return this->HeightMap;
 }
-
 
 Region::~Region()
 {
