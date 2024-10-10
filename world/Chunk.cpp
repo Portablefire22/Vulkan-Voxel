@@ -32,6 +32,7 @@ Chunk::generateChunk()
     } else {
         isSurface = false;
     }
+    bool hasBeenTaggedEmpty = false;
     int tmpHeight;
     for (int z = 0; z < CHUNK_SIZE; z++) {
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -63,28 +64,43 @@ Chunk::generateChunk()
                         (y + (ChunkPosition.y * CHUNK_SIZE) >= 150 &&
                          y < HEIGHT)) {
                         this->Blocks[y][z][x] = (std::byte)2; // STONE
-                        this->ParentRegion->setChunkEmpty(this->ChunkPosition.y,
-                                                          false);
+                        if (!hasBeenTaggedEmpty) {
+                            this->ParentRegion->setChunkEmpty(
+                              this->ChunkPosition.y, false);
+                            hasBeenTaggedEmpty = true;
+                        }
                     } else if (y == HEIGHT &&
                                y + (ChunkPosition.y * CHUNK_SIZE) <=
                                  WATER_LEVEL) {
                         this->Blocks[y][z][x] = (std::byte)4; // SAND
-                        this->ParentRegion->setChunkEmpty(this->ChunkPosition.y,
-                                                          false);
+                        if (!hasBeenTaggedEmpty) {
+                            this->ParentRegion->setChunkEmpty(
+                              this->ChunkPosition.y, false);
+                            hasBeenTaggedEmpty = true;
+                        }
                     } else if (y == HEIGHT - 1) {
                         this->Blocks[y][z][x] = (std::byte)1; // GRASS
-                        this->ParentRegion->setChunkEmpty(this->ChunkPosition.y,
-                                                          false);
+                        if (!hasBeenTaggedEmpty) {
+                            this->ParentRegion->setChunkEmpty(
+                              this->ChunkPosition.y, false);
+                            hasBeenTaggedEmpty = true;
+                        }
                     } else if (y >= HEIGHT - 4 && y < HEIGHT) {
                         this->Blocks[y][z][x] = (std::byte)3; // DIRT
-                        this->ParentRegion->setChunkEmpty(this->ChunkPosition.y,
-                                                          false);
+                        if (!hasBeenTaggedEmpty) {
+                            this->ParentRegion->setChunkEmpty(
+                              this->ChunkPosition.y, false);
+                            hasBeenTaggedEmpty = true;
+                        }
                     } else if (y > HEIGHT &&
                                y + (ChunkPosition.y * CHUNK_SIZE) <=
                                  WATER_LEVEL) {
                         this->Blocks[y][z][x] = (std::byte)5; // WATER
-                        this->ParentRegion->setChunkEmpty(this->ChunkPosition.y,
-                                                          false);
+                        if (!hasBeenTaggedEmpty) {
+                            this->ParentRegion->setChunkEmpty(
+                              this->ChunkPosition.y, false);
+                            hasBeenTaggedEmpty = true;
+                        }
                     } else {
                         break;
                     }
@@ -164,6 +180,26 @@ VecToIndex(glm::vec3& blockPosition)
 std::vector<RenderBlock::FACE>
 Chunk::ShouldRenderFace(glm::vec3& originalPos)
 {
+    chunk::Chunk* BottomChunk =
+      this->ParentRegion->getChunk(this->ChunkPosition.y - 1);
+    chunk::Chunk* TopChunk =
+      this->ParentRegion->getChunk(this->ChunkPosition.y + 1);
+    chunk::Chunk* RightChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z + 1)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* LeftChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x, this->ChunkPosition.z - 1)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* ForwardChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x + 1, this->ChunkPosition.z)
+        ->getChunk(this->ChunkPosition.y);
+    chunk::Chunk* BackChunk =
+      entryPoint::engine.currentWorld
+        .GetRegion(this->ChunkPosition.x - 1, this->ChunkPosition.z)
+        ->getChunk(this->ChunkPosition.y);
     std::vector<RenderBlock::FACE> faces;
     for (int faceVal = RenderBlock::FRONT; faceVal <= RenderBlock::BOTTOM;
          faceVal++) {
@@ -176,11 +212,8 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::FRONT: // PosX
                 x++;
                 if (x == CHUNK_SIZE) {
-                    if (entryPoint::engine.currentWorld
-                          .GetRegion(this->ChunkPosition.x + 1,
-                                     this->ChunkPosition.z)
-                          ->getChunk(this->ChunkPosition.y)
-                          ->Blocks[y][z][0] == static_cast<std::byte>(0)) {
+                    if (ForwardChunk->Blocks[y][z][0] ==
+                        static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
                     }
@@ -190,11 +223,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::BACK: // NegX
                 x--;
                 if (x == -1) {
-                    if (entryPoint::engine.currentWorld
-                          .GetRegion(this->ChunkPosition.x - 1,
-                                     this->ChunkPosition.z)
-                          ->getChunk(this->ChunkPosition.y)
-                          ->Blocks[y][z][CHUNK_SIZE - 1] ==
+                    if (BackChunk->Blocks[y][z][CHUNK_SIZE - 1] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -205,11 +234,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::LEFT: // Neg Z
                 z--;
                 if (z == -1) {
-                    if (entryPoint::engine.currentWorld
-                          .GetRegion(this->ChunkPosition.x,
-                                     this->ChunkPosition.z - 1)
-                          ->getChunk(this->ChunkPosition.y)
-                          ->Blocks[y][CHUNK_SIZE - 1][x] ==
+                    if (LeftChunk->Blocks[y][CHUNK_SIZE - 1][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
@@ -220,11 +245,8 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::RIGHT: // Pos Z
                 z++;
                 if (z == CHUNK_SIZE) {
-                    if (entryPoint::engine.currentWorld
-                          .GetRegion(this->ChunkPosition.x,
-                                     this->ChunkPosition.z + 1)
-                          ->getChunk(this->ChunkPosition.y)
-                          ->Blocks[y][0][x] == static_cast<std::byte>(0)) {
+                    if (RightChunk->Blocks[y][0][x] ==
+                        static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
                     }
@@ -234,8 +256,8 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::TOP: // Pos Y Works
                 y++;
                 if (y == CHUNK_SIZE) {
-                    if (this->ParentRegion->getChunk(this->ChunkPosition.y + 1)
-                          ->Blocks[0][z][x] == static_cast<std::byte>(0)) {
+                    if (TopChunk->Blocks[0][z][x] ==
+                        static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));
                     }
@@ -245,8 +267,7 @@ Chunk::ShouldRenderFace(glm::vec3& originalPos)
             case RenderBlock::BOTTOM: // Neg Y
                 y--;
                 if (y == -1) {
-                    if (this->ParentRegion->getChunk(this->ChunkPosition.y - 1)
-                          ->Blocks[CHUNK_SIZE - 1][z][x] ==
+                    if (BottomChunk->Blocks[CHUNK_SIZE - 1][z][x] ==
                         static_cast<std::byte>(0)) {
                         faces.push_back(
                           static_cast<RenderBlock::FACE>(faceVal));

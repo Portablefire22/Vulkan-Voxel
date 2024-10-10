@@ -23,10 +23,10 @@ ChunkPool::ChunkPool(int num_threads)
                     std::unique_lock<std::mutex> lock(_mtx);
                     // If there is nothing to do, then submit meshes for
                     // rendering
-                    if (_task_queue.empty()) {
+                    if (_task_queue.empty() || (render_queue.size() % 10 == 0 && render_queue.size() != 0)) {
                         {
                             // std::unique_lock<std::mutex> lock(_mtx);
-                            while (!render_queue.empty()) {
+                            while (!render_queue.empty() ) {
                                 auto x = std::move(render_queue.front());
                                 render_queue.pop();
                                 _chunkMeshQueue.push(std::move(x));
@@ -45,6 +45,9 @@ ChunkPool::ChunkPool(int num_threads)
                 // This specialised chunkpool should always return a chunk-mesh
                 // from it's tasks.
                 render_queue.push(task());
+        // auto x = std::move(render_queue.front());
+        //                         render_queue.pop();
+        //                         _chunkMeshQueue.push(std::move(x));
                 // If there is nothing to do, then submit meshes for rendering
             }
         });

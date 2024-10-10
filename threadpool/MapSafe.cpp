@@ -1,14 +1,11 @@
 
 #include "MapSafe.hpp"
 #include <glm/ext/vector_float2.hpp>
-#include <ios>
-#include <iterator>
 #include <map>
 #include <mutex>
 #include <utility>
 
 #include "../world/Region.h"
-#include "../world/Chunk.h"
 
 template<typename T, typename X>
 void
