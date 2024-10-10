@@ -30,6 +30,7 @@ class Region
     int* getHeightMap();
     int* getBlockHeight(int x, int z);
     bool generateHeightMap();
+    bool isGenerated();
     ~Region();
     Region();
 
@@ -39,6 +40,7 @@ class Region
     MapSafe<int, chunk::Chunk*>* Chunks;
     MapSafe<int, ChunkInformation>* ChunkInfo;
     std::pair<int, int> Position;
+    bool _generated = false;
 };
 
 #endif // REGION_H

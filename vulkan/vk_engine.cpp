@@ -485,11 +485,13 @@ VulkanEngine::run()
             _player_position_changed = false;
         }
         while (!chunks.empty()) {
+            if (!chunks.front()->ParentRegion->isGenerated())
+                continue;
             auto localChunk = std::move(chunks.front());
             chunks.pop();
             try {
                 if (localChunk->ParentRegion->isChunkRendered(
-                      localChunk->ChunkPosition.y))
+                      localChunk->ChunkPosition.y) )
                     continue;
                 pool.enqueue([=, this]() {
                     return currentWorld.SetToRender(*this,

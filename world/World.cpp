@@ -47,11 +47,6 @@ World::SetToRender(VulkanEngine& engine, chunk::Chunk localChunk)
     glm::mat4 scale = glm::scale(glm::mat4{ 1.0 }, glm::vec3(1, 1, 1));
     chunkObject.transformMatrix = translation * scale;
     chunkObject.position = localChunk.ChunkPosition;
-    // std::osyncstream(std::cout) << "Pushing Mesh: [" <<
-    // localChunk->ChunkPosition.x << ","
-    //           << localChunk->ChunkPosition.y << ","
-    //           << localChunk->ChunkPosition.z << "]" << "Thread ID: " <<
-    //           std::this_thread::get_id() << '\n';
     localChunk.ParentRegion->setChunkRendered(localChunk.ChunkPosition.y, true);
     return chunkObject;
 }
@@ -99,20 +94,6 @@ World::RenderChunk(VulkanEngine& engine, chunk::Chunk* localChunk)
 {
     RenderObject chunkObject;
     std::string name = glm::to_string(localChunk->ChunkPosition);
-    // bool chunkExists = false;
-    // for (auto t : engine._renderables) {
-    //     if (t.name == name) {
-    //         chunkExists = true;
-    //     }
-    // }
-    // if (chunkExists) {
-    //     return;
-    // }
-
-    // // Check if the chunk mesh already exists, if not then create it
-    // if (!engine._meshes.contains(name)) {
-    //     localChunk->GenerateChunkMesh();
-    // }
     chunkObject.mesh = engine.getMesh(name);
     if (chunkObject.mesh == nullptr) {
         return;
