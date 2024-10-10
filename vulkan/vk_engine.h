@@ -11,11 +11,8 @@
 #include <functional>
 #include <glm/vec4.hpp>
 
-#include "../threadpool/ThreadPool.hpp"
-
-#include "../DebugUtils/ImGuiHandler.h"
 #include "../player/Player.h"
-#include "VkBootstrap.h"
+#include <VkBootstrap.h>
 
 #include "../player/Player.h"
 #include <unordered_map>
