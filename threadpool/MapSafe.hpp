@@ -3,13 +3,14 @@
 #include <iterator>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 
 template<typename T, typename X>
 class MapSafe
 {
  
   private:
-    std::mutex _mtx;
+    std::shared_mutex _mtx;
     std::map<T, X> _map;
 
 public:

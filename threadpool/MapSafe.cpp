@@ -11,14 +11,14 @@ template<typename T, typename X>
 void
 MapSafe<T, X>::insert(T key, X value)
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::unique_lock<std::shared_mutex> lock(_mtx);
     _map.insert(std::make_pair(key, value));
 }
 
 template<typename T, typename X>
 X
 MapSafe<T, X>::at(T key) {
-  std::unique_lock<std::mutex> lock(_mtx);
+  std::shared_lock<std::shared_mutex> lock(_mtx);
   return _map.at(key);
 }
 
@@ -26,7 +26,7 @@ template<typename T, typename X>
 bool
 MapSafe<T, X>::contains(T key)
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map.contains(key);
 }
 
@@ -34,7 +34,7 @@ template<typename T, typename X>
 X&
 MapSafe<T, X>::operator[](T key)
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map[key];
 }
 
@@ -42,20 +42,20 @@ template<typename T, typename X>
 X&
 MapSafe<T, X>::at_ptr(T key)
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map[key];
 }
 
 template<typename T, typename X>
 auto MapSafe<T, X>::begin() -> decltype(_map.begin())
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map.begin();
 }
 template<typename T, typename X>
 auto MapSafe<T, X>::end()
 {
-    std::unique_lock<std::mutex> lock(_mtx);
+    std::shared_lock<std::shared_mutex> lock(_mtx);
     return _map.end();
 }
 

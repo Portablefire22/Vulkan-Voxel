@@ -14,6 +14,7 @@ class ThreadPool
   protected:
     std::vector<std::thread> _threads;
     std::mutex _mtx;
+    std::mutex _data_mtx;
     std::condition_variable _cv;
     int _n_threads;
     bool _stop;
