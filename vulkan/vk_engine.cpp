@@ -20,7 +20,7 @@
 
 #define VMA_IMPLEMENTATION
 #include "../Camera.h"
-#include "vk_mem_alloc.h"
+#include <vma/vk_mem_alloc.h>
 
 #include "../threadpool/ChunkPool.hpp"
 
@@ -30,6 +30,12 @@
 #include "../world/World.h"
 #include "vk_initialisers.h"
 #include "vk_textures.h"
+#include "../RenderUtils/RenderBlock.h"
+#include "../deps/imgui/imgui.h"
+#include "../deps/imgui/imgui_impl_sdl2.h"
+#include "../deps/imgui/imgui_impl_osx.h"
+#include "../deps/imgui/imgui_internal.h"
+#include "../world/World.h"
 
 #include "../DebugUtils/ImGuiHandler.h"
 #include <glm/gtx/string_cast.hpp>

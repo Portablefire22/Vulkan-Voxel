@@ -7,7 +7,7 @@
 #include "vk_initialisers.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../stb_image.h"
 
 bool vkUtil::loadImageFromFile(VulkanEngine&engine, const char* file, AllocatedImage&outImage) {
     int texWidth, texHeight, texChannels;
