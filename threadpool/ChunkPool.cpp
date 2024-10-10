@@ -11,6 +11,7 @@ ChunkPool<T>::enqueue(std::function<T()> task)
 template <typename T>
 ChunkPool<T>::ChunkPool(int num_threads)
 {
+    _n_threads = num_threads;
     // Create the threads
     for (int i = 0; i < _n_threads; i++) {
         _threads.emplace_back([this] {

@@ -481,7 +481,6 @@ VulkanEngine::run()
                 auto localChunk = std::move(chunks.front());
                 chunks.pop();
                 std::string name = glm::to_string(localChunk->ChunkPosition);
-                // std::cout << "[VK_ENGINE:] " << name << std::endl;
                 try {
                     if (_meshes.contains(name) && getMesh(name) == nullptr) {
                         std::cout << "Exists but is nullptr" << std::endl;
