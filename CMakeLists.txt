@@ -13,7 +13,6 @@ set(destination "${CMAKE_CURRENT_BINARY_DIR}/resources")
 find_package(SDL2 REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIRS})
-add_subdirectory(deps/vk-bootstrap)
 
 include_directories(/Users/blakey/VulkanSDK/1.3.290.0/macOS/include)
 add_subdirectory(deps/vk-bootstrap)
