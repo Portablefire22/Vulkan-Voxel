@@ -1617,12 +1617,12 @@ stbi__float_postprocess(float* result, int* x, int* y, int* comp, int req_comp)
 
 #if defined(_WIN32) && defined(STBI_WINDOWS_UTF8)
 STBI_EXTERN
-  __declspec(dllimport) int __stdcall MultiByteToWideChar(unsigned int cp,
-                                                          unsigned long flags,
-                                                          const char* str,
-                                                          int cbmb,
-                                                          wchar_t* widestr,
-                                                          int cchwide);
+__declspec(dllimport) int __stdcall MultiByteToWideChar(unsigned int cp,
+                                                        unsigned long flags,
+                                                        const char* str,
+                                                        int cbmb,
+                                                        wchar_t* widestr,
+                                                        int cchwide);
 STBI_EXTERN __declspec(dllimport) int __stdcall WideCharToMultiByte(
   unsigned int cp,
   unsigned long flags,

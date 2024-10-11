@@ -37,6 +37,14 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x,
                                                startPos.y,
                                                startPos.z };
+
+            quadMesh._vertices[0].normal = { 0.0f, 0.0f, 0.0f };
+            quadMesh._vertices[1].normal = { 0.0f, 0.0f + 1.0f, 0.0f };
+            quadMesh._vertices[2].normal = { 0.0f + 1.0f, 0.0f + 1.0f, 0.0f };
+
+            quadMesh._vertices[3].normal = { 0.0f + 1.0f, 0.0f + 1.0f, 0.0f };
+            quadMesh._vertices[4].normal = { 0.0f + 1.0f, 0.0f, 0.0f };
+            quadMesh._vertices[5].normal = { 0.0f, 0.0f, 0.0f };
             break;
         case BACK:
             quadMesh._vertices[0].position = { startPos.x,
@@ -57,6 +65,14 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x,
                                                startPos.y,
                                                startPos.z };
+
+            quadMesh._vertices[0].normal = { 0.0f, 0.0f, 0.0f };
+            quadMesh._vertices[1].normal = { 0.0f, 0.0f + 1.0f, 0.0f };
+            quadMesh._vertices[2].normal = { 0.0f, 0.0f + 1.0f, 0.0f + 1.0f };
+            quadMesh._vertices[3].normal = { 0.0f, 0.0f + 1.0f, 0.0f + 1.0f };
+            quadMesh._vertices[4].normal = { 0.0f, 0.0f, 0.0f + 1.0f };
+            quadMesh._vertices[5].normal = { 0.0f, 0.0f, 0.0f };
+
             break;
         case RIGHT:
             quadMesh._vertices[0].position = { startPos.x,
@@ -78,6 +94,14 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x,
                                                startPos.y,
                                                startPos.z + tileSize };
+
+            quadMesh._vertices[0].normal = { 0.0f, 0.0f, 1.0f };
+            quadMesh._vertices[1].normal = { 0.0f, 1.0f, 1.0f };
+            quadMesh._vertices[2].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[3].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[4].normal = { 1.0f, 0.0f, 1.0f };
+            quadMesh._vertices[5].normal = { 0.0f, 0.0f, 1.0f };
+
             break;
         case FRONT:
             quadMesh._vertices[0].position = { startPos.x + tileSize,
@@ -98,6 +122,13 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x + tileSize,
                                                startPos.y,
                                                startPos.z };
+
+            quadMesh._vertices[0].normal = { 1.0f, 0.0f, 0.0f };
+            quadMesh._vertices[1].normal = { 1.0f, 1.0f, 0.0f };
+            quadMesh._vertices[2].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[3].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[4].normal = { 1.0f, 0.0f, 1.0f };
+            quadMesh._vertices[5].normal = { 1.0f, 0.0f, 0.0f };
             break;
         case TOP:
             quadMesh._vertices[0].position = { startPos.x,
@@ -120,6 +151,13 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x,
                                                startPos.y + tileSize,
                                                startPos.z };
+
+            quadMesh._vertices[0].normal = { 0.0f, 1.0f, 0.0f };
+            quadMesh._vertices[1].normal = { 0.0f, 1.0f, 1.0f };
+            quadMesh._vertices[2].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[3].normal = { 1.0f, 1.0f, 1.0f };
+            quadMesh._vertices[4].normal = { 1.0f, 1.0f, 0.0f };
+            quadMesh._vertices[5].normal = { 0.0f, 1.0f, 0.0f };
             break;
         case BOTTOM:
             quadMesh._vertices[0].position = { startPos.x,
@@ -141,6 +179,12 @@ RenderBlock::createHorizontalQuad(int blockId,
             quadMesh._vertices[5].position = { startPos.x,
                                                startPos.y,
                                                startPos.z };
+            quadMesh._vertices[0].normal = { 0.0f, 0.0f, 0.0f };
+            quadMesh._vertices[1].normal = { 0.0f, 0.0f, 1.0f };
+            quadMesh._vertices[2].normal = { 1.0f, 0.0f, 1.0f };
+            quadMesh._vertices[3].normal = { 1.0f, 0.0f, 1.0f };
+            quadMesh._vertices[4].normal = { 1.0f, 0.0f, 0.0f };
+            quadMesh._vertices[5].normal = { 0.0f, 0.0f, 0.0f };
             break;
 
         default:

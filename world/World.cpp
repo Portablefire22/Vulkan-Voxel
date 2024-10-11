@@ -144,12 +144,6 @@ World::GetChunksAroundPlayer(VulkanEngine& engine,
          });
     }
   });
-    // while (!pool->_task_queue.empty() && !pool->_chunkQueue.empty()) {
-    //     auto t = pool->_chunkQueue.pop();
-    //     chunksToRender.push(std::move(t));
-    //     std::cout << "Popped: #" <<  pool->_task_queue.size() << std::endl;
-    //     std::cout << "Pushed: #" <<  chunksToRender.size() << std::endl;
-    // }
     return chunksToRender;
 }
 
